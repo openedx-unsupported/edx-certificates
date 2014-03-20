@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>Valid Certificate Number</title>
+ <link rel="stylesheet" href="/stylesheets/base.css">
+</head>
+<body>
+  <header>
+    <h1>edx</h1>
+  </header>
+
+  <section>
+    <header class="valid">
+      <h1>This is a valid edX certificate number for <span>{NAME}</span></h1>
+    </header>
+
+    <section>
+      <dl>
+        <dt>Student Name</dt>
+        <dd>{NAME}</dd>
+        <dt>Identifier number</dt>
+        <dd>{CERTIFICATE_ID}</dd>
+        <dt>Course</dt>
+        <dd>{COURSE}</dd>
+        <dd class="description">A course of study offered by {ORG}, an online learning initiative of {ORG_LONG}, through edX, the online learning initiative of Harvard University and MIT</dd>
+      </dl>
+    </section>
+
+  </section>
+  <footer>
+    <p>{SIGNATURE}
+    </p>
+    <a href="{SIG_URL}" class="download">Download this signature</a>
+    <a href="{VERIFY_URL}" class="what">What is this?</a>
+  </footer>
+</body>
+</html>

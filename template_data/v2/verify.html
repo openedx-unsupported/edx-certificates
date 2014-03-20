@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"><![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie10 lt-ie9 lt-ie8" lang="en"><![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie10 lt-ie9" lang="en"><![endif]-->
+<!--[if IE 9]><html class="no-js lt-ie10" lang="en"><![endif]-->
+<!--[if gt IE 9]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Validate an edX Certificate Yourself | edX</title>
+  <meta name="description" content="[View Description]">
+
+  <link rel="stylesheet" href="/v2/static/css/vendor/normalize.css" />
+  <link rel="stylesheet" href="/v2/static/css/vendor/font-awesome.css" />
+  <link rel="stylesheet" href="/v2/static/css/style-application.css" />
+  <script src="/v2/static/js/vendor/modernizr-2.6.2.min.js"></script>
+</head>
+
+<body class="view--validate-certificate" data-view="validate-certificate">
+
+  <!--[if lt IE 9]>
+      <p class="msg msg--browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+  <![endif]-->
+
+  <nav class="nav--skip sr">
+    <h2>Skip to This Page's Content</h2>
+    <ol>
+      <li class="nav__item"><a class="action" href="#validation-requirements">Validation Requirements</a></li>
+      <li class="nav__item"><a class="action" href="#validation-instructions">Validation Instructions</a></li>
+    </ol>
+  </nav>
+
+  <div class="wrapper--view">
+    <div class="wrapper--header">
+      <header class="header--app" role="banner">
+        <h1 class="title title--logo">
+          <span class="logo">
+            <a href="http://www.edx.org"><img class="img--logo" src="/v2/static/images/logo-edx.png" alt="edX" /></a>
+          </span>
+          <span class="title title--sub">Certificate Validation</span>
+        </h1>
+      </header>
+    </div>
+
+    <div class="wrapper--content">
+      <section class="content content--main" role="main">
+        <section class="introduction">
+          <h2 class="title title--lvl1">Validate an edX Certificate</h2>
+
+          <div class="copy">
+            <p>The certificate issued by edX is signed by a <a href="http://www.gnupg.org">GPG</a> key so that it can be validated independently by anyone with the edX public key.  For independent validation, edX uses a "detached signature," meaning that the signature for the certificate is contained in a separate file with a ".sig" extension.</p>
+          </div>
+        </section>
+
+        <hr class="divider /">
+
+        <section class="requirements" id="validation-requirements">
+          <h3 class="title title--lvl2">Requirements to Validate an edX Certificate</h3>
+
+          <div class="copy">
+            <p>To validate an edX certificate, you need the following files:</p>
+
+            <ul class="list list--requirements">
+              <li class="item item--requirement">
+                <span class="requirement__label"><a href="http://verify.edx.org/edx.pub">The official edX public key</a></span>
+                </li>
+
+              <li class="item item--requirement">
+                <span class="requirement__label">Certificate PDF</span> <span class="sr">:</span>
+                <span class="requirement__details">The edX certificate belonging to {NAME} (you should already have this file).</span>
+              </li>
+
+              <li class="item item--requirement">
+                <span class="requirement__label">A Digital Signature</span> <span class="sr">:</span>
+                <span class="requirement__details">The <a href="{SIG_URL}">signature file</a> for {NAME}'s certificate.</span>
+              </li>
+
+              <li class="item item--requirement requirement--allitems">
+                <span class="requirement__label">All Elements Present</span> <span class="sr">:</span>
+                <span class="requirement__details">Ensure you save the PDF, the signature file, and the edX public key in the same directory.</span>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <hr class="divider /">
+
+        <h2 class="title sr">How to Validate an edX Certificate</h2>
+
+        <section class="instructions instructions--osx" id="validation-instructions">
+          <h4 class="title title--lvl3">Validate an edX Certificate on OSX (using GPG Keychain)</h4>
+
+          <div class="copy">
+            <ol class="list list--instructions">
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Download and install <a href="http://www.gpgtools.org/installer/index.html">gpgtools</a>.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  After installation, when you are prompted by GPG Keychain Access, enter a new personal keypair.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/osxgpg-new-keypair.png" alt="Explanation: Create a new keypair" />
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Click the Import icon to import the edX public key file, <strong>edx.pub</strong>.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  CTRL-click the edX public key and select <strong>sign</strong> to validate it.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/osxgpg-sign-key.png" alt="Explanation: How to sign key" />
+              </li>
+
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Confirm that the edX public key is listed in the GPG Keychain Access window and that it has the Short ID <strong>044DA1D9</strong>.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/osxgpg-key-list.png" alt="Explanation: Confirm edX public key exists" />
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <hr class="divider /">
+
+        <section class="instructions instructions--pc">
+          <h4 class="title title--lvl3">Validate an edX Certificate on Microsoft Windows (using gpg4win)</h4>
+
+          <div class="copy">
+            <ol class="list list--instructions">
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Download and install the full version of <a href="http://www.gpg4win.org/download.html">gpg4win</a>.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  After the installation is complete, launch Kleapatra from the Start menu.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Create a new personal certificate if don't have one listed under My Certificates.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/wingpg-new-cert.png" alt="Explanation: How to make a new certificate" />
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  When prompted, select <strong>Create personal OpenPGP key pair</strong>.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/wingpg-new-cert2.png" alt="Explanation: How to make a new certificate" />
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Import the edX public key file, <strong>edx.pub</strong>, by clicking the Import Certificate icon.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Certify the edX public key by highlighting the edX certificate and selecting <strong>Certify Certificate</strong> under the <strong>Certificates</strong> menu.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/wingpg-certify-cert.png" alt="Explanation: How to certify certificate" />
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Make sure that the edX public key/certificate is listed in the Trusted Certificates tab and verify it has the Key-ID <strong>044DA1D9</strong>.
+                </div>
+
+                <img class="instruction__image" src="/v2/static/images/wingpg-verify-cert.png" alt="Explanation: How to verify certificate" />
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <hr class="divider /">
+
+        <section class="instructions instructions--terminal">
+          <h4 class="title title--lvl3">Validate an edX certificate through the Terminal (using gpg)</h4>
+
+          <div class="copy">
+            <ol class="list list--instructions">
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Open a new terminal on OSX or a command window on Windows.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Go into the directory where the edX public key, PDF, and .sig file are located.
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  <span class="label">Run the following command to verify the fingerprint of the edX key:</span>
+
+                  <span class="value">
+                    <pre>gpg --verify {SIG_FILE} {PDF_FILE}</pre>
+                  </span>
+                </div>
+              </li>
+              <li class="item item--instruction">
+                <div class="instruction__details">
+                  Confirm that "Good signature from edx &lt;info@edx.org&gt;" is reported by gpg.
+                </div>
+              </li>
+            </ol>
+          </div>
+        </section>
+
+        <hr class="divider /">
+
+        <section class="support support--questions">
+          <h3 class="title title--lvl2">Have Questions or Need Help?</h3>
+
+          <div class="copy">
+            <p>To learn more about how signatures work, see <a href="http://en.wikipedia.org/wiki/Public-key_cryptography">Public key cryptography</a> and the <a href="http://www.gnupg.org">GnuPG website</a>.  If you have questions about validating edX certificates specifically, contact us.</p>
+          </div>
+
+          <ul class="list list--actions">
+            <li class="item item--action">
+              <a class="action action--contact" href="http://www.edx.org/contact-us">Contact edX Support</a>
+            </li>
+          </ul>
+        </section>
+      </section>
+    </div>
+
+    <hr class="divider /">
+
+    <div class="wrapper--footer">
+      <footer class="footer--app" role="contentinfo" id="edx-info">
+
+        <div class="copyright">
+          <p>&copy; 2013 edX. All rights reserved</p>
+        </div>
+
+        <nav class="nav--footer">
+          <ul class="list list--legal">
+            <li class="nav__item">
+              <a class="action" href="http://www.edx.org/edx-terms-service">Terms of Service &amp; Honor Code</a>
+            </li>
+            <li class="nav__item">
+              <a class="action" href="http://www.edx.org/edx-privacy-policy">Privacy Policy</a>
+            </li>
+          </ul>
+
+          <ul class="list list--actions">
+            <li class="nav__item">
+              <a class="action" href="http://www.edx.org/course-list">Learn with edX</a>
+            </li>
+            <li class="nav__item">
+              <a class="action" href="http://www.edx.org/jobs">Work at edX</a>
+            </li>
+            <li class="nav__item">
+              <a class="action" href="http://www.edx.org/contact-us">Contact edX</a>
+            </li>
+          </ul>
+        </nav>
+      </footer>
+    </div>
+  </div>
+
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="/v2/static/jsjs/vendor/jquery-1.10.2.min.js"><\/script>')</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+*.pyc
+*~
+*.sw[po]
+*.DS_Store
+certs/

@@ -1,0 +1,14 @@
+argparse==1.2.1
+boto==2.6.0
+lockfile==0.9.1
+logging-config==1.0.4
+nose==1.2.1
+path.py==2.4.1
+pyPdf2==1.19
+python-daemon==1.6
+python-gnupg==0.3.4
+reportlab==2.6
+requests==0.14.1
+simples3==1.0-alpha
+wsgiref==0.1.2
+python-bidi==0.3.4
