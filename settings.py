@@ -60,7 +60,8 @@ CERT_DATA = {
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
 CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
-CERT_KEY_ID = 'info@edx.org'
+# dummy key - https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
+CERT_KEY_ID = 'FEF8D954'
 
 # Specify these credentials before running the test suite
 # or ensure that your .boto file has write permission
