@@ -12,7 +12,11 @@ from path import path
 ROOT_PATH = path(__file__).dirname()
 REPO_PATH = ROOT_PATH
 ENV_ROOT = REPO_PATH.dirname()
-TEMPLATE_DIR = '{0}/template_data'.format(REPO_PATH)
+# Override TEMPLATE_DATA_DIR if you have have
+# private templates, fonts, etc.
+# Needs to be relative to the certificates repo
+# root
+TEMPLATE_DATA_DIR = 'template_data'
 
 # DEFAULTS
 DEBUG = False
@@ -119,7 +123,7 @@ if os.path.isfile(ENV_ROOT / "env.json"):
                                 local_loglevel=local_loglevel,
                                 debug=False,
                                 service_variant=os.environ.get('SERVICE_VARIANT', None))
-    TEMPLATE_DIR = ENV_TOKENS.get('TEMPLATE_DIR', TEMPLATE_DIR)
+    TEMPLATE_DATA_DIR = ENV_TOKENS.get('TEMPLATE_DATA_DIR', TEMPLATE_DATA_DIR)
 
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
@@ -130,3 +134,5 @@ if os.path.isfile(ENV_ROOT / "auth.json"):
     QUEUE_AUTH_PASS = ENV_TOKENS.get('QUEUE_AUTH_PASS', '')
     CERT_AWS_KEY = ENV_TOKENS.get('CERT_AWS_KEY', CERT_AWS_KEY)
     CERT_AWS_ID = ENV_TOKENS.get('CERT_AWS_ID', CERT_AWS_ID)
+
+TEMPLATE_DIR = os.path.join(REPO_PATH, TEMPLATE_DATA_DIR)
