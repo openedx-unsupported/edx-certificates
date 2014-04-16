@@ -43,7 +43,7 @@ def test_cert_gen():
         # Verify that the detached signature is valid
         pdf = os.path.join(tmpdir,
                 S3_CERT_PATH, download_uuid, 'Certificate.pdf')
-        sig = os.path.join(,
+        sig = os.path.join(tmpdir,
                 S3_VERIFY_PATH, verify_uuid, 'Certificate.pdf.sig')
         gpg = gnupg.GPG(gnupghome=settings.CERT_GPG_DIR)
 
