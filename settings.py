@@ -119,6 +119,7 @@ if os.path.isfile(ENV_ROOT / "env.json"):
                                 local_loglevel=local_loglevel,
                                 debug=False,
                                 service_variant=os.environ.get('SERVICE_VARIANT', None))
+    TEMPLATE_DIR = ENV_TOKENS.get('TEMPLATE_DIR', TEMPLATE_DIR)
 
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
