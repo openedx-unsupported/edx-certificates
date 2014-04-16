@@ -20,7 +20,7 @@ TEMPLATE_DATA_DIR = 'template_data'
 
 # DEFAULTS
 DEBUG = False
-LOGGING = get_logger_config(ENV_ROOT / "log",
+LOGGING = get_logger_config(ENV_ROOT,
                             logging_env="dev",
                             local_loglevel="DEBUG",
                             dev_env=True,
