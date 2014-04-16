@@ -169,9 +169,13 @@ class CertificateGen(object):
                     course_id.split('/')[0], course_id.split('/')[1])), "rb"))
 
         # Open the 188 letterhead pdf
-        self.letterhead_pdf = PdfFileReader(
-            file("{0}/letterhead-template-BerkeleyX-CS188.1x.pdf".format(
-                 self.template_dir), "rb"))
+        # if it exists
+        letterhead_file = "{0}/letterhead-template-BerkeleyX-CS188.1x.pdf".format(self.template_dir)
+
+        if os.path.exists(letterhead_file):
+            self.letterhead_pdf = PdfFileReader(file(letterhead_file, "rb"))
+        else:
+            self.letterhead_pdf = None
 
         self.aws_id = aws_id
         self.aws_key = aws_key
