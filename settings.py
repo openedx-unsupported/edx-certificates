@@ -75,10 +75,12 @@ CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
 CERT_KEY_ID = 'info@edx.org'
 
 # Specify these credentials before running the test suite
-CERT_AWS_ID = 'PLEASE_PROVIDE_AN_ID'
-CERT_AWS_KEY = 'PLEASE_PROVIDE_AN_AWS_BUCKET_KEY'
-CERT_BUCKET = 'provide_a_bucket_name'
-CERT_URL = 'http://localhost:18090'
+# or ensure that your .boto file has write permission
+# to the bucket
+CERT_AWS_ID = None
+CERT_AWS_KEY = None
+# Update this with your bucket name
+CERT_BUCKET = 'verify-test.edx.org'
 CERT_WEB_ROOT = '/var/tmp'
 # when set to true this will copy the generated certificate
 # to the CERT_WEB_ROOT. This is not something you want to do
@@ -86,7 +88,14 @@ CERT_WEB_ROOT = '/var/tmp'
 # server
 COPY_TO_WEB_ROOT = False
 S3_UPLOAD = True
-CERT_URL = 'http://{0}.s3.amazonaws.com'.format(CERT_BUCKET)
+# This is the base URL used for CERT uploads to s3
+CERT_URL = 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
+# This is the base URL that will be displayed to the user in the dashboard
+# It's different than CERT_URL because because CERT_URL will not have a valid
+# SSL certificate.
+CERT_DOWNLOAD_URL = 'https://s3.amazonaws.com/{}'.format(CERT_BUCKET)
+CERT_VERIFY_URL = 'http://s3.amazonaws.com/{}'.format(CERT_BUCKET)
+
 
 # load settings from env.json and auth.json
 if os.path.isfile(ENV_ROOT / "env.json"):
@@ -100,6 +109,8 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     CERT_KEY_ID = ENV_TOKENS.get('CERT_KEY_ID', CERT_KEY_ID)
     CERT_BUCKET = ENV_TOKENS.get('CERT_BUCKET', CERT_BUCKET)
     CERT_URL = ENV_TOKENS.get('CERT_URL', CERT_URL)
+    CERT_DOWNLOAD_URL = ENV_TOKENS.get('CERT_DOWNLOAD_URL', CERT_DOWNLOAD_URL)
+    CERT_WEB_ROOT = ENV_TOKENS.get('CERT_WEB_ROOT', CERT_WEB_ROOT)
     COPY_TO_WEB_ROOT = ENV_TOKENS.get('COPY_TO_WEB_ROOT', COPY_TO_WEB_ROOT)
     S3_UPLOAD = ENV_TOKENS.get('S3_UPLOAD', S3_UPLOAD)
     LOGGING = get_logger_config(LOG_DIR,
