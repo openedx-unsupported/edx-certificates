@@ -644,11 +644,12 @@ class CertificateGen(object):
 
         paragraph_string = "HONOR CODE CERTIFICATE<br/>" \
             "*Authenticity of this certificate can be verified at " \
-            "<a href='https://{bucket}/{verify_path}/{verify_uuid}'>" \
-            "https://{bucket}/{verify_path}/{verify_uuid}</a>"
+            "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
+            "{verify_url}/{verify_path}/{verify_uuid}</a>"
 
         paragraph_string = paragraph_string.format(
-            bucket=BUCKET, verify_path=S3_VERIFY_PATH,
+            verify_url=settings.CERT_VERIFY_URL,
+            verify_path=S3_VERIFY_PATH,
             verify_uuid=verify_uuid
         )
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
