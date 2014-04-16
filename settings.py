@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Setings file for the certificate agent
+Settings file for the certificate agent
 """
 
 import json
