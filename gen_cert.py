@@ -30,14 +30,13 @@ import arabic_reshaper
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
-BUCKET = settings.CERT_BUCKET
 logging.config.dictConfig(settings.LOGGING)
 log = logging.getLogger('certificates.' + __name__)
 # name of the S3 bucket
 # paths to the S3 are for downloading and verifying certs
 S3_CERT_PATH = 'downloads'
 S3_VERIFY_PATH = 'cert'
-
+BUCKET = settings.CERT_BUCKET
 # reduce logging level for gnupg
 l = logging.getLogger('gnupg')
 l.setLevel('WARNING')
@@ -181,8 +180,8 @@ class CertificateGen(object):
         # TODO remove/archive an existing certificate
         raise NotImplementedError
 
-    def create_and_upload(self, name, upload=True, cleanup=True,
-                          letterhead=False):
+    def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True,
+                          copy_to_webroot=settings.COPY_TO_WEB_ROOT, letterhead=False):
         """
         name - Full name that will be on the certificate
         upload - Upload to S3 (defaults to True)
@@ -222,28 +221,36 @@ class CertificateGen(object):
                     verify_dir=verify_path)
 
         # upload generated certificate and verification files to S3
-        if upload:
-            base_url = 'http://{0}.s3.amazonaws.com'.format(BUCKET)
-            s3 = S3Bucket(BUCKET,
-                    access_key=str(self.aws_id),
-                    secret_key=str(self.aws_key),
-                    base_url=base_url)
+        for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
+            for filename in filenames:
+                local_path = os.path.join(dirpath, filename)
+                dest_path = os.path.relpath(os.path.join(dirpath, filename),
+                                            start=self.dir_prefix)
+                print "dest path: {}".format(dest_path)
+                if upload:
+                    s3 = S3Bucket(BUCKET,
+                                  access_key=str(self.aws_id),
+                                  secret_key=str(self.aws_key),
+                                  base_url=settings.CERT_URL)
 
-            for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
-                for filename in filenames:
-                    aws_path = os.path.relpath(os.path.join(dirpath, filename),
-                                                    start=self.dir_prefix)
-                    local_path = os.path.join(dirpath, filename)
                     log.info('uploading to {0} from {1} to {2}'.format(
-                        base_url, local_path, aws_path))
+                        settings.CERT_URL, local_path, dest_path))
                     with open(local_path) as f:
-                        s3.put(aws_path, f.read(), acl="public-read")
+                        s3.put(dest_path, f.read(), acl="public-read")
+
+                if copy_to_webroot:
+                    publish_dest = os.path.join(settings.CERT_WEB_ROOT, dest_path)
+                    log.info('publishing to {0} from {1} to {2}'.format(
+                        settings.CERT_URL, local_path, publish_dest))
+                    if not os.path.exists(os.path.dirname(publish_dest)):
+                        os.makedirs(os.path.dirname(publish_dest))
+                    shutil.copy(local_path, publish_dest)
+
         if cleanup:
             if os.path.exists(self.dir_prefix):
                 shutil.rmtree(self.dir_prefix)
 
         return (download_uuid, verify_uuid, download_url)
-
 
     def _generate_letterhead(self, student_name, download_dir,
                              filename='distinction-letter.pdf'):
@@ -261,8 +268,8 @@ class CertificateGen(object):
         download_uuid = uuid.uuid4().hex
         download_url = "https://s3.amazonaws.com/{0}/" \
                        "{1}/{2}/{3}".format(
-                               BUCKET, S3_CERT_PATH,
-                               download_uuid, filename)
+                           BUCKET, S3_CERT_PATH,
+                           download_uuid, filename)
 
         filename = os.path.join(download_dir, download_uuid, filename)
 
@@ -383,9 +390,8 @@ class CertificateGen(object):
 
         return (download_uuid, download_url)
 
-
     def _generate_certificate(self, student_name, download_dir,
-                                verify_dir, filename='Certificate.pdf'):
+                              verify_dir, filename='Certificate.pdf'):
         """
         Generate a PDF certificate, signature and static html
         files used for validation.
@@ -393,18 +399,21 @@ class CertificateGen(object):
         return (download_uuid, verify_uuid, download_url)
 
         """
+        if self.template_version == 1:
+            return self._generate_v1_certificate(student_name, download_dir, verify_dir, filename)
 
         if self.template_version == 2:
             return self._generate_v2_certificate(student_name, download_dir, verify_dir, filename)
 
+    def _generate_v1_certificate(self, student_name, download_dir, verify_dir, filename='Certificate.pdf'):
         # A4 page size is 297mm x 210mm
 
         verify_uuid = uuid.uuid4().hex
         download_uuid = uuid.uuid4().hex
         download_url = "https://s3.amazonaws.com/{0}/" \
                        "{1}/{2}/{3}".format(
-                               BUCKET, S3_CERT_PATH,
-                               download_uuid, filename)
+                           BUCKET, S3_CERT_PATH,
+                           download_uuid, filename)
 
         filename = os.path.join(download_dir, download_uuid, filename)
 
@@ -640,8 +649,8 @@ class CertificateGen(object):
             "https://{bucket}/{verify_path}/{verify_uuid}</a>"
 
         paragraph_string = paragraph_string.format(bucket=BUCKET,
-                verify_path=S3_VERIFY_PATH,
-                verify_uuid=verify_uuid)
+                                                   verify_path=S3_VERIFY_PATH,
+                                                   verify_uuid=verify_uuid)
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
@@ -1154,7 +1163,6 @@ class CertificateGen(object):
         do not fit into Latin-1
         """
         return self._contains_characters_above(string, 0x0100)
-
 
     def _use_unicode_font(self, string):
         # This function should return true for any

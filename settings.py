@@ -78,6 +78,15 @@ CERT_KEY_ID = 'info@edx.org'
 CERT_AWS_ID = 'PLEASE_PROVIDE_AN_ID'
 CERT_AWS_KEY = 'PLEASE_PROVIDE_AN_AWS_BUCKET_KEY'
 CERT_BUCKET = 'provide_a_bucket_name'
+CERT_URL = 'http://localhost:18090'
+CERT_WEB_ROOT = '/var/tmp'
+# when set to true this will copy the generated certificate
+# to the CERT_WEB_ROOT. This is not something you want to do
+# unless you are running your certificate service on a single
+# server
+COPY_TO_WEB_ROOT = False
+S3_UPLOAD = True
+CERT_URL = 'http://{0}.s3.amazonaws.com'.format(CERT_BUCKET)
 
 # load settings from env.json and auth.json
 if os.path.isfile(ENV_ROOT / "env.json"):
@@ -90,6 +99,9 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     CERT_GPG_DIR = ENV_TOKENS.get('CERT_GPG_DIR', CERT_GPG_DIR)
     CERT_KEY_ID = ENV_TOKENS.get('CERT_KEY_ID', CERT_KEY_ID)
     CERT_BUCKET = ENV_TOKENS.get('CERT_BUCKET', CERT_BUCKET)
+    CERT_URL = ENV_TOKENS.get('CERT_URL', CERT_URL)
+    COPY_TO_WEB_ROOT = ENV_TOKENS.get('COPY_TO_WEB_ROOT', COPY_TO_WEB_ROOT)
+    S3_UPLOAD = ENV_TOKENS.get('S3_UPLOAD', S3_UPLOAD)
     LOGGING = get_logger_config(LOG_DIR,
                                 logging_env=ENV_TOKENS['LOGGING_ENV'],
                                 local_loglevel=local_loglevel,
