@@ -185,7 +185,8 @@ class CertificateGen(object):
         raise NotImplementedError
 
     def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True,
-                          copy_to_webroot=settings.COPY_TO_WEB_ROOT, letterhead=False):
+                          copy_to_webroot=settings.COPY_TO_WEB_ROOT,
+                          cert_web_root=settings.CERT_WEB_ROOT, letterhead=False):
         """
         name - Full name that will be on the certificate
         upload - Upload to S3 (defaults to True)
@@ -240,7 +241,7 @@ class CertificateGen(object):
                     key.set_contents_from_filename(local_path, policy='public-read')
 
                 if copy_to_webroot:
-                    publish_dest = os.path.join(settings.CERT_WEB_ROOT, dest_path)
+                    publish_dest = os.path.join(cert_web_root, dest_path)
                     log.info('publishing to {0} from {1} to {2}'.format(
                         settings.CERT_URL, local_path, publish_dest))
                     if not os.path.exists(os.path.dirname(publish_dest)):

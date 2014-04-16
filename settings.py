@@ -54,22 +54,6 @@ CERT_DATA = {
     "LONG_COURSE" : "Sample course",
     "ISSUED_DATE" : "Jan. 1st, 1970"
   },
-  "CaltechX/CS1156x/Fall2013" : {
-    "LONG_ORG" : "California Institute of Technology",
-    "LONG_COURSE" : "Learning From Data",
-    "ISSUED_DATE" : "December 9th, 2013",
-    "COURSE": "CS1156x",
-    "COURSE_ASSOCIATION_TEXT" : "a non-credit course",
-    "VERSION": 2
-  },
-  "University_of_TorontoX/OEE101x/3T2013" : {
-    "COURSE" : "OEE101x",
-    "ORG" : "University of TorontoX",
-    "LONG_ORG" : "University of Toronto",
-    "LONG_COURSE" : "Our Energetic Earth",
-    "ISSUED_DATE" : "December 16th, 2013",
-    "VERSION": 2
-  },
 }
 
 
