@@ -136,11 +136,18 @@ To run the test suite:
         CERT_AWS_ID = # Amazon Web Services ID
         CERT_AWS_KEY = # Amazon Web Services Key
         CERT_BUCKET = # Amazon Web Services S3 bucket name
-        
 
-2. From the `certificates` directory, run:
+   It is also fine to have a .boto file or a run this code from a server that has a proper
+   IAM role.    
+
+2. To run all of the tests from the `certificates` directory, run:
 
         nosetests
+
+   Note that this will run tests that will fail unless AWS credentials are setup. To run just
+   the tests for local on-disk publishing run:
+
+        nosetests tests.gen_cert_test:test_cert_gen
 
 
 **Troubleshooting**: If tests fail with errors, try running:
