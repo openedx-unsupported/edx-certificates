@@ -1,5 +1,5 @@
 argparse==1.2.1
-boto==2.6.0
+boto==2.27.0
 lockfile==0.9.1
 logging-config==1.0.4
 nose==1.2.1
