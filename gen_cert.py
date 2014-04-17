@@ -230,8 +230,10 @@ class CertificateGen(object):
         for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
             for filename in filenames:
                 local_path = os.path.join(dirpath, filename)
-                dest_path = os.path.relpath(os.path.join(dirpath, filename),
-                                            start=self.dir_prefix)
+                dest_path = os.path.relpath(
+                    os.path.join(dirpath, filename),
+                    start=self.dir_prefix
+                )
                 if upload:
                     s3_conn = boto.connect_s3()
                     bucket = s3_conn.get_bucket(BUCKET)
