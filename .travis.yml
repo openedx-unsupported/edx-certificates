@@ -1,0 +1,13 @@
+# Travis CI configuration file for running tests
+language: python
+python:
+  - "2.7"
+install:
+  - "pip install --allow-all-external -r requirements.txt"
+script:
+  - |
+    curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt -o /var/tmp/key.txt
+    curl https://raw.githubusercontent.com/edx/configuration/rc/injera/playbooks/roles/certs/files/example-key-ownertrust.txt -o /var/tmp/trust.txt
+    /usr/bin/gpg --import /var/tmp/key.txt
+    /usr/bin/gpg --import-ownertrust /var/tmp/trust.txt
+    nosetests tests.gen_cert_test:test_cert_gen

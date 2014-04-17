@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Setings file for the certificate agent
+Settings file for the certificate agent
 """
 
 import json
@@ -12,11 +12,13 @@ from path import path
 ROOT_PATH = path(__file__).dirname()
 REPO_PATH = ROOT_PATH
 ENV_ROOT = REPO_PATH.dirname()
-TEMPLATE_DIR = '{0}/template_data'.format(REPO_PATH)
+# Override TEMPLATE_DATA_DIR if you have have private templates, fonts, etc.
+# Needs to be relative to the certificates repo root
+TEMPLATE_DATA_DIR = 'template_data'
 
 # DEFAULTS
 DEBUG = False
-LOGGING = get_logger_config(ENV_ROOT / "log",
+LOGGING = get_logger_config(ENV_ROOT,
                             logging_env="dev",
                             local_loglevel="DEBUG",
                             dev_env=True,
@@ -50,34 +52,37 @@ CERT_DATA = {
     "LONG_COURSE" : "Sample course",
     "ISSUED_DATE" : "Jan. 1st, 1970"
   },
-  "CaltechX/CS1156x/Fall2013" : {
-    "LONG_ORG" : "California Institute of Technology",
-    "LONG_COURSE" : "Learning From Data",
-    "ISSUED_DATE" : "December 9th, 2013",
-    "COURSE": "CS1156x",
-    "COURSE_ASSOCIATION_TEXT" : "a non-credit course",
-    "VERSION": 2
-  },
-  "University_of_TorontoX/OEE101x/3T2013" : {
-    "COURSE" : "OEE101x",
-    "ORG" : "University of TorontoX",
-    "LONG_ORG" : "University of Toronto",
-    "LONG_COURSE" : "Our Energetic Earth",
-    "ISSUED_DATE" : "December 16th, 2013",
-    "VERSION": 2
-  },
 }
 
 
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
 CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
-CERT_KEY_ID = 'info@edx.org'
+# dummy key - https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
+CERT_KEY_ID = 'FEF8D954'
 
 # Specify these credentials before running the test suite
-CERT_AWS_ID = 'PLEASE_PROVIDE_AN_ID'
-CERT_AWS_KEY = 'PLEASE_PROVIDE_AN_AWS_BUCKET_KEY'
-CERT_BUCKET = 'provide_a_bucket_name'
+# or ensure that your .boto file has write permission
+# to the bucket.
+CERT_AWS_ID = None
+CERT_AWS_KEY = None
+# Update this with your bucket name
+CERT_BUCKET = 'verify-test.edx.org'
+CERT_WEB_ROOT = '/var/tmp'
+# when set to true this will copy the generated certificate
+# to the CERT_WEB_ROOT. This is not something you want to do
+# unless you are running your certificate service on a single
+# server
+COPY_TO_WEB_ROOT = False
+S3_UPLOAD = True
+# This is the base URL used for CERT uploads to s3
+CERT_URL = 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
+# This is the base URL that will be displayed to the user in the dashboard
+# It's different than CERT_URL because because CERT_URL will not have a valid
+# SSL certificate.
+CERT_DOWNLOAD_URL = 'https://s3.amazonaws.com/{}'.format(CERT_BUCKET)
+CERT_VERIFY_URL = 'http://s3.amazonaws.com/{}'.format(CERT_BUCKET)
+
 
 # load settings from env.json and auth.json
 if os.path.isfile(ENV_ROOT / "env.json"):
@@ -90,11 +95,18 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     CERT_GPG_DIR = ENV_TOKENS.get('CERT_GPG_DIR', CERT_GPG_DIR)
     CERT_KEY_ID = ENV_TOKENS.get('CERT_KEY_ID', CERT_KEY_ID)
     CERT_BUCKET = ENV_TOKENS.get('CERT_BUCKET', CERT_BUCKET)
+    CERT_URL = ENV_TOKENS.get('CERT_URL', CERT_URL)
+    CERT_VERIFY_URL = ENV_TOKENS.get('CERT_VERIFY_URL', CERT_VERIFY_URL)
+    CERT_DOWNLOAD_URL = ENV_TOKENS.get('CERT_DOWNLOAD_URL', CERT_DOWNLOAD_URL)
+    CERT_WEB_ROOT = ENV_TOKENS.get('CERT_WEB_ROOT', CERT_WEB_ROOT)
+    COPY_TO_WEB_ROOT = ENV_TOKENS.get('COPY_TO_WEB_ROOT', COPY_TO_WEB_ROOT)
+    S3_UPLOAD = ENV_TOKENS.get('S3_UPLOAD', S3_UPLOAD)
     LOGGING = get_logger_config(LOG_DIR,
                                 logging_env=ENV_TOKENS['LOGGING_ENV'],
                                 local_loglevel=local_loglevel,
                                 debug=False,
                                 service_variant=os.environ.get('SERVICE_VARIANT', None))
+    TEMPLATE_DATA_DIR = ENV_TOKENS.get('TEMPLATE_DATA_DIR', TEMPLATE_DATA_DIR)
 
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
@@ -105,3 +117,5 @@ if os.path.isfile(ENV_ROOT / "auth.json"):
     QUEUE_AUTH_PASS = ENV_TOKENS.get('QUEUE_AUTH_PASS', '')
     CERT_AWS_KEY = ENV_TOKENS.get('CERT_AWS_KEY', CERT_AWS_KEY)
     CERT_AWS_ID = ENV_TOKENS.get('CERT_AWS_ID', CERT_AWS_ID)
+
+TEMPLATE_DIR = os.path.join(REPO_PATH, TEMPLATE_DATA_DIR)

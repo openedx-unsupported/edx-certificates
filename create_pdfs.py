@@ -87,7 +87,7 @@ def main():
             )
             (download_uuid, verify_uuid,
                 download_url) = cert.create_and_upload(
-                    name, upload=True, cleanup=False)
+                    name, upload=True, copy_to_webroot=False, cleanup=False)
             certificate_data.append([name, download_url])
             gen_dir = os.path.join(
                 cert.dir_prefix, S3_CERT_PATH, download_uuid)

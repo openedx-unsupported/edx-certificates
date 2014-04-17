@@ -24,20 +24,20 @@ import settings
 import logging.config
 import reportlab.rl_config
 import tempfile
-from simples3 import S3Bucket
+import boto.s3
+from boto.s3.key import Key
 from bidi.algorithm import get_display
 import arabic_reshaper
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
-BUCKET = settings.CERT_BUCKET
 logging.config.dictConfig(settings.LOGGING)
 log = logging.getLogger('certificates.' + __name__)
 # name of the S3 bucket
 # paths to the S3 are for downloading and verifying certs
 S3_CERT_PATH = 'downloads'
 S3_VERIFY_PATH = 'cert'
-
+BUCKET = settings.CERT_BUCKET
 # reduce logging level for gnupg
 l = logging.getLogger('gnupg')
 l.setLevel('WARNING')
@@ -158,7 +158,7 @@ class CertificateGen(object):
         if template_pdf:
             # Open and load the template pdf for the org
             self.template_pdf = PdfFileReader(
-                file(os.path.join(template_path, template_pdf), 'rb'))
+                open(os.path.join(template_path, template_pdf), 'rb'))
         else:
             # For backwards compatibility and standalone testing
             # when the template file is not available use the
@@ -170,9 +170,13 @@ class CertificateGen(object):
                     course_id.split('/')[0], course_id.split('/')[1])), "rb"))
 
         # Open the 188 letterhead pdf
-        self.letterhead_pdf = PdfFileReader(
-            file("{0}/letterhead-template-BerkeleyX-CS188.1x.pdf".format(
-                 self.template_dir), "rb"))
+        # if it exists
+        letterhead_path = "{0}/letterhead-template-BerkeleyX-CS188.1x.pdf".format(self.template_dir)
+
+        if os.path.exists(letterhead_path):
+            self.letterhead_pdf = PdfFileReader(file(letterhead_path, "rb"))
+        else:
+            self.letterhead_pdf = None
 
         self.aws_id = aws_id
         self.aws_key = aws_key
@@ -181,8 +185,9 @@ class CertificateGen(object):
         # TODO remove/archive an existing certificate
         raise NotImplementedError
 
-    def create_and_upload(self, name, upload=True, cleanup=True,
-                          letterhead=False):
+    def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True,
+                          copy_to_webroot=settings.COPY_TO_WEB_ROOT,
+                          cert_web_root=settings.CERT_WEB_ROOT, letterhead=False):
         """
         name - Full name that will be on the certificate
         upload - Upload to S3 (defaults to True)
@@ -222,28 +227,34 @@ class CertificateGen(object):
                     verify_dir=verify_path)
 
         # upload generated certificate and verification files to S3
-        if upload:
-            base_url = 'http://{0}.s3.amazonaws.com'.format(BUCKET)
-            s3 = S3Bucket(BUCKET,
-                    access_key=str(self.aws_id),
-                    secret_key=str(self.aws_key),
-                    base_url=base_url)
-
-            for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
-                for filename in filenames:
-                    aws_path = os.path.relpath(os.path.join(dirpath, filename),
-                                                    start=self.dir_prefix)
-                    local_path = os.path.join(dirpath, filename)
+        for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
+            for filename in filenames:
+                local_path = os.path.join(dirpath, filename)
+                dest_path = os.path.relpath(
+                    os.path.join(dirpath, filename),
+                    start=self.dir_prefix
+                )
+                if upload:
+                    s3_conn = boto.connect_s3()
+                    bucket = s3_conn.get_bucket(BUCKET)
+                    key = Key(bucket, name=dest_path)
                     log.info('uploading to {0} from {1} to {2}'.format(
-                        base_url, local_path, aws_path))
-                    with open(local_path) as f:
-                        s3.put(aws_path, f.read(), acl="public-read")
+                        settings.CERT_URL, local_path, dest_path))
+                    key.set_contents_from_filename(local_path, policy='public-read')
+
+                if copy_to_webroot:
+                    publish_dest = os.path.join(cert_web_root, dest_path)
+                    log.info('publishing to {0} from {1} to {2}'.format(
+                        settings.CERT_URL, local_path, publish_dest))
+                    if not os.path.exists(os.path.dirname(publish_dest)):
+                        os.makedirs(os.path.dirname(publish_dest))
+                    shutil.copy(local_path, publish_dest)
+
         if cleanup:
             if os.path.exists(self.dir_prefix):
                 shutil.rmtree(self.dir_prefix)
 
         return (download_uuid, verify_uuid, download_url)
-
 
     def _generate_letterhead(self, student_name, download_dir,
                              filename='distinction-letter.pdf'):
@@ -259,10 +270,10 @@ class CertificateGen(object):
         # A4 page size is 210mm x 297mm
 
         download_uuid = uuid.uuid4().hex
-        download_url = "https://s3.amazonaws.com/{0}/" \
-                       "{1}/{2}/{3}".format(
-                               BUCKET, S3_CERT_PATH,
-                               download_uuid, filename)
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
+        )
 
         filename = os.path.join(download_dir, download_uuid, filename)
 
@@ -271,13 +282,12 @@ class CertificateGen(object):
         c = canvas.Canvas(overlay_pdf_buffer)
         c.setPageSize((297 * mm, 210 * mm))
 
-
         # register all fonts in the fonts/ dir,
         # there are more fonts in here than we need
         # but the performance hit seems minimal
-
-        for font_file in glob('{0}/fonts/*.ttf'.format(
-            self.template_dir)):
+        # the open-source repo does not include
+        # a font that has full unicode support.
+        for font_file in glob('{0}/fonts/*.ttf'.format(self.template_dir)):
             font_name = os.path.basename(os.path.splitext(font_file)[0])
             pdfmetrics.registerFont(TTFont(font_name, font_file))
 
@@ -295,17 +305,18 @@ class CertificateGen(object):
         addMapping('OpenSans-Regular', 1, 0, 'OpenSans-Bold')
         addMapping('OpenSans-Regular', 1, 1, 'OpenSans-BoldItalic')
 
-
-        styleArial = ParagraphStyle(name="arial", leading=10,
-            fontName='Arial Unicode')
-        styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10,
-            fontName='OpenSans-Regular')
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10,
-            fontName='OpenSans-Light')
-        styleUCBerkeley = ParagraphStyle(name="ucberkeley", leading=10,
-            fontName='UCBerkeleyOS')
-
-
+        styleArial = ParagraphStyle(
+            name="arial", leading=10,
+            fontName='Arial Unicode'
+        )
+        styleOpenSans = ParagraphStyle(
+            name="opensans-regular",
+            leading=10, fontName='OpenSans-Regular'
+        )
+        styleOpenSansLight = ParagraphStyle(
+            name="opensans-light",
+            leading=10, fontName='OpenSans-Light'
+        )
 
         # Text is overlayed top to bottom
         #   * Student's name
@@ -322,8 +333,9 @@ class CertificateGen(object):
         # will fall back to Arial if there are
         # unusual characters
         style = styleOpenSans
-        width = stringWidth(student_name.decode('utf-8'),
-                                'OpenSans-Bold', 16) / mm
+        width = stringWidth(
+            student_name.decode('utf-8'),
+            'OpenSans-Bold', 16) / mm
         paragraph_string = "<b>{0}</b>".format(student_name)
 
         if self._use_unicode_font(student_name):
@@ -335,7 +347,7 @@ class CertificateGen(object):
 
         style.fontSize = 16
         style.textColor = colors.Color(
-                0, 0.624, 0.886)
+            0, 0.624, 0.886)
         style.alignment = TA_LEFT
 
         paragraph = Paragraph(paragraph_string, style)
@@ -346,13 +358,11 @@ class CertificateGen(object):
         style = styleOpenSansLight
         style.fontSize = 14
         style.textColor = colors.Color(
-                0.302, 0.306, 0.318)
+            0.302, 0.306, 0.318)
         # Place the comma after the student's name
         paragraph = Paragraph(",", style)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (LEFT_INDENT + width) * mm, 216.8 * mm)
-
-
 
         c.showPage()
         c.save()
@@ -367,7 +377,7 @@ class CertificateGen(object):
         # (much faster)
 
         blank_pdf = PdfFileReader(
-                file("{0}/blank-portrait.pdf".format(self.template_dir), "rb"))
+            file("{0}/blank-portrait.pdf".format(self.template_dir), "rb"))
 
         final_certificate = blank_pdf.getPage(0)
         final_certificate.mergePage(self.letterhead_pdf.getPage(0))
@@ -383,9 +393,8 @@ class CertificateGen(object):
 
         return (download_uuid, download_url)
 
-
     def _generate_certificate(self, student_name, download_dir,
-                                verify_dir, filename='Certificate.pdf'):
+                              verify_dir, filename='Certificate.pdf'):
         """
         Generate a PDF certificate, signature and static html
         files used for validation.
@@ -393,19 +402,21 @@ class CertificateGen(object):
         return (download_uuid, verify_uuid, download_url)
 
         """
+        if self.template_version == 1:
+            return self._generate_v1_certificate(student_name, download_dir, verify_dir, filename)
 
-        if self.template_version == 2:
+        elif self.template_version == 2:
             return self._generate_v2_certificate(student_name, download_dir, verify_dir, filename)
 
+    def _generate_v1_certificate(self, student_name, download_dir, verify_dir, filename='Certificate.pdf'):
         # A4 page size is 297mm x 210mm
 
         verify_uuid = uuid.uuid4().hex
         download_uuid = uuid.uuid4().hex
-        download_url = "https://s3.amazonaws.com/{0}/" \
-                       "{1}/{2}/{3}".format(
-                               BUCKET, S3_CERT_PATH,
-                               download_uuid, filename)
-
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
+        )
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
@@ -413,13 +424,11 @@ class CertificateGen(object):
         c = canvas.Canvas(overlay_pdf_buffer)
         c.setPageSize((297 * mm, 210 * mm))
 
-
         # register all fonts in the fonts/ dir,
         # there are more fonts in here than we need
         # but the performance hit seems minimal
 
-        for font_file in glob('{0}/fonts/*.ttf'.format(
-            self.template_dir)):
+        for font_file in glob('{0}/fonts/*.ttf'.format(self.template_dir)):
             font_name = os.path.basename(os.path.splitext(font_file)[0])
             pdfmetrics.registerFont(TTFont(font_name, font_file))
 
@@ -437,17 +446,18 @@ class CertificateGen(object):
         addMapping('OpenSans-Regular', 1, 0, 'OpenSans-Bold')
         addMapping('OpenSans-Regular', 1, 1, 'OpenSans-BoldItalic')
 
-
-        styleArial = ParagraphStyle(name="arial", leading=10,
-            fontName='Arial Unicode')
-        styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10,
-            fontName='OpenSans-Regular')
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10,
-            fontName='OpenSans-Light')
-        styleUCBerkeley = ParagraphStyle(name="ucberkeley", leading=10,
-            fontName='UCBerkeleyOS')
-
-
+        styleArial = ParagraphStyle(
+            name="arial", leading=10,
+            fontName='Arial Unicode'
+        )
+        styleOpenSans = ParagraphStyle(
+            name="opensans-regular", leading=10,
+            fontName='OpenSans-Regular'
+        )
+        styleOpenSansLight = ParagraphStyle(
+            name="opensans-light", leading=10,
+            fontName='OpenSans-Light'
+        )
 
         # Text is overlayed top to bottom
         #   * Issued date (top right corner)
@@ -461,51 +471,52 @@ class CertificateGen(object):
         HEIGHT = 210  # hight in mm (A4)
 
         LEFT_INDENT = 49  # mm from the left side to write the text
-        RIGHT_INDENT = 49 # mm from the right side for the CERTIFICATE
+        RIGHT_INDENT = 49  # mm from the right side for the CERTIFICATE
 
         ####### CERTIFICATE
 
         styleOpenSansLight.fontSize = 19
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
-                0.302, 0.306, 0.318)
+            0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
         paragraph_string = "CERTIFICATE"
 
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-                                'OpenSans-Light', 19) / mm
+        width = stringWidth(
+            paragraph_string,
+            'OpenSans-Light', 19) / mm
         paragraph = Paragraph("{0}".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH-RIGHT_INDENT-width) * mm, 163 * mm)
-
+        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
 
         ####### Issued ..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
-                0.302, 0.306, 0.318)
+            0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
         paragraph_string = "Issued {0}".format(self.issued_date)
 
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-                                'OpenSans-LightItalic', 12) / mm
+        width = stringWidth(
+            paragraph_string,
+            'OpenSans-LightItalic', 12) / mm
         paragraph = Paragraph("<i>{0}</i>".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH-RIGHT_INDENT-width) * mm, 155 * mm)
+        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
 
         ####### This is to certify..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
-                0.302, 0.306, 0.318)
+            0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
         paragraph_string = "This is to certify that"
@@ -520,8 +531,9 @@ class CertificateGen(object):
         # unusual characters
         style = styleOpenSans
         style.leading = 10
-        width = stringWidth(student_name.decode('utf-8'),
-                                'OpenSans-Bold', 34) / mm
+        width = stringWidth(
+            student_name.decode('utf-8'),
+            'OpenSans-Bold', 34) / mm
         paragraph_string = "<b>{0}</b>".format(student_name)
 
         if self._use_unicode_font(student_name):
@@ -541,7 +553,7 @@ class CertificateGen(object):
             nameYOffset = 124.5
 
         style.textColor = colors.Color(
-                0, 0.624, 0.886)
+            0, 0.624, 0.886)
         style.alignment = TA_LEFT
 
         paragraph = Paragraph(paragraph_string, style)
@@ -553,7 +565,7 @@ class CertificateGen(object):
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
-                0.302, 0.306, 0.318)
+            0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
         paragraph_string = "successfully completed"
@@ -592,11 +604,11 @@ class CertificateGen(object):
             styleOpenSans.fontSize = 24
             styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
-                0, 0.624, 0.886)
+            0, 0.624, 0.886)
         styleOpenSans.alignment = TA_LEFT
 
         paragraph_string = "<b><i>{0}: {1}</i></b>".format(
-                self.course, self.long_course)
+            self.course, self.long_course)
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         if 'PH207x' in self.course:
@@ -609,12 +621,11 @@ class CertificateGen(object):
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, 99 * mm)
 
-
         ###### A course of study..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.textColor = colors.Color(
-                0.302, 0.306, 0.318)
+            0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
         paragraph_string = "a course of study offered by <b>{0}</b>" \
@@ -636,13 +647,14 @@ class CertificateGen(object):
 
         paragraph_string = "HONOR CODE CERTIFICATE<br/>" \
             "*Authenticity of this certificate can be verified at " \
-            "<a href='https://{bucket}/{verify_path}/{verify_uuid}'>" \
-            "https://{bucket}/{verify_path}/{verify_uuid}</a>"
+            "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
+            "{verify_url}/{verify_path}/{verify_uuid}</a>"
 
-        paragraph_string = paragraph_string.format(bucket=BUCKET,
-                verify_path=S3_VERIFY_PATH,
-                verify_uuid=verify_uuid)
-
+        paragraph_string = paragraph_string.format(
+            verify_url=settings.CERT_VERIFY_URL,
+            verify_path=S3_VERIFY_PATH,
+            verify_uuid=verify_uuid
+        )
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
@@ -695,16 +707,15 @@ class CertificateGen(object):
         """
 
         # 8.5x11 page size 279.4mm x 215.9mm
-        WIDTH = 279 # width in mm (8.5x11)
+        WIDTH = 279  # width in mm (8.5x11)
         HEIGHT = 216  # height in mm (8.5x11)
 
         verify_uuid = uuid.uuid4().hex
         download_uuid = uuid.uuid4().hex
-        download_url = "https://s3.amazonaws.com/{0}/" \
-                       "{1}/{2}/{3}".format(
-                           BUCKET, S3_CERT_PATH,
-                           download_uuid, filename)
-
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
+        )
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
@@ -746,15 +757,13 @@ class CertificateGen(object):
 
         #### STYLE: grid/layout
         LEFT_INDENT = 23  # mm from the left side to write the text
-        RIGHT_INDENT = 23 # mm from the right side for the CERTIFICATE
-        MAX_WIDTH = 150 # maximum width on the content in the cert, used for wrapping
+        MAX_WIDTH = 150  # maximum width on the content in the cert, used for wrapping
 
         #### STYLE: template-wide typography settings
         style_type_metacopy_size = 13
         style_type_metacopy_leading = 10
 
         style_type_footer_size = 8
-        style_type_footer_leading = 10
 
         style_type_name_size = 36
         style_type_name_leading = 53
@@ -765,16 +774,12 @@ class CertificateGen(object):
 
         style_type_course_size = 24
         style_type_course_leading = 28
-        style_type_course_med_size = 22
-        style_type_course_med_leading = 20
         style_type_course_small_size = 16
         style_type_course_small_leading = 20
 
         #### STYLE: template-wide color settings
         style_color_metadata = colors.Color(0.541176, 0.509804, 0.560784)
         style_color_name = colors.Color(0.000000, 0.000000, 0.000000)
-        style_color_course = colors.Color(0.000000, 0.000000, 0.000000)
-        style_color_footer = colors.Color(0.000000, 0.000000, 0.000000)
 
         #### STYLE: positioning
         pos_metacopy_title_y = 120
@@ -819,7 +824,6 @@ class CertificateGen(object):
 
             paragraph_string = 'This is to certify that'
 
-            width = stringWidth(paragraph_string, 'AvenirNext-Regular', style_type_metacopy_size) / mm
             paragraph = Paragraph(paragraph_string, styleAvenirNext)
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
@@ -842,8 +846,9 @@ class CertificateGen(object):
         html_student_name = html.unescape(student_name)
         larger_width = stringWidth(html_student_name.decode('utf-8'),
                                    'AvenirNext-DemiBold', style_type_name_size) / mm
-        smaller_width = stringWidth(html_student_name.decode('utf-8'),
-                                   'AvenirNext-DemiBold', style_type_name_small_size) / mm
+        smaller_width = stringWidth(
+            html_student_name.decode('utf-8'),
+            'AvenirNext-DemiBold', style_type_name_small_size) / mm
 
         #TODO: get all strings working reshaped and handling bi-directional strings
         paragraph_string = arabic_reshaper.reshape(student_name.decode('utf-8'))
@@ -899,7 +904,7 @@ class CertificateGen(object):
         y_offset_larger = pos_course_y
         y_offset_smaller = pos_course_small_y
 
-        styleAvenirCourseName = ParagraphStyle(name="avenirnext-demi",fontName='AvenirNext-DemiBold')
+        styleAvenirCourseName = ParagraphStyle(name="avenirnext-demi", fontName='AvenirNext-DemiBold')
         styleAvenirCourseName.textColor = style_color_name
         if self.template_type == 'verified':
             styleAvenirCourseName.textColor = v_style_color_course
@@ -957,8 +962,6 @@ class CertificateGen(object):
         y_offset = pos_footer_date_y
         paragraph_string = "Issued {0}".format(self.issued_date)
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-                            'AvenirNext-DemiBold', styleAvenirFooter.fontSize) / mm
         paragraph = Paragraph("{0}".format(
             paragraph_string), styleAvenirFooter)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
@@ -1053,8 +1056,9 @@ class CertificateGen(object):
         gpg.encoding = 'utf-8'
         with open(filename) as f:
             if settings.CERT_KEY_ID:
-                signed_data = gpg.sign_file(f, detach=True,
-                        keyid=settings.CERT_KEY_ID).data
+                signed_data = gpg.sign_file(
+                    f, detach=True,
+                    keyid=settings.CERT_KEY_ID).data
             else:
                 signed_data = gpg.sign_file(f, detach=True).data
 
@@ -1069,16 +1073,17 @@ class CertificateGen(object):
             valid_template = 'v2/valid.html'
             verify_template = 'v2/verify.html'
 
-
         # create the validation page
-        signature_download_url = "https://{0}/{1}/" \
-                                 "{2}/{3}".format(
-                                         BUCKET, S3_VERIFY_PATH,
-                                         verify_uuid,
-                                         os.path.basename(signature_filename))
-        verify_page_url = "https://{0}/{1}/" \
-                            "{2}/verify.html".format(BUCKET, S3_VERIFY_PATH,
-                                    verify_uuid)
+        signature_download_url = "{verify_url}/{verify_path}/{verify_uuid}/{verify_filename}".format(
+            verify_url=settings.CERT_VERIFY_URL,
+            verify_path=S3_VERIFY_PATH,
+            verify_uuid=verify_uuid,
+            verify_filename=os.path.basename(signature_filename))
+
+        verify_page_url = "{verify_url}/{verify_path}/{verify_uuid}/verify.html".format(
+            verify_url=settings.CERT_VERIFY_URL,
+            verify_path=S3_VERIFY_PATH,
+            verify_uuid=verify_uuid)
 
         type_map = {
             'verified': {'type': 'idverified', 'type_name': 'Verified'},
@@ -1121,15 +1126,13 @@ class CertificateGen(object):
             verify_page = f.read().decode('utf-8').format(
                 NAME=name.decode('utf-8'),
                 SIG_URL=signature_download_url,
-                SIG_FILE=os.path.basename(
-                    signature_download_url),
-                PDF_FILE=os.path.basename(
-                download_url))
+                SIG_FILE=os.path.basename(signature_download_url),
+                PDF_FILE=os.path.basename(download_url)
+            )
 
         with open(os.path.join(
                 output_dir, verify_uuid, "verify.html"), 'w') as f:
             f.write(verify_page.encode('utf-8'))
-
 
     def _ensure_dir(self, f):
         d = os.path.dirname(f)
@@ -1154,7 +1157,6 @@ class CertificateGen(object):
         do not fit into Latin-1
         """
         return self._contains_characters_above(string, 0x0100)
-
 
     def _use_unicode_font(self, string):
         # This function should return true for any
