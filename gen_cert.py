@@ -25,6 +25,7 @@ import logging.config
 import reportlab.rl_config
 import tempfile
 import boto.s3
+from boto.s3.key import Key
 from bidi.algorithm import get_display
 import arabic_reshaper
 
@@ -232,7 +233,6 @@ class CertificateGen(object):
                 dest_path = os.path.relpath(os.path.join(dirpath, filename),
                                             start=self.dir_prefix)
                 if upload:
-                    from boto.s3.key import Key
                     s3_conn = boto.connect_s3()
                     bucket = s3_conn.get_bucket(BUCKET)
                     key = Key(bucket, name=dest_path)
