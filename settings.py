@@ -12,10 +12,8 @@ from path import path
 ROOT_PATH = path(__file__).dirname()
 REPO_PATH = ROOT_PATH
 ENV_ROOT = REPO_PATH.dirname()
-# Override TEMPLATE_DATA_DIR if you have have
-# private templates, fonts, etc.
-# Needs to be relative to the certificates repo
-# root
+# Override TEMPLATE_DATA_DIR if you have have private templates, fonts, etc.
+# Needs to be relative to the certificates repo root
 TEMPLATE_DATA_DIR = 'template_data'
 
 # DEFAULTS
@@ -65,7 +63,7 @@ CERT_KEY_ID = 'FEF8D954'
 
 # Specify these credentials before running the test suite
 # or ensure that your .boto file has write permission
-# to the bucket
+# to the bucket.
 CERT_AWS_ID = None
 CERT_AWS_KEY = None
 # Update this with your bucket name
