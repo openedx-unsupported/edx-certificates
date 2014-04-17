@@ -283,7 +283,8 @@ class CertificateGen(object):
         # register all fonts in the fonts/ dir,
         # there are more fonts in here than we need
         # but the performance hit seems minimal
-
+        # the open-source repo does not include
+        # a font that has full unicode support.
         for font_file in glob('{0}/fonts/*.ttf'.format(self.template_dir)):
             font_name = os.path.basename(os.path.splitext(font_file)[0])
             pdfmetrics.registerFont(TTFont(font_name, font_file))

@@ -137,8 +137,9 @@ To run the test suite:
         CERT_AWS_KEY = # Amazon Web Services Key
         CERT_BUCKET = # Amazon Web Services S3 bucket name
 
-   It is also fine to have a .boto file or a run this code from a server that has a proper
-   IAM role.    
+   It is also acceptable to leave the AWS KEY and ID values as none and instead
+   use .boto file or run this code from a server that has an
+   IAM role that gives it write access to the bucket in the configuration.
 
 2. To run all of the tests from the `certificates` directory, run:
 
