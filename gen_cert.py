@@ -157,7 +157,7 @@ class CertificateGen(object):
         if template_pdf:
             # Open and load the template pdf for the org
             self.template_pdf = PdfFileReader(
-                file(os.path.join(template_path, template_pdf), 'rb'))
+                open(os.path.join(template_path, template_pdf), 'rb'))
         else:
             # For backwards compatibility and standalone testing
             # when the template file is not available use the
