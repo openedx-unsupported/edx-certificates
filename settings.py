@@ -33,9 +33,9 @@ CERT_DATA_FILE = 'cert-data.yml'
 DEBUG = False
 LOGGING = get_logger_config(ENV_ROOT,
                             logging_env="dev",
-                            local_loglevel="DEBUG",
+                            local_loglevel="INFO",
                             dev_env=True,
-                            debug=True)
+                            debug=False)
 
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
