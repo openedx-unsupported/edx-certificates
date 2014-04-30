@@ -1036,10 +1036,10 @@ class CertificateGen(object):
 
         download_uuid = uuid.uuid4().hex
         verify_uuid = uuid.uuid4().hex
-        download_url = "https://s3.amazonaws.com/{0}/" \
-                       "{1}/{2}/{3}".format(
-                           BUCKET, S3_CERT_PATH,
-                           download_uuid, filename)
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
+        )
 
         filename = os.path.join(download_dir, download_uuid, filename)
 
