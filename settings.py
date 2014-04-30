@@ -6,54 +6,36 @@ Settings file for the certificate agent
 
 import json
 import os
+import yaml
+
 from logsettings import get_logger_config
 from path import path
+
 
 ROOT_PATH = path(__file__).dirname()
 REPO_PATH = ROOT_PATH
 ENV_ROOT = REPO_PATH.dirname()
-# Override TEMPLATE_DATA_DIR if you have have private templates, fonts, etc.
-# Needs to be relative to the certificates repo root
-TEMPLATE_DATA_DIR = 'template_data'
+
+# Override CERT_PRIVATE_DIR if you have have private templates, fonts, etc.
+CERT_PRIVATE_DIR = REPO_PATH
+
+# If CERT_PRIVATE_DIR is set in the environment use it
+
+if 'CERT_PRIVATE_DIR' in os.environ:
+    CERT_PRIVATE_DIR = path(os.environ['CERT_PRIVATE_DIR'])
+
+# This directory and file must exist in CERT_PRIVATE_DIR
+# if you are using custom templates and custom cert config
+TEMPLATE_DATA_SUBDIR = 'template_data'
+CERT_DATA_FILE = 'cert-data.yml'
 
 # DEFAULTS
 DEBUG = False
 LOGGING = get_logger_config(ENV_ROOT,
                             logging_env="dev",
-                            local_loglevel="DEBUG",
+                            local_loglevel="INFO",
                             dev_env=True,
-                            debug=True)
-
-# Default long names, these can be overridden in
-# env.json
-#  Full list of courses:
-#            'BerkeleyX/CS169.1x/2012_Fall',
-#            'BerkeleyX/CS169.2x/2012_Fall',
-#            'BerkeleyX/CS188.1x/2012_Fall',
-#            'BerkeleyX/CS184.1x/2012_Fall',
-#            'HarvardX/CS50x/2012',
-#            'HarvardX/PH207x/2012_Fall',
-#            'MITx/3.091x/2012_Fall',
-#            'MITx/6.002x/2012_Fall',
-#            'MITx/6.00x/2012_Fall',
-#            'BerkeleyX/CS169/fa12',
-#            'BerkeleyX/CS188/fa12',
-#            'HarvardX/CS50/2012H',
-#            'MITx/3.091/MIT_2012_Fall',
-#            'MITx/6.00/MIT_2012_Fall',
-#            'MITx/6.002x-EE98/2012_Fall_SJSU',
-#            'MITx/6.002x-NUM/2012_Fall_NUM']
-
-# What we support:
-
-CERT_DATA = {
-  "edX/Open_DemoX/edx_demo_course" : {
-    "LONG_ORG" : "Sample Org",
-    "LONG_COURSE" : "Sample course",
-    "ISSUED_DATE" : "Jan. 1st, 1970"
-  },
-}
-
+                            debug=False)
 
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
@@ -106,7 +88,7 @@ if os.path.isfile(ENV_ROOT / "env.json"):
                                 local_loglevel=local_loglevel,
                                 debug=False,
                                 service_variant=os.environ.get('SERVICE_VARIANT', None))
-    TEMPLATE_DATA_DIR = ENV_TOKENS.get('TEMPLATE_DATA_DIR', TEMPLATE_DATA_DIR)
+    CERT_PRIVATE_DIR = ENV_TOKENS.get('CERT_PRIVATE_DIR', CERT_PRIVATE_DIR)
 
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
@@ -118,4 +100,11 @@ if os.path.isfile(ENV_ROOT / "auth.json"):
     CERT_AWS_KEY = ENV_TOKENS.get('CERT_AWS_KEY', CERT_AWS_KEY)
     CERT_AWS_ID = ENV_TOKENS.get('CERT_AWS_ID', CERT_AWS_ID)
 
-TEMPLATE_DIR = os.path.join(REPO_PATH, TEMPLATE_DATA_DIR)
+
+# Use the custom CERT_PRIVATE_DIR for paths to the
+# template sub directory and the cert data config
+
+TEMPLATE_DIR = CERT_PRIVATE_DIR / TEMPLATE_DATA_SUBDIR
+
+with open(CERT_PRIVATE_DIR / CERT_DATA_FILE) as f:
+    CERT_DATA = yaml.load(f.read())

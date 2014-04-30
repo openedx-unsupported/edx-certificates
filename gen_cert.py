@@ -100,15 +100,15 @@ class CertificateGen(object):
         # lookup long names from the course_id
         try:
             if long_org is None:
-                self.long_org = settings.CERT_DATA[course_id]['LONG_ORG']
+                self.long_org = settings.CERT_DATA[course_id]['LONG_ORG'].encode('utf-8')
             else:
                 self.long_org = long_org
             if long_course is None:
-                self.long_course = settings.CERT_DATA[course_id]['LONG_COURSE']
+                self.long_course = settings.CERT_DATA[course_id]['LONG_COURSE'].encode('utf-8')
             else:
                 self.long_course = long_course
             if issued_date is None:
-                self.issued_date = settings.CERT_DATA[course_id]['ISSUED_DATE']
+                self.issued_date = settings.CERT_DATA[course_id]['ISSUED_DATE'].encode('utf-8')
             else:
                 self.issued_date = issued_date
 
@@ -407,6 +407,9 @@ class CertificateGen(object):
 
         elif self.template_version == 2:
             return self._generate_v2_certificate(student_name, download_dir, verify_dir, filename)
+
+        elif self.template_version == 'MIT_PE':
+            return self._generate_mit_pe_certificate(student_name, download_dir, verify_dir, filename)
 
     def _generate_v1_certificate(self, student_name, download_dir, verify_dir, filename='Certificate.pdf'):
         # A4 page size is 297mm x 210mm
@@ -1021,6 +1024,143 @@ class CertificateGen(object):
             download_url
         )
 
+        return (download_uuid, verify_uuid, download_url)
+
+    def _generate_mit_pe_certificate(self, student_name, download_dir, verify_dir, filename='Certificate.pdf'):
+        """
+        Generate the BigDataX certs
+        """
+        # 8.5x11 page size 279.4mm x 215.9mm
+        WIDTH = 279  # width in mm (8.5x11)
+        HEIGHT = 216  # height in mm (8.5x11)
+
+        download_uuid = uuid.uuid4().hex
+        verify_uuid = uuid.uuid4().hex
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
+        )
+
+        filename = os.path.join(download_dir, download_uuid, filename)
+
+        # This file is overlaid on the template certificate
+        overlay_pdf_buffer = StringIO.StringIO()
+        c = canvas.Canvas(overlay_pdf_buffer)
+        c.setPageSize((WIDTH * mm, HEIGHT * mm))
+
+        # register all fonts in the fonts/ dir,
+        # there are more fonts in here than we need
+        # but the performance hit seems minimal
+
+        for font_file in glob('{0}/fonts/*.ttf'.format(self.template_dir)):
+            font_name = os.path.basename(os.path.splitext(font_file)[0])
+            pdfmetrics.registerFont(TTFont(font_name, font_file))
+
+        #### STYLE: grid/layout
+        LEFT_INDENT = 10  # mm from the left side to write the text
+        MAX_WIDTH = 260  # maximum width on the content in the cert, used for wrapping
+
+        #### STYLE: template-wide typography settings
+        style_type_name_size = 36
+        style_type_name_leading = 53
+        style_type_name_med_size = 22
+        style_type_name_med_leading = 27
+        style_type_name_small_size = 18
+        style_type_name_small_leading = 21
+
+        #### STYLE: template-wide color settings
+        style_color_name = colors.Color(0.000000, 0.000000, 0.000000)
+
+        #### STYLE: positioning
+        pos_name_y = 137
+        pos_name_med_y = 142
+        pos_name_small_y = 140
+        pos_name_no_wrap_offset_y = 2
+
+        #### HTML Parser ####
+        # Since the final string is HTML in a PDF we need to un-escape the html
+        # when calculating the string width.
+        html = HTMLParser()
+
+        ####### ELEM: Student Name
+        # default is to use Garamond for the name,
+        # will fall back to Arial if there are
+        # unusual characters
+        y_offset_name = pos_name_y
+        y_offset_name_med = pos_name_med_y
+        y_offset_name_small = pos_name_small_y
+
+        styleUnicode = ParagraphStyle(name="arial", leading=10,
+                                      fontName='Arial Unicode')
+        styleGaramondStudentName = ParagraphStyle(name="garamond", fontName='Garamond-Bold')
+        styleGaramondStudentName.leading = style_type_name_small_size
+
+        style = styleGaramondStudentName
+
+        html_student_name = html.unescape(student_name)
+        larger_width = stringWidth(html_student_name.decode('utf-8'),
+                                   'Garamond-Bold', style_type_name_size) / mm
+        smaller_width = stringWidth(html_student_name.decode('utf-8'),
+                                    'Garamond-Bold', style_type_name_small_size) / mm
+
+        paragraph_string = arabic_reshaper.reshape(student_name.decode('utf-8'))
+        paragraph_string = get_display(paragraph_string)
+
+        # Garamond only supports Latin-1
+        # if we can't use it, use Gentium
+        if self._use_unicode_font(student_name):
+            style = styleUnicode
+            larger_width = stringWidth(html_student_name.decode('utf-8'),
+                                       'Arial Unicode', style_type_name_size) / mm
+
+        # if the name is too long, shrink the font size
+        if larger_width < MAX_WIDTH:
+            style.fontSize = style_type_name_size
+            style.leading = style_type_name_leading
+            y_offset = y_offset_name
+        elif smaller_width < MAX_WIDTH:
+            y_offset = y_offset_name_med + pos_name_no_wrap_offset_y
+            style.fontSize = style_type_name_med_size
+            style.leading = style_type_name_med_leading
+        else:
+            y_offset = y_offset_name_small
+            style.fontSize = style_type_name_small_size
+            style.leading = style_type_name_small_leading
+        style.textColor = style_color_name
+        style.alignment = TA_CENTER
+
+        paragraph = Paragraph(paragraph_string, style)
+        paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
+
+        ## Generate the final PDF
+        c.showPage()
+        c.save()
+
+        # Merge the overlay with the template, then write it to file
+        output = PdfFileWriter()
+        overlay = PdfFileReader(overlay_pdf_buffer)
+
+        # We need a page to overlay on.
+        # So that we don't have to open the template
+        # several times, we open a blank pdf several times instead
+        # (much faster)
+
+        blank_pdf = PdfFileReader(
+            file("{0}/blank-letter.pdf".format(self.template_dir), "rb")
+        )
+
+        final_certificate = blank_pdf.getPage(0)
+        final_certificate.mergePage(self.template_pdf.getPage(0))
+        final_certificate.mergePage(overlay.getPage(0))
+
+        output.addPage(final_certificate)
+
+        self._ensure_dir(filename)
+
+        outputStream = file(filename, "wb")
+        output.write(outputStream)
+        outputStream.close()
         return (download_uuid, verify_uuid, download_url)
 
     def _generate_verification_page(self,
