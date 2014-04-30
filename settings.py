@@ -7,8 +7,10 @@ Settings file for the certificate agent
 import json
 import os
 import yaml
+
 from logsettings import get_logger_config
 from path import path
+
 
 ROOT_PATH = path(__file__).dirname()
 REPO_PATH = ROOT_PATH

@@ -100,15 +100,15 @@ class CertificateGen(object):
         # lookup long names from the course_id
         try:
             if long_org is None:
-                self.long_org = settings.CERT_DATA[course_id]['LONG_ORG']
+                self.long_org = settings.CERT_DATA[course_id]['LONG_ORG'].encode('utf-8')
             else:
                 self.long_org = long_org
             if long_course is None:
-                self.long_course = settings.CERT_DATA[course_id]['LONG_COURSE']
+                self.long_course = settings.CERT_DATA[course_id]['LONG_COURSE'].encode('utf-8')
             else:
                 self.long_course = long_course
             if issued_date is None:
-                self.issued_date = settings.CERT_DATA[course_id]['ISSUED_DATE']
+                self.issued_date = settings.CERT_DATA[course_id]['ISSUED_DATE'].encode('utf-8')
             else:
                 self.issued_date = issued_date
 
