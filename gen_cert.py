@@ -235,7 +235,7 @@ class CertificateGen(object):
                     start=self.dir_prefix
                 )
                 if upload:
-                    s3_conn = boto.connect_s3()
+                    s3_conn = boto.connect_s3(settings.CERT_AWS_ID, settings.CERT_AWS_KEY)
                     bucket = s3_conn.get_bucket(BUCKET)
                     key = Key(bucket, name=dest_path)
                     log.info('uploading to {0} from {1} to {2}'.format(
