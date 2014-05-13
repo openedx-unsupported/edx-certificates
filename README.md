@@ -1,12 +1,7 @@
-# Read-only certificate code
+# edx-certificates
 
-This is a copy of the code we use the generate certificates at edX.
-Unfortunately, our code is in the same repo as our certificate templates, which
-our partners would not like distributed.  The code is not very flexible, but
-if there are parts that are helpful for you, please feel free to use them.
+This is the code we use the generate certificates at edX.
 
-We would like to build a better certificate generation facility soon, but in
-the meantime, this code might help you.
 
 
 # Generate edX certificates
