@@ -41,7 +41,11 @@ LOGGING = get_logger_config(ENV_ROOT,
 # Specify the CERT_KEY_ID before running the test suite
 CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
 # dummy key - https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
-CERT_KEY_ID = 'FEF8D954'
+#CERT_KEY_ID = 'FEF8D954'
+CERT_KEY_ID = ''
+
+# Specify the default name of the certificate PDF
+CERT_FILENAME = 'Certificate.pdf'
 
 # Specify these credentials before running the test suite
 # or ensure that your .boto file has write permission
@@ -57,38 +61,54 @@ CERT_WEB_ROOT = '/var/tmp'
 # server
 COPY_TO_WEB_ROOT = False
 S3_UPLOAD = True
-# This is the base URL used for CERT uploads to s3
-CERT_URL = 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
-# This is the base URL that will be displayed to the user in the dashboard
-# It's different than CERT_URL because because CERT_URL will not have a valid
-# SSL certificate.
-CERT_DOWNLOAD_URL = 'https://s3.amazonaws.com/{}'.format(CERT_BUCKET)
-CERT_VERIFY_URL = 'http://s3.amazonaws.com/{}'.format(CERT_BUCKET)
+S3_VERIFY_PATH = 'cert'
 
+# A knob to control what certs are called, some places have restrictions on the
+# word 'certificate'
+CERTS_ARE_CALLED = 'certificate'
+CERTS_ARE_CALLED_PLURAL = 'certificates'
+
+# These are initialized below, after the environment is read
+CERT_URL = ''
+CERT_DOWNLOAD_URL = ''
+CERT_VERIFY_URL = ''
 
 # load settings from env.json and auth.json
 if os.path.isfile(ENV_ROOT / "env.json"):
     with open(ENV_ROOT / "env.json") as env_file:
         ENV_TOKENS = json.load(env_file)
     LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
+    TMP_GEN_DIR = ENV_TOKENS.get('TMP_GEN_DIR', '/var/tmp')
     local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
     QUEUE_NAME = ENV_TOKENS.get('QUEUE_NAME', 'test-pull')
     QUEUE_URL = ENV_TOKENS.get('QUEUE_URL', 'https://stage-xqueue.edx.org')
     CERT_GPG_DIR = ENV_TOKENS.get('CERT_GPG_DIR', CERT_GPG_DIR)
     CERT_KEY_ID = ENV_TOKENS.get('CERT_KEY_ID', CERT_KEY_ID)
     CERT_BUCKET = ENV_TOKENS.get('CERT_BUCKET', CERT_BUCKET)
-    CERT_URL = ENV_TOKENS.get('CERT_URL', CERT_URL)
-    CERT_VERIFY_URL = ENV_TOKENS.get('CERT_VERIFY_URL', CERT_VERIFY_URL)
-    CERT_DOWNLOAD_URL = ENV_TOKENS.get('CERT_DOWNLOAD_URL', CERT_DOWNLOAD_URL)
+    CERT_FILENAME = ENV_TOKENS.get('CERT_FILENAME', CERT_FILENAME)
+    CERT_URL = ENV_TOKENS.get('CERT_URL', '')
+    CERT_DOWNLOAD_URL = ENV_TOKENS.get('CERT_DOWNLOAD_URL', "")
+    CERT_VERIFY_URL = ENV_TOKENS.get('CERT_VERIFY_URL', "")
     CERT_WEB_ROOT = ENV_TOKENS.get('CERT_WEB_ROOT', CERT_WEB_ROOT)
     COPY_TO_WEB_ROOT = ENV_TOKENS.get('COPY_TO_WEB_ROOT', COPY_TO_WEB_ROOT)
     S3_UPLOAD = ENV_TOKENS.get('S3_UPLOAD', S3_UPLOAD)
+    S3_VERIFY_PATH = ENV_TOKENS.get('S3_VERIFY_PATH', S3_VERIFY_PATH)
+    CERTS_ARE_CALLED = ENV_TOKENS.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
+    CERTS_ARE_CALLED_PLURAL = ENV_TOKENS.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
     LOGGING = get_logger_config(LOG_DIR,
                                 logging_env=ENV_TOKENS['LOGGING_ENV'],
                                 local_loglevel=local_loglevel,
                                 debug=False,
                                 service_variant=os.environ.get('SERVICE_VARIANT', None))
     CERT_PRIVATE_DIR = ENV_TOKENS.get('CERT_PRIVATE_DIR', CERT_PRIVATE_DIR)
+
+# This is the base URL used for logging CERT uploads to s3
+CERT_URL = CERT_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
+# This is the base URL that will be displayed to the user in the dashboard
+# It's different than CERT_URL because because CERT_URL will not have a valid
+# SSL certificate. # FIXME: confirm whether this is true
+CERT_DOWNLOAD_URL = CERT_DOWNLOAD_URL or 'https://{}.s3.amazonaws.com'.format(CERT_BUCKET)
+CERT_VERIFY_URL = CERT_VERIFY_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
 
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
@@ -104,7 +124,7 @@ if os.path.isfile(ENV_ROOT / "auth.json"):
 # Use the custom CERT_PRIVATE_DIR for paths to the
 # template sub directory and the cert data config
 
-TEMPLATE_DIR = CERT_PRIVATE_DIR / TEMPLATE_DATA_SUBDIR
+TEMPLATE_DIR = os.path.join(CERT_PRIVATE_DIR, TEMPLATE_DATA_SUBDIR)
 
-with open(CERT_PRIVATE_DIR / CERT_DATA_FILE) as f:
+with open(os.path.join(CERT_PRIVATE_DIR, CERT_DATA_FILE)) as f:
     CERT_DATA = yaml.load(f.read())

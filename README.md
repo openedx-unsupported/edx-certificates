@@ -54,19 +54,18 @@ _some/course/id should be a valid course id found in `edx-certificates-internal/
 Overview
 -------------------------
 
-This script will continuously monitor a queue
-for certificate generation, it does the following:
+The `certificate_agent.py` script will continuously monitor a queue for 
+certificate generation, it does the following:
 
 * Connect to the xqueue server
-* Pull a single certificate request
-* Process the request
-* Post a result back to the xqueue server
+* Poll for a single certificate request
+* If it finds one, it:
+  * Processes the request
+  * Post a results json back to the xqueue server
 
-A global exception handler will catch any error
-during the certificate generation process and
-post a result back to the LMS via the xqueue server
+A global exception handler will catch any error during the certificate
+generation process and post a result back to the LMS via the xqueue server
 indicating there was a problem.
-
     
     optional arguments:
       -h, --help         show this help message and exit
@@ -76,6 +75,7 @@ indicating there was a problem.
 
 ## Generation overview
 
+TODO
 
 ## Logging:
 
@@ -102,8 +102,11 @@ To run the test suite:
 
         nosetests
 
-   Note that this will run tests that will fail unless AWS credentials are setup. To run just
-   the tests for local on-disk publishing run:
+   These are more integration tests than unit tests, and will be exercising your 
+   certificate configuration, your file pathing, and your S3 credentials.  Some tests
+   may fail, but the code may still be working properly; you'll have to investigate to
+   discover what the failed test is diagnostic of. To run just the tests for local 
+   on-disk publishing run:
 
         nosetests tests.gen_cert_test:test_cert_gen
 
