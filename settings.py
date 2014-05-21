@@ -125,5 +125,5 @@ if os.path.isfile(ENV_ROOT / "auth.json"):
 
 TEMPLATE_DIR = os.path.join((CERT_PRIVATE_DIR, TEMPLATE_DATA_SUBDIR))
 
-with open(CERT_PRIVATE_DIR / CERT_DATA_FILE) as f:
+with open(os.path.join((CERT_PRIVATE_DIR, CERT_DATA_FILE))) as f:
     CERT_DATA = yaml.load(f.read())
