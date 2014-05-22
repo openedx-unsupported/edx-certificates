@@ -849,7 +849,7 @@ class CertificateGen(object):
         if self.template_type == 'verified':
             styleAvenirCourseName.textColor = v_style_color_course
 
-        paragraph_string = "{0}: {1}".format(self.course, self.long_course.decode('utf-8'))
+        paragraph_string = "{0}: {1}".format(self.course, self.long_course)
         html_paragraph_string = html.unescape(paragraph_string)
         larger_width = stringWidth(html_paragraph_string.decode('utf-8'),
                                    'AvenirNext-DemiBold', style_type_course_size) / mm
