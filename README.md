@@ -9,7 +9,49 @@ This is the code we use the generate certificates at edX.
 This script will continuously monitor an xqueue queue
 for the purpose of generating a course certificate for a user.
 
-Generate edX certificates
+
+Generating sample certificates
+-------------------------
+
+1. Create a new python virtualenv 
+```
+mkvirtualenv certificates
+```
+2. Clone the certificate repo 
+```
+git clone git@github.com:edx/edx-certificates
+```
+3. Clone the internal certificate repo for templates and private data (optional) 
+```
+git clone git@github.com:edx/edx-certificates-internal
+```
+4. Install the python requirements into the virtualenv 
+```
+pip install -r edx-certificates/requirements.txt
+```
+5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
+```
+[Credentials]
+aws_access_key_id = *****
+aws_secret_access_key = ****
+```
+*Or* for edX use the `boto.example` in the edx-certificates-interal repo: 
+```
+cp edx-certificates-internal/boto.example ~/.boto
+```
+6. Set an environment variable to point to the internal repo for certificate templates 
+```
+export CERT_PRIVATE_DIR=/path/to/edx-certificates-internal
+```
+7. In the edx-certificates directory generate a sample certificate:
+```
+cd edx-certificates
+python create_pdfs.py -c some/course/id -n Guido
+
+```
+_some/course/id should be a valid course id found in `edx-certificates-internal/cert-data.yml_
+
+Overview
 -------------------------
 
 This script will continuously monitor a queue
@@ -33,86 +75,6 @@ indicating there was a problem.
 
 
 ## Generation overview
-
-### State diagram:
-
-    [deleted,error,unavailable] [error,downloadable]
-                +                +             +
-                |                |             |
-                |                |             |
-             add_cert       regen_cert     del_cert
-                |                |             |
-                v                v             v
-           [generating]    [regenerating]  [deleting]
-                +                +             +
-                |                |             |
-           certificate      certificate    certificate
-             created       removed,created   deleted
-                +----------------+-------------+------->[error]
-                |                |             |
-                |                |             |
-                v                v             v
-          [downloadable]   [downloadable]  [deleted]
-    
-
-This code is responsbile for the
-"generating", "regenerating" and "deleting" state
-changes in the above diagram.  
-When those changes are complete the results are posted
-back to the LMS via the xqueue server where the GeneratedCertificate
-table will be updated.
-
-If there is an error the "error\_reason" field in the GeneratedCertfificate
-table will contain the exception name, error, filename and line number.
-
-## Failure Modes
-
-* A connection to xqueue fails - logs the error, retries
-* Fails to make a connection to S3 or the upload fails - logs the error, the certificate state will toggle to error and the reason will be recorded in the db.
-* Certificate generation fails - ^^^
-* Post to xqueue server fails - This will be logged on the certificate server, the certificate state will remain as it was (and require intervention).
-* Post to the LMS from the xqueue server fails - This will be logged on the LMS, the certificate state will remain as it was (and require intervention).
-
-
-## Installation:
-
-Clone the repo and run certificate\_agent.py
-In a production environment this script will run continuously
-as an upstart job.
-
-## Configuration:
-
-Normally configuration is read from {auth,env}.json though
-all options can be passed in on the commandline.
-The two files should be on the same directory level as the
-repository.
-
-### env.json example:
-
-    {
-        "CERT_ORGS_LONG" : {
-          "BerkeleyX" : "the University of California at Berkeley",
-          "MITx" : "the Massachusetts University of Technology",
-          "HarvardX" : "Harvard University",
-          },
-          "LOGGING_ENV" : "myhost",
-          "LOG_DIR" : "/var/tmp",
-          "SYSLOG_SERVER" : "syslog.a.m.i4x.org",
-          "QUEUE_NAME" : "myqueue",
-          "QUEUE_URL" : "https://sandbox-xqueue.edx.org"
-        },
-    
-    }
-    
-### auth.json example:
-    {
-        "QUEUE_USER" : "lms",
-        "QUEUE_PASS" : "*****",
-        "QUEUE_AUTH_USER" : "***",
-        "QUEUE_AUTH_PASS" : "******",
-        "CERT_AWS_ID" : "***",
-        "CERT_AWS_KEY" : "***"
-    }
 
 
 ## Logging:
