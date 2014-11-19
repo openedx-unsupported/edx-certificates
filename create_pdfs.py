@@ -21,19 +21,19 @@ description = """
 """
 
 stanford_cme_titles = (('AuD', 'AuD'),
-          ('DDS', 'DDS'),
-          ('DO', 'DO'),
-          ('MD', 'MD'),
-          ('MD,PhD', 'MD,PhD'),
-          ('MBBS', 'MBBS'),
-          ('NP', 'NP'),
-          ('PA', 'PA'),
-          ('PharmD', 'PharmD'),
-          ('PhD', 'PhD'),
-          ('RN', 'RN'),
-          ('Other', 'Other'),
-          ('None', 'None'),
-          (None, None))
+                       ('DDS', 'DDS'),
+                       ('DO', 'DO'),
+                       ('MD', 'MD'),
+                       ('MD,PhD', 'MD,PhD'),
+                       ('MBBS', 'MBBS'),
+                       ('NP', 'NP'),
+                       ('PA', 'PA'),
+                       ('PharmD', 'PharmD'),
+                       ('PhD', 'PhD'),
+                       ('RN', 'RN'),
+                       ('Other', 'Other'),
+                       ('None', 'None'),
+                       (None, None))
 
 
 def parse_args(args=sys.argv[1:]):
@@ -66,7 +66,7 @@ def main():
     Will copy out the pdfs into the certs/ dir
     """
     pdf_dir = TMP_GEN_DIR
-    copy_dir = TMP_GEN_DIR+"+copy"
+    copy_dir = TMP_GEN_DIR + "+copy"
     if args.output_file:
         # ensure we can open the output file
         output_f = open(args.output_file, 'bw')
@@ -110,15 +110,15 @@ def main():
                 long_course=args.long_course,
                 issued_date=args.issued_date,
             )
-            title=None
+            title = None
             if args.random_title:
-                title=random.choice(stanford_cme_titles)[0]
+                title = random.choice(stanford_cme_titles)[0]
                 print "generating random title", name, title
-            grade=None
+            grade = None
             if args.grade_text:
-                grade=args.grade_text
+                grade = args.grade_text
             (download_uuid, verify_uuid,
-                download_url) = cert.create_and_upload(name, upload=upload_files, copy_to_webroot=False, 
+                download_url) = cert.create_and_upload(name, upload=upload_files, copy_to_webroot=False,
                                                        cleanup=False, designation=title, grade=grade)
             certificate_data.append((name, download_url))
             gen_dir = os.path.join(cert.dir_prefix, S3_CERT_PATH, download_uuid)

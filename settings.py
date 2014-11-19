@@ -40,8 +40,10 @@ LOGGING = get_logger_config(ENV_ROOT,
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
 CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
-# dummy key - https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
-#CERT_KEY_ID = 'FEF8D954'
+# dummy key:
+# https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
+# CERT_KEY_ID = 'FEF8D954'
+# or leave blank to skip gpg signing
 CERT_KEY_ID = ''
 
 # Specify the default name of the certificate PDF

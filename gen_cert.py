@@ -55,8 +55,8 @@ CERTS_ARE_CALLED_PLURAL = getattr(settings, 'CERTS_ARE_CALLED_PLURAL', 'certific
 l = logging.getLogger('gnupg')
 l.setLevel('WARNING')
 
-# Register all fonts in the fonts/ dir; there are likely more fonts here than 
-# we need, but the performance hit is minimal -- especially since we only do 
+# Register all fonts in the fonts/ dir; there are likely more fonts here than
+# we need, but the performance hit is minimal -- especially since we only do
 # this at import time.
 #
 # While registering fonts, build a table of the Unicode code points in each
@@ -69,7 +69,7 @@ for font_file in glob('{0}/fonts/*.ttf'.format(TEMPLATE_DIR)):
     pdfmetrics.registerFont(TTFont(font_name, font_file))
 
 # These are small, so let's just load them at import time and keep them around
-# so we don't have to keep doing the file I/o 
+# so we don't have to keep doing the file I/o
 BLANK_PDFS = {
     'landscape-A4': PdfFileReader(file("{0}/blank.pdf".format(TEMPLATE_DIR), "rb")),
     'landscape-letter': PdfFileReader(file("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")),
@@ -81,25 +81,27 @@ def prettify_isodate(isoformat_date):
     """Convert a string like '2012-02-02' to one like 'February 2nd, 2012'"""
     m = RE_ISODATES.match(isoformat_date)
     if not m:
-        raise TypeError, "prettify_isodate called with incorrect date format: %s" % isoformat_date
+        raise TypeError("prettify_isodate called with incorrect date format: %s" % isoformat_date)
     day_suffixes = {'1': 'st', '2': 'nd', '3': 'rd', '21': 'st', '22': 'nd', '23': 'rd', '31': 'st'}
-    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+              'August', 'September', 'October', 'November', 'December']
     date = {'year': '', 'month': '', 'day': '', 'suffix': 'th'}
-    date['year']   = m.group('year')
-    date['month']  = months[int(m.group('month'))-1]
-    date['day']    = m.group('day').lstrip('0')
+    date['year'] = m.group('year')
+    date['month'] = months[int(m.group('month')) - 1]
+    date['day'] = m.group('day').lstrip('0')
     date['suffix'] = day_suffixes.get(date['day'], 'th')
     return "%(month)s %(day)s%(suffix)s, %(year)s" % date
+
 
 def font_for_string(fontlist, ustring):
     """Determine the best font to render a string.
 
-    Given a list of fonts in priority order (that is, prettiest-first) and a 
+    Given a list of fonts in priority order (that is, prettiest-first) and a
     string which may or may not contain Unicode characters, test the string's
     codepoints for glyph entries in the font, failing if any are missing and
     returning the font name if it succeeds.
 
-    Font list a list of tuples where the first two items are the 
+    Font list a list of tuples where the first two items are the
     human-readable font name, the on-disk filename, and one or more ignored
     fields, e.g.:
       [('font name', 'filename.ttf', 'ignored value', [...]), ...]
@@ -109,12 +111,12 @@ def font_for_string(fontlist, ustring):
     for fonttuple in fontlist:
         fonttag = fonttuple[0]
         codepoints = FONT_CHARACTER_TABLES.get(fonttag, [])
-        OK = reduce(lambda x,y: x and y, (ord(c) in codepoints for c in ustring.decode('utf-8')))
+        OK = reduce(lambda x, y: x and y, (ord(c) in codepoints for c in ustring.decode('utf-8')))
         if OK:
             return fonttuple
     # No font we tested supports this string, throw an exception.
     # Then a human can and should install better fonts
-    raise ValueError, "No font in supplied fontlist supports string '{0}'. Fontlist: {1}".format(ustring, repr(fontlist))
+    raise ValueError("Nothing in fontlist supports string '{0}'. Fontlist: {1}".format(ustring, repr(fontlist)))
 
 
 class CertificateGen(object):
@@ -126,7 +128,7 @@ class CertificateGen(object):
     def __init__(self, course_id, template_pdf=None, aws_id=None, aws_key=None,
                  dir_prefix=None, long_org=None, long_course=None, issued_date=None):
         """Load a pdf template and initialize
-        
+
         Multiple certificates can be generated and uploaded for a single course.
 
         course_id    - Full course_id (ex: MITx/6.00x/2012_Fall)
@@ -180,9 +182,9 @@ class CertificateGen(object):
         self.template_type = 'honor'
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
-        template_prefix= '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
+        template_prefix = '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
         template_pdf_filename = "{0}/certificate-template-{1}-{2}.pdf".format(
-                template_prefix, self.org, self.course)
+            template_prefix, self.org, self.course)
         if template_pdf:
             template_pdf_filename = "{0}/{1}".format(template_prefix, template_pdf)
             if 'verified' in template_pdf:
@@ -238,8 +240,8 @@ class CertificateGen(object):
         if letterhead and self.letterhead:
             (download_uuid, download_url) = self._generate_letterhead(student_name=name, download_dir=certificates_path)
         else:
-            (download_uuid, verify_uuid, download_url) = self._generate_certificate(student_name=name, 
-                                                                                    download_dir=certificates_path, 
+            (download_uuid, verify_uuid, download_url) = self._generate_certificate(student_name=name,
+                                                                                    download_dir=certificates_path,
                                                                                     verify_dir=verify_path,
                                                                                     grade=grade,
                                                                                     designation=designation,)
@@ -1233,14 +1235,14 @@ class CertificateGen(object):
 
         REQUIRED PARAMETERS:
         student_name  - specifies student name as it must appear on the cert.
-        download_dir  - 
+        download_dir  -
         verify_dir    -
 
         OPTIONAL PARAMETERS:
         filename      - the filename to write out, i.e., 'Certificate.pdf'.
                         Defaults to settings.TARGET_FILENAME
         grade         - the grade received by the student. Defaults to 'Pass'
-        generate_date - specifies an ISO formatted date (i.e., '2012-02-02') 
+        generate_date - specifies an ISO formatted date (i.e., '2012-02-02')
                         with which to stamp the cert. Defaults to CERT_DATA's
                         ISSUED_DATE, or today's date for ROLLING.
 
@@ -1358,7 +1360,7 @@ class CertificateGen(object):
         # Add distinction here
         if grade:
             tmp = self.interstitial_texts.get(grade, paragraph_string_interstitial)
-            if tmp != paragraph_string_interstitial: 
+            if tmp != paragraph_string_interstitial:
                 tmp = ' <b>' + tmp + '</b> '
             paragraph_string_interstitial = tmp
         paragraph_string = successfully_completed.format(paragraph_string_interstitial)
@@ -1416,20 +1418,20 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_stanford_cme_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, 
+    def _generate_stanford_cme_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME,
                                            grade=None, designation=None, generate_date=None):
         """Generate a PDF certificate, signature and html files for validation.
 
         REQUIRED PARAMETERS:
         student_name  - specifies student name as it must appear on the cert.
-        download_dir  - 
+        download_dir  -
         verify_dir    -
 
         OPTIONAL PARAMETERS:
         filename      - the filename to write out, i.e., 'Certificate.pdf'.
                         Defaults to settings.TARGET_FILENAME
         grade         - the grade received by the student. Defaults to 'Pass'
-        generate_date - specifies an ISO formatted date (i.e., '2012-02-02') 
+        generate_date - specifies an ISO formatted date (i.e., '2012-02-02')
                         with which to stamp the cert. Defaults to CERT_DATA's
                         ISSUED_DATE, or today's date for ROLLING.
 
@@ -1491,13 +1493,11 @@ class CertificateGen(object):
         #######  Student name
 
         # These are ordered by preference; cf. font_for_string() above
-        fontlist = [('DroidSerif',     'DroidSerif.ttf',     styleDroidSerif), 
-                    ('OpenSans-Light', 'OpenSans-Light.ttf', styleOpenSansLight), 
+        fontlist = [('DroidSerif',     'DroidSerif.ttf',     styleDroidSerif),
+                    ('OpenSans-Light', 'OpenSans-Light.ttf', styleOpenSansLight),
                     ('Arial Unicode',  'Ariel Unicode.ttf',  styleArial)]
 
-        (fonttag, 
-         fontfile, 
-         style)         = font_for_string(fontlist, student_name)
+        (fonttag, fontfile, style) = font_for_string(fontlist, student_name)
         style.alignment = TA_CENTER
         width           = 9999    # Fencepost width is way too wide
         nameYOffset     = 146     # by eye, looks good for 34 pt font
@@ -1510,7 +1510,7 @@ class CertificateGen(object):
             width = stringWidth(student_name.decode('utf-8'), fonttag, fontsize)
             if nameYOffset > 140:
                 nameYOffset = nameYOffset - math.floor((36 - fontsize) / 12)
-            fontsize -= 1 
+            fontsize -= 1
 
         draw_centered_text("<b>{0}</b>".format(student_name), style, nameYOffset)
 

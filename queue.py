@@ -17,8 +17,7 @@ class XQueuePullManager(object):
     and posting a response.
     """
 
-    def __init__(self, queue_url, queue_name, queue_auth_user,
-            queue_auth_pass, queue_user, queue_pass):
+    def __init__(self, queue_url, queue_name, queue_auth_user, queue_auth_pass, queue_user, queue_pass):
         self.url = queue_url
         self.queue_name = queue_name
         self.auth_user = queue_auth_user
@@ -36,10 +35,8 @@ class XQueuePullManager(object):
             self.session = requests.session(auth=HTTPBasicAuth(
                 self.auth_user, self.auth_pass))
             request = self.session.post('{0}/xqueue/login/'.format(self.url),
-                    data={
-                        'username': self.queue_user,
-                        'password': self.queue_pass
-                        })
+                                        data={'username': self.queue_user,
+                                              'password': self.queue_pass})
             response = json.loads(request.text)
             if response['return_code'] != 0:
                 raise Exception("Invalid return code in reply resp:{0}".format(
@@ -76,8 +73,7 @@ class XQueuePullManager(object):
             request = self.session.get('{0}/xqueue/get_submission/'.format(
                 self.url), params={'queue_name': self.queue_name})
         except (ConnectionError, Timeout) as e:
-            log.critical("Unable to get submission "
-                             "from queue: {0}".format(e))
+            log.critical("Unable to get submission from queue: {0}".format(e))
             raise
 
         try:
@@ -90,15 +86,11 @@ class XQueuePullManager(object):
             return json.loads(response['content'])
 
         except (Exception, ValueError, KeyError) as e:
-            log.critical("Unable to parse queue message: {0} "
-                                "response: {1}".format(e, request.text))
+            log.critical("Unable to parse queue message: {0} response: {1}".format(e, request.text))
             raise
 
     def respond(self, xqueue_reply):
-        """
-        Posts xqueue_reply to the qserver which
-        will be posted back to the LMS
-        """
+        """Post xqueue_reply to qserver for posting back to LMS"""
 
         try:
             request = self.session.post('{0}/xqueue/put_result/'.format(
@@ -106,8 +98,7 @@ class XQueuePullManager(object):
             log.info('Response: {0}'.format(request.text))
 
         except (ConnectionError, Timeout) as e:
-            log.critical("Connection error posting response "
-                             "to the LMS: {0}".format(e))
+            log.critical("Connection error posting response to the LMS: {0}".format(e))
             raise
         response = json.loads(request.text)
         if response['return_code'] != 0:

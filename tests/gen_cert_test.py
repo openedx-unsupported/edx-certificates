@@ -25,6 +25,7 @@ def setUp():
     VERIFY_FILES.add(CERT_FILESIG)
     DOWNLOAD_FILES.add(CERT_FILENAME)
 
+
 def test_cert_gen():
     """
     For every course:
@@ -50,8 +51,8 @@ def test_cert_gen():
             assert_true(set(verify_files) == VERIFY_FILES)
 
             # The detached signature is valid
-            pdf = os.path.join( tmpdir, S3_CERT_PATH, download_uuid, CERT_FILENAME)
-            sig = os.path.join( tmpdir, S3_VERIFY_PATH, verify_uuid, CERT_FILESIG)
+            pdf = os.path.join(tmpdir, S3_CERT_PATH, download_uuid, CERT_FILENAME)
+            sig = os.path.join(tmpdir, S3_VERIFY_PATH, verify_uuid, CERT_FILESIG)
             gpg = gnupg.GPG(gnupghome=settings.CERT_GPG_DIR)
             with open(sig) as f:
                 v = gpg.verify_file(f, pdf)
@@ -71,8 +72,7 @@ def test_cert_names():
     course_id = settings.CERT_DATA.keys()[0]
     for name in NAMES:
         cert = CertificateGen(course_id)
-        (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, 
-                upload=False)
+        (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
 
 
 def test_cert_upload():
@@ -84,5 +84,3 @@ def test_cert_upload():
     r = urllib2.urlopen(download_url)
     with tempfile.NamedTemporaryFile(delete=True) as f:
         f.write(r.read())
-
-
