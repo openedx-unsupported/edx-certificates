@@ -42,9 +42,9 @@ LOGGING = get_logger_config(ENV_ROOT,
 CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
 # dummy key:
 # https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
-# CERT_KEY_ID = 'FEF8D954'
+CERT_KEY_ID = 'FEF8D954'
 # or leave blank to skip gpg signing
-CERT_KEY_ID = ''
+# CERT_KEY_ID = ''
 
 # Specify the default name of the certificate PDF
 CERT_FILENAME = 'Certificate.pdf'

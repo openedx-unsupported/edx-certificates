@@ -10,4 +10,5 @@ script:
     curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-key-ownertrust.txt -o /var/tmp/trust.txt
     /usr/bin/gpg --import /var/tmp/key.txt
     /usr/bin/gpg --import-ownertrust /var/tmp/trust.txt
-    nosetests tests.gen_cert_test:test_cert_gen
+    nosetests
+    #nosetests tests.gen_cert_test:test_cert_gen

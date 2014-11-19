@@ -27,7 +27,8 @@ def setUp():
 
 
 def test_cert_gen():
-    """
+    """Do end-to-end generation test (sans s3) for every course.
+
     For every course:
      * Generates a single dummy certificate
      * Verifies all file artificats are created
