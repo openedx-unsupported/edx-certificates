@@ -2,23 +2,23 @@
 <html lang="en">
 <head>
  <meta charset="UTF-8">
- <title>Validate the Certificate</title>
+ <title>Validate the {CERTS_ARE_CALLED}</title>
  <link rel="stylesheet" href="/stylesheets/base.css">
 </head>
 <body class="verify">
 
   <header>
-    <h1>edx</h1>
+    <h1>OpenEdX</h1>
   </header>
 
   <section>
     <section class="introduction">
       <p>
-        The certificate issued by Edx is signed by a 
+        The {CERTS_ARE_CALLED_PLURAL} issued by OpenEdX are signed by a 
         <a href="http://www.gnupg.org">gpg</a> key so that
-        it can be validated independently by anyone who has
-        the edX public key.  For independent verification edX uses 
-        what is called a "detached signature" 
+        they can be validated independently by anyone who has
+        the correct OpenEdX public key.  For independent verification OpenEdX uses 
+        what is called a "detached signature",
         meaning that the signature for the certificate is contained in
         a separate file with a ".sig" extension.  
       </p>
@@ -27,21 +27,21 @@
         To complete the verification procedure you will need the following
         three files:
         <ul>
-          <li>The <a href="http://verify.edx.org/edx.pub">official edX public key</a>.</li>
-          <li>The edX certificate belonging to {NAME} (you should already have this file).</li>
-          <li>The <a href="{SIG_URL}">signature file</a> for {NAME}'s certificate</li>
+          <li>The <a href="{VERIFY_URL}/openedx.pub">official openedx instance public key</a>.</li>
+          <li>The OpenEdX {CERTS_ARE_CALLED} belonging to {NAME} (you should already have this file).</li>
+          <li>The <a href="{SIG_URL}">signature file</a> for {NAME}'s {CERTS_ARE_CALLED}</li>
         </ul>
       </p>
 
       <p> 
-        Ensure you have the pdf, the ".sig" signature file and the edX public key 
+        Ensure you have the pdf, the ".sig" signature file and the public key 
         copied to a single directory before you begin.
       </p>
     </section>
 
     <section class="instruction">
       <header>
-        <h1>Import the edX public key on OSX using GPG Keychain</h1>
+        <h1>Import the public key on OSX using GPG Keychain</h1>
       </header>
 
       <ul>
@@ -49,10 +49,10 @@
         <li><p>After installation, GPG Keychain Access will prompt for a new personal keypair.</p>
           <p><img class="ss" src="/images/osxgpg-new-keypair.png" alt="new keypair" /></p>
         </li>
-        <li><p>Click the import icon to import the public key file edX, <i>edx.pub</i>.</p></li>
-        <li><p>CTRL-click the edX public key and select "sign" to validate it.</p>
+        <li><p>Click the import icon to import the public key file, <i>openedx.pub</i>.</p></li>
+        <li><p>CTRL-click the public key and select "sign" to validate it.</p>
           <p><img class="ss" src="/images/osxgpg-sign-key.png" alt="sign key"/></p></li>
-        <li><p>Confirm that the edX public key is listed in the GPG Keychain Access window and it has Short ID 044DA1D9.</p>
+          <li><p>Confirm that the public key is listed in the GPG Keychain Access window and it has Short ID {CERT_KEY_ID}.</p>
         <img class="ss" src="/images/osxgpg-key-list.png" alt="sign key"/></li>
     </ul>
   </section>
@@ -70,10 +70,10 @@
         <p><img class="ss" src="/images/wingpg-new-cert.png" alt="new certificate" /> </p></li>
       <p>When prompted, select "Create personal OpenPGP key pair."</p>
       <p><img class="ss" src="/images/wingpg-new-cert2.png" alt="new certificate" /></p> </li>
-      <li><p>Import the edX public key file, <i>edx.pub</i> for edX by clicking on the "Import Certificate" icon.</p></li>
-    <li><p>Certify the edX public key by highlighting the edx certificate and selecting "Certify Certificate" under the "Certificates" menu.</p>
+      <li><p>Import the public key file, <i>openedx.pub</i> by clicking on the "Import Certificate" icon.</p></li>
+    <li><p>Certify the public key by highlighting the new public key/certificate and selecting "Certify Certificate" under the "Certificates" menu.</p>
       <p><img class="ss" src="/images/wingpg-certify-cert.png" alt="certify certificate" /></p> </li>
-    <li><p>Make sure that the edX public key/certificate is listed under the "Trusted Certificates" tab and verify it has the Key-ID 044DA1D9.</p>
+    <li><p>Make sure that the public key/certificate is listed under the "Trusted Certificates" tab and verify it has the Key-ID {CERT_KEY_ID}.</p>
       <p><img class="ss" src="/images/wingpg-verify-cert.png" alt="verify the certificate" /></p> </li>
   </ul>
 </section>
@@ -87,7 +87,7 @@
     <li>Go into the directory where the .sig and .pdf files are located</li>
     <li>Run the following command to verify the fingerprint of the edx key</li>
         <pre>gpg --verify {SIG_FILE} {PDF_FILE}</pre>
-    <li>Confirm that "Good signature from "edx &lt;info@edx.org&gt;" is reported by gpg</li>
+    <li>Confirm that "Good signature from "OpenEdX Example &lt;techsupport@example.com&gt;" is reported by gpg</li>
   </ul>
 </section>
   </section>

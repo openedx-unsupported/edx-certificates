@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import platform
 import sys
@@ -35,9 +37,8 @@ def get_logger_config(log_dir,
     syslog_format = ("[service_variant={service_variant}]"
                      "[%(name)s][env:{logging_env}] %(levelname)s "
                      "[{hostname}  %(process)d] [%(filename)s:%(lineno)d] "
-                     "- %(message)s").format(
-                        service_variant=service_variant,
-                        logging_env=logging_env, hostname=hostname)
+                     "- %(message)s").format(service_variant=service_variant,
+                                             logging_env=logging_env, hostname=hostname)
 
     handlers = ['console', 'local'] if debug else ['console', 'local']
 
