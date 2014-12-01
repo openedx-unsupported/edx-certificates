@@ -120,10 +120,7 @@ def font_for_string(fontlist, ustring):
 
 
 class CertificateGen(object):
-    """Manages the pdf, signatures, and S3 bucket for course certificates.
-
-    Also generates the letterhead for 188x
-    """
+    """Manages the pdf, signatures, and S3 bucket for course certificates."""
 
     def __init__(self, course_id, template_pdf=None, aws_id=None, aws_key=None,
                  dir_prefix=None, long_org=None, long_course=None, issued_date=None):
@@ -195,13 +192,6 @@ class CertificateGen(object):
             log.critical("I/O error ({0}): {1} opening {2}".format(e.errno, e.strerror, template_pdf_filename))
             raise
 
-        # Open the 188 letterhead pdf if it exists
-        letterhead_path = "{0}/letterhead-template-BerkeleyX-CS188.1x.pdf".format(TEMPLATE_DIR)
-        if os.path.exists(letterhead_path):
-            self.letterhead_pdf = PdfFileReader(file(letterhead_path, "rb"))
-        else:
-            self.letterhead_pdf = None
-
         self.cert_label_singular = cert_data.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
         self.cert_label_plural = cert_data.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
         self.course_association_text = cert_data.get('COURSE_ASSOCIATION_TEXT', 'a course of study')
@@ -210,13 +200,10 @@ class CertificateGen(object):
         # TODO remove/archive an existing certificate
         raise NotImplementedError
 
-    def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True, copy_to_webroot=settings.COPY_TO_WEB_ROOT, cert_web_root=settings.CERT_WEB_ROOT, letterhead=False, grade=None, designation=None):
+    def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True, copy_to_webroot=settings.COPY_TO_WEB_ROOT, cert_web_root=settings.CERT_WEB_ROOT, grade=None, designation=None):
         """
         name - Full name that will be on the certificate
         upload - Upload to S3 (defaults to True)
-        letterhead - Set to True to generate a letterhead instead
-                     of a certificate.  Letterheads are not signed
-                     so there will be no verification pages.
 
         set upload to False if you do not want to upload to S3,
         this will also keep temporary files that are created.
@@ -237,14 +224,11 @@ class CertificateGen(object):
         certificates_path = os.path.join(self.dir_prefix, S3_CERT_PATH)
         verify_path = os.path.join(self.dir_prefix, S3_VERIFY_PATH)
 
-        if letterhead and self.letterhead:
-            (download_uuid, download_url) = self._generate_letterhead(student_name=name, download_dir=certificates_path)
-        else:
-            (download_uuid, verify_uuid, download_url) = self._generate_certificate(student_name=name,
-                                                                                    download_dir=certificates_path,
-                                                                                    verify_dir=verify_path,
-                                                                                    grade=grade,
-                                                                                    designation=designation,)
+        (download_uuid, verify_uuid, download_url) = self._generate_certificate(student_name=name,
+                                                                                download_dir=certificates_path,
+                                                                                verify_dir=verify_path,
+                                                                                grade=grade,
+                                                                                designation=designation,)
 
         # upload generated certificate and verification files to S3
         for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
@@ -285,111 +269,6 @@ class CertificateGen(object):
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
         return versionmap[self.template_version](student_name, download_dir, verify_dir, filename, grade, designation)
-
-    def _generate_letterhead(self, student_name, download_dir, filename='distinction-letter.pdf'):
-        """Generate a PDF letterhead for 188x
-
-        return (download_uuid, download_url)
-        """
-
-        download_uuid = uuid.uuid4().hex
-        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
-            base_url=settings.CERT_DOWNLOAD_URL,
-            cert=S3_CERT_PATH, uuid=download_uuid, file=filename)
-
-        filename = os.path.join(download_dir, download_uuid, filename)
-
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        c = canvas.Canvas(overlay_pdf_buffer, pagesize=portrait(A4))
-
-        # 0 0 - normal
-        # 0 1 - italic
-        # 1 0 - bold
-        # 1 1 - italic and bold
-
-        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
-        addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
-        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-
-        addMapping('OpenSans-Regular', 0, 0, 'OpenSans-Regular')
-        addMapping('OpenSans-Regular', 0, 1, 'OpenSans-Italic')
-        addMapping('OpenSans-Regular', 1, 0, 'OpenSans-Bold')
-        addMapping('OpenSans-Regular', 1, 1, 'OpenSans-BoldItalic')
-
-        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
-        styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10, fontName='OpenSans-Regular')
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light')
-
-        # Text is overlayed top to bottom
-        #   * Student's name
-        #   * comma
-
-        WIDTH = 210  # width in mm (A4)
-        HEIGHT = 297  # height in mm (A4)
-        LEFT_INDENT = 36  # mm from the left side to write the text
-
-        #######  Student name
-
-        # default is to use the DejaVu font for the name,
-        # will fall back to Arial if there are
-        # unusual characters
-        style = styleOpenSans
-        width = stringWidth(student_name.decode('utf-8'),
-            'OpenSans-Bold', 16) / mm
-        paragraph_string = "<b>{0}</b>".format(student_name)
-
-        if self._use_unicode_font(student_name):
-            style = styleArial
-            width = stringWidth(student_name.decode('utf-8'),
-                                'Arial Unicode', 16) / mm
-            # There is no bold styling for Arial :(
-            paragraph_string = "{0}".format(student_name)
-
-        style.fontSize = 16
-        style.textColor = colors.Color(
-            0, 0.624, 0.886)
-        style.alignment = TA_LEFT
-
-        paragraph = Paragraph(paragraph_string, style)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 217.7 * mm)
-
-        ########## Comma
-        style = styleOpenSansLight
-        style.fontSize = 14
-        style.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        # Place the comma after the student's name
-        paragraph = Paragraph(",", style)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (LEFT_INDENT + width) * mm, 216.8 * mm)
-
-        c.showPage()
-        c.save()
-
-        # Merge the overlay with the template, then write it to file
-        output = PdfFileWriter()
-        overlay = PdfFileReader(overlay_pdf_buffer)
-
-        # We need a page to overlay on.
-        # So that we don't have to open the template
-        # several times, we open a blank pdf several times instead
-        # (much faster)
-
-        final_certificate = copy.copy(BLANK_PDFS['landscape-A4']).getPage(0)
-        final_certificate.mergePage(self.letterhead_pdf.getPage(0))
-        final_certificate.mergePage(overlay.getPage(0))
-
-        output.addPage(final_certificate)
-
-        self._ensure_dir(filename)
-
-        outputStream = file(filename, "wb")
-        output.write(outputStream)
-        outputStream.close()
-
-        return (download_uuid, download_url)
 
     def _generate_v1_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
         # A4 page size is 297mm x 210mm
