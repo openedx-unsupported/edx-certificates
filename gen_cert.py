@@ -994,10 +994,10 @@ class CertificateGen(object):
         signature_filename = os.path.basename(filename) + ".sig"
         signature_filename = os.path.join(output_dir, verify_uuid, signature_filename)
         self._ensure_dir(signature_filename)
-        gpg = gnupg.GPG(gnupghome=settings.CERT_GPG_DIR)
+        gpg = gnupg.GPG(homedir=settings.CERT_GPG_DIR)
         gpg.encoding = 'utf-8'
         with open(filename) as f:
-            signed_data = gpg.sign_file(f, keyid=CERT_KEY_ID, detach=True).data
+            signed_data = gpg.sign(data=f, default_key=CERT_KEY_ID, clearsign=False, detach=True).data
         with open(signature_filename, 'w') as f:
             f.write(signed_data.encode('utf-8'))
 
