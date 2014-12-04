@@ -15,7 +15,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.fonts import addMapping
-from reportlab.lib.pagesizes import A4, letter, landscape, portrait
+from reportlab.lib.pagesizes import A4, letter, landscape
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics

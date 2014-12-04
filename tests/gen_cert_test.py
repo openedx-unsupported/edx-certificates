@@ -54,10 +54,10 @@ def test_cert_gen():
             # The detached signature is valid
             pdf = os.path.join(tmpdir, S3_CERT_PATH, download_uuid, CERT_FILENAME)
             sig = os.path.join(tmpdir, S3_VERIFY_PATH, verify_uuid, CERT_FILESIG)
-            gpg = gnupg.GPG(gnupghome=settings.CERT_GPG_DIR)
-            with open(sig) as f:
-                v = gpg.verify_file(f, pdf)
-                assert_true(v is not None and v.trust_level >= v.TRUST_FULLY)
+            gpg = gnupg.GPG(homedir=settings.CERT_GPG_DIR)
+            with open(pdf) as f:
+                v = gpg.verify_file(f, sig)
+            assert_true(v is not None and v.trust_level >= v.TRUST_FULLY)
 
         # And of course we have a download file, right?
         assert_true(set(download_files) == DOWNLOAD_FILES)
