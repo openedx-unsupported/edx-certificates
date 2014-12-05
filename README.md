@@ -14,42 +14,50 @@ Generating sample certificates
 -------------------------
 
 1. Create a new python virtualenv 
-```
-mkvirtualenv certificates
-```
-2. Clone the certificate repo 
-```
-git clone https://github.com/edx/edx-certificates.git
-```
-3. Clone the internal certificate repo for templates and private data (optional) 
-```
-git clone git@github.com:edx/edx-certificates-internal
-```
-4. Install the python requirements into the virtualenv 
-```
-pip install -r edx-certificates/requirements.txt
-```
-5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
-```
-[Credentials]
-aws_access_key_id = *****
-aws_secret_access_key = ****
-```
-*Or* for edX use the `boto.example` in the edx-certificates-interal repo: 
-```
-cp edx-certificates-internal/boto.example ~/.boto
-```
-6. Set an environment variable to point to the internal repo for certificate templates 
-```
-export CERT_PRIVATE_DIR=/path/to/edx-certificates-internal
-```
-7. In the edx-certificates directory generate a sample certificate:
-```
-cd edx-certificates
-python create_pdfs.py -c some/course/id -n Guido
+    ```shell
+    mkvirtualenv certificates
+    ```
 
-```
-_some/course/id should be a valid course id found in `edx-certificates-internal/cert-data.yml`_
+2. Clone the certificate repo 
+    ```shell
+    git clone https://github.com/edx/edx-certificates.git
+    ```
+
+3. Clone the internal certificate repo for templates and private data (optional) 
+    ```shell
+    git clone git@github.com:edx/edx-certificates-internal
+    ```
+
+4. Install the python requirements into the virtualenv 
+    ```shell
+    pip install -r edx-certificates/requirements.txt
+    ```
+
+5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
+    ```ini
+    [Credentials]
+    aws_access_key_id = *****
+    aws_secret_access_key = ****
+    ```
+
+    - *Or* for edX use the `boto.example` in the edx-certificates-interal repo:
+
+        ```shell
+        cp edx-certificates-internal/boto.example ~/.boto
+        ```
+
+6. Set an environment variable to point to the internal repo for certificate templates 
+    ```shell
+    export CERT_PRIVATE_DIR=/path/to/edx-certificates-internal
+    ```
+
+7. In the edx-certificates directory generate a sample certificate:
+    ```shell
+    cd edx-certificates
+    python create_pdfs.py -c some/course/id -n Guido
+    ```
+
+    - `some/course/id` should be a valid course id found in `edx-certificates-internal/cert-data.yml`
 
 Overview
 -------------------------
