@@ -49,7 +49,7 @@ cd edx-certificates
 python create_pdfs.py -c some/course/id -n Guido
 
 ```
-_some/course/id should be a valid course id found in `edx-certificates-internal/cert-data.yml_
+_some/course/id should be a valid course id found in `edx-certificates-internal/cert-data.yml`_
 
 Overview
 -------------------------
