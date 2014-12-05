@@ -19,7 +19,7 @@ mkvirtualenv certificates
 ```
 2. Clone the certificate repo 
 ```
-git clone git@github.com:edx/edx-certificates
+git clone https://github.com/edx/edx-certificates.git
 ```
 3. Clone the internal certificate repo for templates and private data (optional) 
 ```
