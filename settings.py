@@ -31,10 +31,13 @@ CERT_DATA_FILE = 'cert-data.yml'
 
 # DEFAULTS
 DEBUG = False
+# This needs to be set on MacOS or anywhere you want logging to simply go 
+# to an output file.
+LOGGING_DEV_ENV = True
 LOGGING = get_logger_config(ENV_ROOT,
                             logging_env="dev",
                             local_loglevel="INFO",
-                            dev_env=True,
+                            dev_env=LOGGING_DEV_ENV,
                             debug=False)
 
 # Default for the gpg dir
@@ -79,9 +82,7 @@ CERT_VERIFY_URL = ''
 if os.path.isfile(ENV_ROOT / "env.json"):
     with open(ENV_ROOT / "env.json") as env_file:
         ENV_TOKENS = json.load(env_file)
-    LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
     TMP_GEN_DIR = ENV_TOKENS.get('TMP_GEN_DIR', '/var/tmp')
-    local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
     QUEUE_NAME = ENV_TOKENS.get('QUEUE_NAME', 'test-pull')
     QUEUE_URL = ENV_TOKENS.get('QUEUE_URL', 'https://stage-xqueue.edx.org')
     CERT_GPG_DIR = ENV_TOKENS.get('CERT_GPG_DIR', CERT_GPG_DIR)
@@ -97,10 +98,14 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     S3_VERIFY_PATH = ENV_TOKENS.get('S3_VERIFY_PATH', S3_VERIFY_PATH)
     CERTS_ARE_CALLED = ENV_TOKENS.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
     CERTS_ARE_CALLED_PLURAL = ENV_TOKENS.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
+    LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
+    local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
+    LOGGING_DEV_ENV = ENV_TOKENS.get('LOGGING_DEV_ENV', True)
     LOGGING = get_logger_config(LOG_DIR,
-                                logging_env=ENV_TOKENS['LOGGING_ENV'],
+                                logging_env=ENV_TOKENS.get('LOGGING_ENV', 'dev'),
                                 local_loglevel=local_loglevel,
                                 debug=False,
+                                dev_env=LOGGING_DEV_ENV,
                                 service_variant=os.environ.get('SERVICE_VARIANT', None))
     CERT_PRIVATE_DIR = ENV_TOKENS.get('CERT_PRIVATE_DIR', CERT_PRIVATE_DIR)
 
