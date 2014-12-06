@@ -1303,8 +1303,8 @@ class CertificateGen(object):
         WIDTH, HEIGHT = landscape(letter)   # values in points, multiply by mm
 
         download_uuid = uuid.uuid4().hex
-        download_url  = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(BUCKET, S3_CERT_PATH, download_uuid, filename)
-        filename      = os.path.join(download_dir, download_uuid, filename)
+        download_url = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(BUCKET, S3_CERT_PATH, download_uuid, filename)
+        filename = os.path.join(download_dir, download_uuid, filename)
         self._ensure_dir(filename)
 
         # Manipulate student titles
@@ -1327,9 +1327,9 @@ class CertificateGen(object):
         addMapping('DroidSerif',     1, 0, 'DroidSerif-Bold')
         addMapping('DroidSerif',     1, 1, 'DroidSerif-BoldItalic')
 
-        styleArial         = ParagraphStyle(name="arial",          leading=10, fontName='Arial Unicode',  allowWidows=0)
+        styleArial = ParagraphStyle(name="arial",          leading=10, fontName='Arial Unicode',  allowWidows=0)
         styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light', allowWidows=0)
-        styleDroidSerif    = ParagraphStyle(name="droidserif",     leading=10, fontName='DroidSerif',     allowWidows=0)
+        styleDroidSerif = ParagraphStyle(name="droidserif",     leading=10, fontName='DroidSerif',     allowWidows=0)
 
         # This file is overlaid on the template certificate
         overlay_pdf_buffer = StringIO.StringIO()
@@ -1358,11 +1358,11 @@ class CertificateGen(object):
 
         (fonttag, fontfile, style) = font_for_string(fontlist, student_name)
         style.alignment = TA_CENTER
-        width           = 9999    # Fencepost width is way too wide
-        nameYOffset     = 146     # by eye, looks good for 34 pt font
-        fontsize        = 36      # good default giant text size: 1/2"
-        indent          = 0       # initialize while loop
-        max_width       = 0.8 * WIDTH  # Keep scaling until <= 80% of page
+        width = 9999    # Fencepost width is way too wide
+        nameYOffset = 146     # by eye, looks good for 34 pt font
+        fontsize = 36      # good default giant text size: 1/2"
+        indent = 0       # initialize while loop
+        max_width = 0.8 * WIDTH  # Keep scaling until <= 80% of page
 
         while width > max_width:
             style.fontSize = fontsize
@@ -1405,7 +1405,7 @@ class CertificateGen(object):
             paragraph_string = "MD/DO"
         else:
             paragraph_string = "AHP"
-        indent    = WIDTH - 72         # One inch in from right edge
+        indent = WIDTH - 72         # One inch in from right edge
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrap(WIDTH, HEIGHT)
         paragraph.drawOn(c, indent, 14.9 * mm)
