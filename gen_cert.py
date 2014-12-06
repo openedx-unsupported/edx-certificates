@@ -357,8 +357,11 @@ class CertificateGen(object):
         paragraph_string = "CERTIFICATE"
 
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-                                'OpenSans-Light', 19) / mm
+        width = stringWidth(
+            paragraph_string,
+            'OpenSans-Light',
+            19,
+        ) / mm
         paragraph = Paragraph("{0}".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
@@ -1302,12 +1305,14 @@ class CertificateGen(object):
             styleSourceSansPro.fontSize = 9
             styleSourceSansPro.alignment = TA_CENTER
             paragraph_string = "Authenticity of this {cert_label} can be verified at " \
-                 "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
-                 "<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>"
-            paragraph_string = paragraph_string.format(cert_label=self.cert_label_singular,
-                    verify_url=settings.CERT_VERIFY_URL,
-                    verify_path=S3_VERIFY_PATH,
-                    verify_uuid=verify_uuid)
+                "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
+                "<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>"
+            paragraph_string = paragraph_string.format(
+                cert_label=self.cert_label_singular,
+                verify_url=settings.CERT_VERIFY_URL,
+                verify_path=S3_VERIFY_PATH,
+                verify_uuid=verify_uuid,
+            )
             paragraph = Paragraph(paragraph_string, styleSourceSansPro)
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             # paragraph.drawOn(c, 0 * mm, 31 * mm)
