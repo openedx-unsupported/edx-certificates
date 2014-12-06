@@ -57,7 +57,7 @@ def main():
                                 settings.QUEUE_AUTH_PASS,
                                 settings.QUEUE_USER, settings.QUEUE_PASS)
     last_course = None  # The last course_id we generated for
-    cert = None # A CertificateGen instance for a particular course
+    cert = None  # A CertificateGen instance for a particular course
 
     while True:
 
