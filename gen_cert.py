@@ -1120,7 +1120,7 @@ class CertificateGen(object):
         """
         Crude method for determining whether or not a string contains
         characters we can't render nicely in particular fonts
-        
+
         FIXME: methods using this should consider using font_for_string()
         instead.
         """
@@ -1287,7 +1287,7 @@ class CertificateGen(object):
         # Successfully completed
         paragraph_string_interstitial = ' '
         successfully_completed = "has successfully completed{0}a free online offering of"
-        
+
         # Add distinction here
         if grade:
             tmp = self.interstitial_texts.get(grade, paragraph_string_interstitial)
