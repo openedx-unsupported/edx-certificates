@@ -1390,14 +1390,14 @@ class CertificateGen(object):
         addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
         addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
         addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-        addMapping('DroidSerif',     0, 0, 'DroidSerif')
-        addMapping('DroidSerif',     0, 1, 'DroidSerif-Italic')
-        addMapping('DroidSerif',     1, 0, 'DroidSerif-Bold')
-        addMapping('DroidSerif',     1, 1, 'DroidSerif-BoldItalic')
+        addMapping('DroidSerif', 0, 0, 'DroidSerif')
+        addMapping('DroidSerif', 0, 1, 'DroidSerif-Italic')
+        addMapping('DroidSerif', 1, 0, 'DroidSerif-Bold')
+        addMapping('DroidSerif', 1, 1, 'DroidSerif-BoldItalic')
 
-        styleArial = ParagraphStyle(name="arial",          leading=10, fontName='Arial Unicode',  allowWidows=0)
+        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode', allowWidows=0)
         styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light', allowWidows=0)
-        styleDroidSerif = ParagraphStyle(name="droidserif",     leading=10, fontName='DroidSerif',     allowWidows=0)
+        styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
 
         # This file is overlaid on the template certificate
         overlay_pdf_buffer = StringIO.StringIO()
@@ -1420,9 +1420,9 @@ class CertificateGen(object):
         # Student name
 
         # These are ordered by preference; cf. font_for_string() above
-        fontlist = [('DroidSerif',     'DroidSerif.ttf',     styleDroidSerif),
+        fontlist = [('DroidSerif', 'DroidSerif.ttf', styleDroidSerif),
                     ('OpenSans-Light', 'OpenSans-Light.ttf', styleOpenSansLight),
-                    ('Arial Unicode',  'Ariel Unicode.ttf',  styleArial)]
+                    ('Arial Unicode', 'Ariel Unicode.ttf', styleArial)]
 
         (fonttag, fontfile, style) = font_for_string(fontlist, student_name)
         style.alignment = TA_CENTER
