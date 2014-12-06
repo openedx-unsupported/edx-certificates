@@ -1500,5 +1500,3 @@ class CertificateGen(object):
             output.write(ostream)
 
         return (download_uuid, 'No Verification', download_url)
-
-
