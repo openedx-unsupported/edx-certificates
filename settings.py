@@ -31,7 +31,7 @@ CERT_DATA_FILE = 'cert-data.yml'
 
 # DEFAULTS
 DEBUG = False
-# This needs to be set on MacOS or anywhere you want logging to simply go 
+# This needs to be set on MacOS or anywhere you want logging to simply go
 # to an output file.
 LOGGING_DEV_ENV = True
 LOGGING = get_logger_config(ENV_ROOT,
