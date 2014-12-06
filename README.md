@@ -54,10 +54,15 @@ Generating sample certificates
 7. In the edx-certificates directory generate a sample certificate:
     ```shell
     cd edx-certificates
-    python create_pdfs.py -c some/course/id -n Guido
+    python create_pdfs.py \
+        --course-id 'edX/DemoX/Demo_Course' \
+        --name 'Guido' \
+        --no-upload \
+        ;
     ```
 
-    - `some/course/id` should be a valid course id found in `edx-certificates-internal/cert-data.yml`
+    - `edX/DemoX/Demo_Course` should be a valid course id found in
+      `edx-certificates-internal/cert-data.yml`
 
 Overview
 -------------------------
