@@ -2,6 +2,9 @@
 language: python
 python:
   - "2.7"
+before_install:
+  - pip install pep8
+  - pep8 --verbose
 install:
   - "pip install --allow-all-external -r requirements.txt"
 script:
