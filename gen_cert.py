@@ -200,7 +200,16 @@ class CertificateGen(object):
         # TODO remove/archive an existing certificate
         raise NotImplementedError
 
-    def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True, copy_to_webroot=settings.COPY_TO_WEB_ROOT, cert_web_root=settings.CERT_WEB_ROOT, grade=None, designation=None):
+    def create_and_upload(
+        self,
+        name,
+        upload=settings.S3_UPLOAD,
+        cleanup=True,
+        copy_to_webroot=settings.COPY_TO_WEB_ROOT,
+        cert_web_root=settings.CERT_WEB_ROOT,
+        grade=None,
+        designation=None,
+    ):
         """
         name - Full name that will be on the certificate
         upload - Upload to S3 (defaults to True)
@@ -255,7 +264,15 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         """Generate a certificate PDF, signature and validation html files.
 
         return (download_uuid, verify_uuid, download_url)
@@ -268,9 +285,24 @@ class CertificateGen(object):
             'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
-        return versionmap[self.template_version](student_name, download_dir, verify_dir, filename, grade, designation)
+        return versionmap[self.template_version](
+            student_name,
+            download_dir,
+            verify_dir,
+            filename,
+            grade,
+            designation,
+        )
 
-    def _generate_v1_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_v1_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         # A4 page size is 297mm x 210mm
 
         verify_uuid = uuid.uuid4().hex
@@ -531,7 +563,15 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_v2_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_v2_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         """
         We have a new set of certificates that we want to generate which means brand new generation of certs
         """
@@ -820,7 +860,15 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_mit_pe_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_mit_pe_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         """
         Generate the BigDataX certs
         """
@@ -999,13 +1047,24 @@ class CertificateGen(object):
             'honor': {'type': 'honorcode', 'type_name': 'Honor Code'},
         }
 
-        type_map['verified']['explanation'] = "An ID verified certificate signifies that an edX user has agreed to abide by edX's honor code and completed all of the required tasks of this course under its guidelines, as well as having their photo ID checked to verify their identity."
+        type_map['verified']['explanation'] = "An ID verified " \
+            "certificate signifies that an edX user has agreed to abide by " \
+            "edX's honor code and completed all of the required tasks of " \
+            "this course under its guidelines, as well as having their " \
+            "photo ID checked to verify their identity."
         type_map['verified']['img'] = '''
             <div class="wrapper--img">
-                <img class="img--idverified" src="/v2/static/images/logo-idverified.png" alt="ID Verified Certificate Logo" />
+                <img
+                    class="img--idverified"
+                    src="/v2/static/images/logo-idverified.png"
+                    alt="ID Verified Certificate Logo"
+                />
             </div>
         '''
-        type_map['honor']['explanation'] = "An honor code certificate signifies that an edX user has agreed to abide by edX's honor code and completed all of the required tasks of this course under its guidelines."
+        type_map['honor']['explanation'] = "An honor code certificate " \
+            "signifies that an edX user has agreed to abide by edX's honor " \
+            "code and completed all of the required tasks of this course " \
+            "under its guidelines."
         type_map['honor']['img'] = ""
 
         with open("{0}/{1}".format(TEMPLATE_DIR, valid_template)) as f:
@@ -1090,7 +1149,16 @@ class CertificateGen(object):
         # Japanese kanji seem to be >= 0x3000
         return self._contains_characters_above(string, 0x0500)
 
-    def _generate_stanford_SOA(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None, generate_date=None):
+    def _generate_stanford_SOA(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+        generate_date=None,
+    ):
         """Generate a PDF certificate, signature and html files for validation.
 
         REQUIRED PARAMETERS:
@@ -1393,9 +1461,13 @@ class CertificateGen(object):
         # Credits statement
         style.fontSize = 18
         if gets_md_cert:
-            paragraph_string = "and is awarded 30.0 <i>AMA PRA Category 1 Credits(s)</i><super><font size=13>TM.</font></super>"
+            paragraph_string = "and is awarded 30.0 " \
+                "<i>AMA PRA Category 1 Credits(s)</i>" \
+                "<super><font size=13>TM.</font></super>"
         else:
-            paragraph_string = "The activity was designated for 30.0 <i>AMA PRA Category 1 Credits(s)</i><super><font size=13>TM.</font></super>"
+            paragraph_string = "The activity was designated for 30.0 " \
+                "<i>AMA PRA Category 1 Credits(s)</i>" \
+                "<super><font size=13>TM.</font></super>"
         draw_centered_text(paragraph_string, style, 80)
 
         # MD/DO vs AHP tags
