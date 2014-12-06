@@ -109,8 +109,15 @@ def main():
                 continue
 
         try:
-            log.info('Generating certificate for {0} ({1}), in {2}, with grade {3}'.format(
-                      username.encode('utf-8'), name.encode('utf-8'), course_id.encode('utf-8'), grade))
+            log.info(
+                "Generating certificate for {username} ({name}), "
+                "in {course_id}, with grade {grade}".format(
+                    username=username.encode('utf-8'),
+                    name=name.encode('utf-8'),
+                    course_id=course_id.encode('utf-8'),
+                    grade=grade,
+                )
+            )
             (download_uuid,
              verify_uuid,
              download_url) = cert.create_and_upload(name.encode('utf-8'), grade=grade, designation=designation)
@@ -126,9 +133,18 @@ def main():
 
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            error_reason = '({0} {1}) {2}: {3} : {4}:{5}'.format(
-                        username, course_id, exc_type, e,
-                        fname, exc_tb.tb_lineno)
+            error_reason = (
+                "({username} {course_id}) "
+                "{exception_type}: {exception}: "
+                "{file_name}:{line_number}".format(
+                    username=username,
+                    course_id=course_id,
+                    exception_type=exc_type,
+                    exception=e,
+                    file_name=fname,
+                    line_number=exc_tb.tb_lineno,
+                )
+            )
 
             log.critical(
                 'An error occurred during certificate generation {reason}'.format(
