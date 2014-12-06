@@ -1019,8 +1019,8 @@ class CertificateGen(object):
         prefix = ''
         if self.template_version == 2:
             prefix = 'v2/'
-        valid_template = prefix+'valid.html'
-        verify_template = prefix+'verify.html'
+        valid_template = prefix + 'valid.html'
+        verify_template = prefix + 'verify.html'
 
         # generate signature
         signature_filename = os.path.basename(filename) + ".sig"
