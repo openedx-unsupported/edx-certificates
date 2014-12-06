@@ -37,10 +37,16 @@ def parse_args(args=sys.argv[1:]):
 
     """, formatter_class=RawTextHelpFormatter)
 
-    parser.add_argument('--aws-id', default=settings.CERT_AWS_ID,
-            help='AWS ID for write access to the S3 bucket')
-    parser.add_argument('--aws-key', default=settings.CERT_AWS_KEY,
-            help='AWS KEY for write access to the S3 bucket')
+    parser.add_argument(
+        '--aws-id',
+        default=settings.CERT_AWS_ID,
+        help='AWS ID for write access to the S3 bucket',
+    )
+    parser.add_argument(
+        '--aws-key',
+        default=settings.CERT_AWS_KEY,
+        help='AWS KEY for write access to the S3 bucket',
+    )
     return parser.parse_args()
 
 
@@ -124,18 +130,23 @@ def main():
                         username, course_id, exc_type, e,
                         fname, exc_tb.tb_lineno)
 
-            log.critical('An error occurred during certificate generation '
-                    '{0}'.format(error_reason))
+            log.critical(
+                'An error occurred during certificate generation {reason}'.format(
+                    reason=error_reason,
+                )
+            )
 
-            xqueue_reply = {'xqueue_header': json.dumps(xqueue_header),
-                    'xqueue_body': json.dumps({
-                        'error': 'There was an error processing'
-                        'the certificate request : {0}'.format(e),
-                        'username': username,
-                        'course_id': course_id,
-                        'error_reason': error_reason,
-                        })
-                    }
+            xqueue_reply = {
+                'xqueue_header': json.dumps(xqueue_header),
+                'xqueue_body': json.dumps({
+                    'error': 'There was an error processing the certificate request: {error}'.format(
+                        error=e,
+                    ),
+                    'username': username,
+                    'course_id': course_id,
+                    'error_reason': error_reason,
+                }),
+            }
             manager.respond(xqueue_reply)
             if settings.DEBUG:
                 raise
@@ -143,15 +154,17 @@ def main():
                 continue
 
         # post result back to the LMS
-        xqueue_reply = {'xqueue_header': json.dumps(xqueue_header),
-                'xqueue_body': json.dumps({
-                    'action': action,
-                    'download_uuid': download_uuid,
-                    'verify_uuid': verify_uuid,
-                    'username': username,
-                    'course_id': course_id,
-                    'url': download_url,
-                    })}
+        xqueue_reply = {
+            'xqueue_header': json.dumps(xqueue_header),
+            'xqueue_body': json.dumps({
+                'action': action,
+                'download_uuid': download_uuid,
+                'verify_uuid': verify_uuid,
+                'username': username,
+                'course_id': course_id,
+                'url': download_url,
+            }),
+        }
         log.info("Posting result to the LMS: {0}".format(xqueue_reply))
         manager.respond(xqueue_reply)
 

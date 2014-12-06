@@ -343,8 +343,11 @@ class CertificateGen(object):
         paragraph_string = "Issued {0}".format(self.issued_date)
 
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-            'OpenSans-LightItalic', 12) / mm
+        width = stringWidth(
+            paragraph_string,
+            'OpenSans-LightItalic',
+            12,
+        ) / mm
         paragraph = Paragraph("<i>{0}</i>".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
