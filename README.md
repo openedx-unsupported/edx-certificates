@@ -51,8 +51,7 @@ python create_pdfs.py -c some/course/id -n Guido
 ```
 _some/course/id should be a valid course id found in `edx-certificates-internal/cert-data.yml_
 
-Overview
--------------------------
+## Behavioral Overview
 
 The `certificate_agent.py` script will continuously monitor a queue for 
 certificate generation, it does the following:
@@ -77,13 +76,13 @@ indicating there was a problem.
 
 TODO
 
-## Logging:
+## Logging
 
 Logging is setup similar to Django logging, logsettings.py
 will generate a configuration dict for logging where in a production
 environment all log messages are sent through rsyslog
 
-## Tests:
+## Tests
 
 To run the test suite:
 
@@ -119,3 +118,20 @@ to install necessary requirements.
 
 In addition, you must install `gpg`.  See [gnugp](http://www.gnupg.org/)
 for instructions.
+
+## Roadmap/TODO/Future Features
+
+* Kill XQueue - nobody really likes xqueue. jarv and e0d and others have
+  expressed a desire to see it replaced by smarter intermediate layers that use
+  celery task queues or similar. This repo should be sufficiently modular that
+  only queue.py should need to be changed to work this way.
+
+* Paralellism - Certification should be embarassingly parallel, except we deal
+  with xqueue, which lacks atomic pop(). If we ever refactor queue.py to use
+  raw celery queues or similar, we should also actualize parallel
+  certification.
+
+* Dynamic scaling and placement of signatures from scanned bitmaps, making cert
+  rendering completely dynamic and freeing us from the tyranny of template
+  preparation. (Freeing us from the tyranny of configuration preparation would
+  come in a future PR.)
