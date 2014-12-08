@@ -117,6 +117,8 @@ CERT_URL = CERT_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
 CERT_DOWNLOAD_URL = CERT_DOWNLOAD_URL or 'https://{}.s3.amazonaws.com'.format(CERT_BUCKET)
 CERT_VERIFY_URL = CERT_VERIFY_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
 
+DEFAULT_ORG = "Some Institution"
+
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
         ENV_TOKENS = json.load(env_file)
@@ -126,6 +128,7 @@ if os.path.isfile(ENV_ROOT / "auth.json"):
     QUEUE_AUTH_PASS = ENV_TOKENS.get('QUEUE_AUTH_PASS', '')
     CERT_AWS_KEY = ENV_TOKENS.get('CERT_AWS_KEY', CERT_AWS_KEY)
     CERT_AWS_ID = ENV_TOKENS.get('CERT_AWS_ID', CERT_AWS_ID)
+    DEFAULT_ORG = ENV_TOKENS.get('DEFAULT_ORG', DEFAULT_ORG)
 
 
 # Use the custom CERT_PRIVATE_DIR for paths to the
