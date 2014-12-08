@@ -1,8 +1,9 @@
-import requests
 import json
-from requests.auth import HTTPBasicAuth
-from requests.exceptions import ConnectionError, Timeout
 import logging
+
+import requests
+from requests.exceptions import ConnectionError, Timeout
+
 
 log = logging.getLogger(__name__)
 
@@ -32,8 +33,8 @@ class XQueuePullManager(object):
         """
 
         try:
-            self.session = requests.session(auth=HTTPBasicAuth(
-                self.auth_user, self.auth_pass))
+            self.session = requests.Session()
+            self.session.auth = (self.auth_user, self.auth_pass)
             request = self.session.post('{0}/xqueue/login/'.format(self.url),
                                         data={'username': self.queue_user,
                                               'password': self.queue_pass})
