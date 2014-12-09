@@ -1050,11 +1050,12 @@ class CertificateGen(object):
             'honor': {'type': 'honorcode', 'type_name': 'Honor Code'},
         }
 
-        type_map['verified']['explanation'] = "An ID verified " \
-            "certificate signifies that an edX user has agreed to abide by " \
-            "edX's honor code and completed all of the required tasks of " \
-            "this course under its guidelines, as well as having their " \
-            "photo ID checked to verify their identity."
+        type_map['verified']['explanation'] = (
+            "An ID verified certificate signifies that an edX user has "
+            "agreed to abide by edX's honor code and completed all of the "
+            "required tasks of this course under its guidelines, as well "
+            "as having their photo ID checked to verify their identity."
+        )
         type_map['verified']['img'] = '''
             <div class="wrapper--img">
                 <img
@@ -1064,10 +1065,11 @@ class CertificateGen(object):
                 />
             </div>
         '''
-        type_map['honor']['explanation'] = "An honor code certificate " \
-            "signifies that an edX user has agreed to abide by edX's honor " \
-            "code and completed all of the required tasks of this course " \
-            "under its guidelines."
+        type_map['honor']['explanation'] = (
+            "An honor code certificate signifies that an edX user has "
+            "agreed to abide by edX's honor code and completed all of the "
+            "required tasks of this course under its guidelines."
+        )
         type_map['honor']['img'] = ""
 
         with open("{0}/{1}".format(TEMPLATE_DIR, valid_template)) as f:
@@ -1203,10 +1205,26 @@ class CertificateGen(object):
         addMapping('SourceSansPro-Light', 1, 1, 'SourceSansPro-SemiboldItalic')
         addMapping('SourceSansPro-Regular', 0, 0, 'SourceSansPro-Regular')
 
-        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light')
-        styleSourceSansPro = ParagraphStyle(name="sourcesans-regular", leading=10, fontName='SourceSansPro-Regular')
-        styleSourceSansProLight = ParagraphStyle(name="sourcesans-light", leading=10, fontName='SourceSansPro-Light')
+        styleArial = ParagraphStyle(
+            name="arial",
+            leading=10,
+            fontName='Arial Unicode',
+        )
+        styleOpenSansLight = ParagraphStyle(
+            name="opensans-light",
+            leading=10,
+            fontName='OpenSans-Light',
+        )
+        styleSourceSansPro = ParagraphStyle(
+            name="sourcesans-regular",
+            leading=10,
+            fontName='SourceSansPro-Regular',
+        )
+        styleSourceSansProLight = ParagraphStyle(
+            name="sourcesans-light",
+            leading=10,
+            fontName='SourceSansPro-Light',
+        )
 
         # Text is overlayed top to bottom
         #   * Issued date (top right corner)
@@ -1304,9 +1322,11 @@ class CertificateGen(object):
         if verify_me_p:
             styleSourceSansPro.fontSize = 9
             styleSourceSansPro.alignment = TA_CENTER
-            paragraph_string = "Authenticity of this {cert_label} can be verified at " \
-                "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
+            paragraph_string = (
+                "Authenticity of this {cert_label} can be verified at "
+                "<a href='{verify_url}/{verify_path}/{verify_uuid}'>"
                 "<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>"
+            )
             paragraph_string = paragraph_string.format(
                 cert_label=self.cert_label_singular,
                 verify_url=settings.CERT_VERIFY_URL,
@@ -1376,7 +1396,12 @@ class CertificateGen(object):
         WIDTH, HEIGHT = landscape(letter)   # values in points, multiply by mm
 
         download_uuid = uuid.uuid4().hex
-        download_url = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(BUCKET, S3_CERT_PATH, download_uuid, filename)
+        download_url = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(
+            BUCKET,
+            S3_CERT_PATH,
+            download_uuid,
+            filename,
+        )
         filename = os.path.join(download_dir, download_uuid, filename)
         self._ensure_dir(filename)
 
