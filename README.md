@@ -140,11 +140,6 @@ To run the test suite:
 
 ## Roadmap/TODO/Future Features
 
-* Kill XQueue - nobody really likes xqueue. jarv and e0d and others have
-  expressed a desire to see it replaced by smarter intermediate layers that use
-  celery task queues or similar. This repo should be sufficiently modular that
-  only queue.py should need to be changed to work this way.
-
 * Paralellism - Certification should be embarassingly parallel, except we deal
   with xqueue, which lacks atomic pop(). If we ever refactor queue.py to use
   raw celery queues or similar, we should also actualize parallel
@@ -154,3 +149,9 @@ To run the test suite:
   rendering completely dynamic and freeing us from the tyranny of template
   preparation. (Freeing us from the tyranny of configuration preparation would
   come in a future PR.)
+
+* Kill XQueue - nobody really likes xqueue. Several ops people have expressed a
+  desire to see it replaced by smarter intermediate layers that use celery task
+  queues or similar. This repo should be sufficiently modular that only
+  queue.py should need to be changed to work this way.
+
