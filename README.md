@@ -110,14 +110,28 @@ To run the test suite:
         nosetests tests.gen_cert_test:test_cert_gen
 
 
-**Troubleshooting**: If tests fail with errors, try running:
+**Troubleshooting**: 
 
-    pip install -r requirements.txt
+  * If tests fail with errors, try running:
+     ```shell
+     pip install -r requirements.txt
+     ```
+    to install necessary requirements.  
 
-to install necessary requirements.  
+  * If your verification pages are wrong or gnupg starts throwing errors, you
+    may not have `gpg` installed. See [gnupg](http://www.gnupg.org/) for help
+    installing.
 
-In addition, you must install `gpg`.  See [gnugp](http://www.gnupg.org/)
-for instructions.
+  * If you run `create_pdf.py` and get unicode errors, you may need to set the
+    LC_ALL environment variable:
+    ```shell
+    export LC_ALL=en_us.UTF-8
+    ```
+
+  * If you are running on a linux virtual machine being hosted by MacOS, and
+    your git checkout is being NFS mounted, you may have library import errors
+    because of Mac case-folding semantic preservation by Python's pathlib. Try
+    doing a git checkout inside the vm that isn't exported from MacOS.
 
 ## Roadmap/TODO/Future Features
 
