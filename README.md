@@ -64,6 +64,11 @@ Generating sample certificates
     - `edX/DemoX/Demo_Course` should be a valid course id found in
       `${CERT_PRIVATE_DIR}`
 
+    - View all options with:
+        ```shell
+        python create_pdfs.py --help
+        ```
+
 Overview
 -------------------------
 
