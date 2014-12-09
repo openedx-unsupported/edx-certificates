@@ -40,7 +40,7 @@ Generating sample certificates
     aws_secret_access_key = ****
     ```
 
-    - *Or* for edX use the `boto.example` in the edx-certificates-interal repo:
+    - *Or* for edX use the `boto.example` in the `${CERT_PRIVATE_DIR}` repo:
 
         ```shell
         cp edx-certificates-internal/boto.example ~/.boto
@@ -62,7 +62,7 @@ Generating sample certificates
     ```
 
     - `edX/DemoX/Demo_Course` should be a valid course id found in
-      `edx-certificates-internal/cert-data.yml`
+      `${CERT_PRIVATE_DIR}`
 
 Overview
 -------------------------
