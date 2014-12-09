@@ -69,8 +69,7 @@ Generating sample certificates
         python create_pdfs.py --help
         ```
 
-Overview
--------------------------
+## Behavioral Overview
 
 The `certificate_agent.py` script will continuously monitor a queue for 
 certificate generation, it does the following:
@@ -95,13 +94,13 @@ indicating there was a problem.
 
 TODO
 
-## Logging:
+## Logging
 
 Logging is setup similar to Django logging, logsettings.py
 will generate a configuration dict for logging where in a production
 environment all log messages are sent through rsyslog
 
-## Tests:
+## Tests
 
 To run the test suite:
 
@@ -129,11 +128,48 @@ To run the test suite:
         nosetests tests.gen_cert_test:test_cert_gen
 
 
-**Troubleshooting**: If tests fail with errors, try running:
+**Troubleshooting**: 
 
-    pip install -r requirements.txt
+  * If tests fail with errors, try running:
+     ```shell
+     pip install -r requirements.txt
+     ```
+    to install necessary requirements.  
 
-to install necessary requirements.  
+  * If your verification pages are wrong or gnupg starts throwing errors, you
+    may not have `gpg` installed. See [gnupg](http://www.gnupg.org/) for help
+    installing.
 
-In addition, you must install `gpg`.  See [gnugp](http://www.gnupg.org/)
-for instructions.
+  * If you run `create_pdf.py` and get unicode errors, you may need to set the
+    LC_ALL environment variable. To set it permanently, like from your 
+    ~/.bashrc, try:
+    ```shell
+    export LC_ALL=en_US.UTF-8
+    ```
+    But if you only want to set it for one test run, you could say:
+    ```shell
+    LC_ALL=en_US.UTF-8 python ./create_pdf.py
+    ```
+
+  * If you are running on a Linux virtual machine being hosted by MacOS, and
+    your git checkout is being NFS mounted, you may have library import errors
+    because of Mac case-folding semantic preservation by Python's pathlib. Try
+    doing a git checkout inside the vm that isn't exported from MacOS.
+
+## Roadmap/TODO/Future Features
+
+* Paralellism - Certification should be embarassingly parallel, except we deal
+  with xqueue, which lacks atomic pop(). If we ever refactor queue.py to use
+  raw celery queues or similar, we should also actualize parallel
+  certification.
+
+* Dynamic scaling and placement of signatures from scanned bitmaps, making cert
+  rendering completely dynamic and freeing us from the tyranny of template
+  preparation. (Freeing us from the tyranny of configuration preparation would
+  come in a future PR.)
+
+* Kill XQueue - nobody really likes xqueue. Several ops people have expressed a
+  desire to see it replaced by smarter intermediate layers that use celery task
+  queues or similar. This repo should be sufficiently modular that only
+  queue.py should need to be changed to work this way.
+
