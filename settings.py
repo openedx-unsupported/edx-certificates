@@ -82,7 +82,7 @@ CERT_VERIFY_URL = ''
 if os.path.isfile(ENV_ROOT / "env.json"):
     with open(ENV_ROOT / "env.json") as env_file:
         ENV_TOKENS = json.load(env_file)
-    TMP_GEN_DIR = ENV_TOKENS.get('TMP_GEN_DIR', '/var/tmp')
+    TMP_GEN_DIR = ENV_TOKENS.get('TMP_GEN_DIR', '/tmp/certificates/')
     QUEUE_NAME = ENV_TOKENS.get('QUEUE_NAME', 'test-pull')
     QUEUE_URL = ENV_TOKENS.get('QUEUE_URL', 'https://stage-xqueue.edx.org')
     CERT_GPG_DIR = ENV_TOKENS.get('CERT_GPG_DIR', CERT_GPG_DIR)
