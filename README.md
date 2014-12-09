@@ -123,12 +123,17 @@ To run the test suite:
     installing.
 
   * If you run `create_pdf.py` and get unicode errors, you may need to set the
-    LC_ALL environment variable:
+    LC_ALL environment variable. To set it permanently, like from your 
+    ~/.bashrc, try:
     ```shell
-    export LC_ALL=en_us.UTF-8
+    export LC_ALL=en_US.UTF-8
+    ```
+    But if you only want to set it for one test run, you could say:
+    ```shell
+    LC_ALL=en_US.UTF-8 python ./create_pdf.py
     ```
 
-  * If you are running on a linux virtual machine being hosted by MacOS, and
+  * If you are running on a Linux virtual machine being hosted by MacOS, and
     your git checkout is being NFS mounted, you may have library import errors
     because of Mac case-folding semantic preservation by Python's pathlib. Try
     doing a git checkout inside the vm that isn't exported from MacOS.
