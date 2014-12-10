@@ -6,12 +6,15 @@ before_install:
   - pip install pep8
   - pep8 --verbose
 install:
-  - "pip install --allow-all-external -r requirements.txt"
+  - pip install --allow-all-external -r requirements.txt
+  - pip install coverage
 script:
   - |
     curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt -o /var/tmp/key.txt
     curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-key-ownertrust.txt -o /var/tmp/trust.txt
     /usr/bin/gpg --import /var/tmp/key.txt
     /usr/bin/gpg --import-ownertrust /var/tmp/trust.txt
-    nosetests
-    #nosetests tests.gen_cert_test:test_cert_gen
+    nosetests --with-coverage
+after_success:
+  - pip install coveralls
+  - coveralls
