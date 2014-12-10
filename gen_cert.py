@@ -262,10 +262,6 @@ class CertificateGen(object):
         self.cert_label_plural = cert_data.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
         self.course_association_text = cert_data.get('COURSE_ASSOCIATION_TEXT', 'a course of study')
 
-    def delete_certificate(self, delete_download_uuid, delete_verify_uuid):
-        # TODO remove/archive an existing certificate
-        raise NotImplementedError
-
     def create_and_upload(
         self,
         name,
