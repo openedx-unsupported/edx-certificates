@@ -15,7 +15,6 @@ script:
     /usr/bin/gpg --import /var/tmp/key.txt
     /usr/bin/gpg --import-ownertrust /var/tmp/trust.txt
     nosetests --with-coverage
-    #nosetests tests.gen_cert_test:test_cert_gen
 after_success:
   - pip install coveralls
   - coveralls
