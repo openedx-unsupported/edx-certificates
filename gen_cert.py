@@ -200,7 +200,16 @@ class CertificateGen(object):
         # TODO remove/archive an existing certificate
         raise NotImplementedError
 
-    def create_and_upload(self, name, upload=settings.S3_UPLOAD, cleanup=True, copy_to_webroot=settings.COPY_TO_WEB_ROOT, cert_web_root=settings.CERT_WEB_ROOT, grade=None, designation=None):
+    def create_and_upload(
+        self,
+        name,
+        upload=settings.S3_UPLOAD,
+        cleanup=True,
+        copy_to_webroot=settings.COPY_TO_WEB_ROOT,
+        cert_web_root=settings.CERT_WEB_ROOT,
+        grade=None,
+        designation=None,
+    ):
         """
         name - Full name that will be on the certificate
         upload - Upload to S3 (defaults to True)
@@ -255,7 +264,15 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         """Generate a certificate PDF, signature and validation html files.
 
         return (download_uuid, verify_uuid, download_url)
@@ -268,9 +285,24 @@ class CertificateGen(object):
             'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
-        return versionmap[self.template_version](student_name, download_dir, verify_dir, filename, grade, designation)
+        return versionmap[self.template_version](
+            student_name,
+            download_dir,
+            verify_dir,
+            filename,
+            grade,
+            designation,
+        )
 
-    def _generate_v1_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_v1_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         # A4 page size is 297mm x 210mm
 
         verify_uuid = uuid.uuid4().hex
@@ -315,7 +347,7 @@ class CertificateGen(object):
         LEFT_INDENT = 49  # mm from the left side to write the text
         RIGHT_INDENT = 49  # mm from the right side for the CERTIFICATE
 
-        ####### CERTIFICATE
+        # CERTIFICATE
 
         styleOpenSansLight.fontSize = 19
         styleOpenSansLight.leading = 10
@@ -325,14 +357,17 @@ class CertificateGen(object):
         paragraph_string = "CERTIFICATE"
 
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-                                'OpenSans-Light', 19) / mm
+        width = stringWidth(
+            paragraph_string,
+            'OpenSans-Light',
+            19,
+        ) / mm
         paragraph = Paragraph("{0}".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
 
-        ####### Issued ..
+        # Issued ..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
@@ -343,14 +378,17 @@ class CertificateGen(object):
         paragraph_string = "Issued {0}".format(self.issued_date)
 
         # Right justified so we compute the width
-        width = stringWidth(paragraph_string,
-            'OpenSans-LightItalic', 12) / mm
+        width = stringWidth(
+            paragraph_string,
+            'OpenSans-LightItalic',
+            12,
+        ) / mm
         paragraph = Paragraph("<i>{0}</i>".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
 
-        ####### This is to certify..
+        # This is to certify..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
@@ -363,7 +401,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
 
-        #######  Student name
+        #  Student name
 
         # default is to use the DejaVu font for the name,
         # will fall back to Arial if there are
@@ -396,7 +434,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, nameYOffset * mm)
 
-        ####### Successfully completed
+        # Successfully completed
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
@@ -415,9 +453,9 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
 
-        ###### Course name
+        # Course name
 
-        #styleOpenSans.fontName = 'OpenSans-BoldItalic'
+        # styleOpenSans.fontName = 'OpenSans-BoldItalic'
         if 'PH207x' in self.course:
             styleOpenSans.fontSize = 18
             styleOpenSans.leading = 21
@@ -457,7 +495,7 @@ class CertificateGen(object):
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, 99 * mm)
 
-        ###### A course of study..
+        # A course of study..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.textColor = colors.Color(
@@ -473,7 +511,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 78 * mm)
 
-        ###### Honor code
+        # Honor code
 
         styleOpenSansLight.fontSize = 7
         styleOpenSansLight.leading = 10
@@ -494,8 +532,6 @@ class CertificateGen(object):
 
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, 0 * mm, 28 * mm)
-
-        ########
 
         c.showPage()
         c.save()
@@ -530,7 +566,15 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_v2_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_v2_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         """
         We have a new set of certificates that we want to generate which means brand new generation of certs
         """
@@ -565,21 +609,17 @@ class CertificateGen(object):
         #   * "a course of study.."
         #   * honor code url at the bottom
 
-        ########
-        #
         # New things below
-        #
-        ########
 
-        #### STYLE: typeface assets
+        # STYLE: typeface assets
         addMapping('AvenirNext-Regular', 0, 0, 'AvenirNext-Regular')
         addMapping('AvenirNext-DemiBold', 1, 0, 'AvenirNext-DemiBold')
 
-        #### STYLE: grid/layout
+        # STYLE: grid/layout
         LEFT_INDENT = 23  # mm from the left side to write the text
         MAX_WIDTH = 150  # maximum width on the content in the cert, used for wrapping
 
-        #### STYLE: template-wide typography settings
+        # STYLE: template-wide typography settings
         style_type_metacopy_size = 13
         style_type_metacopy_leading = 10
 
@@ -597,11 +637,11 @@ class CertificateGen(object):
         style_type_course_small_size = 16
         style_type_course_small_leading = 20
 
-        #### STYLE: template-wide color settings
+        # STYLE: template-wide color settings
         style_color_metadata = colors.Color(0.541176, 0.509804, 0.560784)
         style_color_name = colors.Color(0.000000, 0.000000, 0.000000)
 
-        #### STYLE: positioning
+        # STYLE: positioning
         pos_metacopy_title_y = 120
         pos_metacopy_achivement_y = 88
         pos_metacopy_org_y = 50
@@ -620,17 +660,15 @@ class CertificateGen(object):
         pos_footer_date_x = LEFT_INDENT
         pos_footer_date_y = 20
 
-        #### STYLE: verified settings
+        # STYLE: verified settings
         v_style_color_course = colors.Color(0.701961, 0.231373, 0.400000)
 
-        #### HTML Parser ####
+        # HTML Parser ####
         # Since the final string is HTML in a PDF we need to un-escape the html
         # when calculating the string width.
         html = HTMLParser()
 
-        #### ================== ####
-
-        #### ELEM: Metacopy
+        # ELEM: Metacopy
         styleAvenirNext = ParagraphStyle(name="avenirnext-regular", fontName='AvenirNext-Regular')
 
         styleAvenirNext.alignment = TA_LEFT
@@ -638,7 +676,7 @@ class CertificateGen(object):
         styleAvenirNext.leading = style_type_metacopy_leading
         styleAvenirNext.textColor = style_color_metadata
 
-        #### ELEM: Metacopy - Title: This is to certify that
+        # ELEM: Metacopy - Title: This is to certify that
         if self.template_type == 'verified':
             y_offset = pos_metacopy_title_y
 
@@ -648,9 +686,7 @@ class CertificateGen(object):
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        #### ================== ####
-
-        ####### ELEM: Student Name
+        # ELEM: Student Name
         # default is to use Avenir for the name,
         # will fall back to Arial if there are
         # unusual characters
@@ -670,7 +706,7 @@ class CertificateGen(object):
             html_student_name.decode('utf-8'),
             'AvenirNext-DemiBold', style_type_name_small_size) / mm
 
-        #TODO: get all strings working reshaped and handling bi-directional strings
+        # TODO: get all strings working reshaped and handling bi-directional strings
         paragraph_string = arabic_reshaper.reshape(student_name.decode('utf-8'))
         paragraph_string = get_display(paragraph_string)
 
@@ -707,9 +743,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        #### ================== ####
-
-        ##### ELEM: Metacopy - Achievement: successfully completed and received a passing grade in
+        # ELEM: Metacopy - Achievement: successfully completed and received a passing grade in
         y_offset = pos_metacopy_achivement_y
 
         paragraph_string = 'successfully completed and received a passing grade in'
@@ -718,9 +752,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        #### ================== ####
-
-        ##### ELEM: Course Name
+        # ELEM: Course Name
         y_offset_larger = pos_course_y
         y_offset_smaller = pos_course_small_y
 
@@ -756,9 +788,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        #### ================== ####
-
-        #### ELEM: Metacopy - Org: a course of study...
+        # ELEM: Metacopy - Org: a course of study...
         y_offset = pos_metacopy_org_y
         paragraph_string = "{2} offered by {0}" \
                            ", an online learning<br /><br />initiative of " \
@@ -769,15 +799,13 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        #### ================== ####
-
-        ##### ELEM: Footer
+        # ELEM: Footer
         styleAvenirFooter = ParagraphStyle(name="avenirnext-demi", fontName='AvenirNext-DemiBold')
 
         styleAvenirFooter.alignment = TA_LEFT
         styleAvenirFooter.fontSize = style_type_footer_size
 
-        ##### ELEM: Footer - Issued on Date
+        # ELEM: Footer - Issued on Date
         x_offset = pos_footer_date_x
         y_offset = pos_footer_date_y
         paragraph_string = "Issued {0}".format(self.issued_date)
@@ -787,11 +815,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        ########
-
-        #### ================== ####
-
-        ##### ELEM: Footer - Verify Authenticity URL
+        # ELEM: Footer - Verify Authenticity URL
         y_offset = pos_footer_url_y
         x_offset = pos_footer_url_x
         paragraph_string = "<a href='https://{bucket}/{verify_path}/{verify_uuid}'>" \
@@ -839,7 +863,15 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_mit_pe_certificate(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None):
+    def _generate_mit_pe_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+    ):
         """
         Generate the BigDataX certs
         """
@@ -861,11 +893,11 @@ class CertificateGen(object):
         c = canvas.Canvas(overlay_pdf_buffer)
         c.setPageSize((WIDTH * mm, HEIGHT * mm))
 
-        #### STYLE: grid/layout
+        # STYLE: grid/layout
         LEFT_INDENT = 10  # mm from the left side to write the text
         MAX_WIDTH = 260  # maximum width on the content in the cert, used for wrapping
 
-        #### STYLE: template-wide typography settings
+        # STYLE: template-wide typography settings
         style_type_name_size = 36
         style_type_name_leading = 53
         style_type_name_med_size = 22
@@ -873,21 +905,21 @@ class CertificateGen(object):
         style_type_name_small_size = 18
         style_type_name_small_leading = 21
 
-        #### STYLE: template-wide color settings
+        # STYLE: template-wide color settings
         style_color_name = colors.Color(0.000000, 0.000000, 0.000000)
 
-        #### STYLE: positioning
+        # STYLE: positioning
         pos_name_y = 137
         pos_name_med_y = 142
         pos_name_small_y = 140
         pos_name_no_wrap_offset_y = 2
 
-        #### HTML Parser ####
+        # HTML Parser
         # Since the final string is HTML in a PDF we need to un-escape the html
         # when calculating the string width.
         html = HTMLParser()
 
-        ####### ELEM: Student Name
+        # ELEM: Student Name
         # default is to use Garamond for the name,
         # will fall back to Arial if there are
         # unusual characters
@@ -937,7 +969,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
-        ## Generate the final PDF
+        # Generate the final PDF
         c.showPage()
         c.save()
 
@@ -987,8 +1019,8 @@ class CertificateGen(object):
         prefix = ''
         if self.template_version == 2:
             prefix = 'v2/'
-        valid_template = prefix+'valid.html'
-        verify_template = prefix+'verify.html'
+        valid_template = prefix + 'valid.html'
+        verify_template = prefix + 'verify.html'
 
         # generate signature
         signature_filename = os.path.basename(filename) + ".sig"
@@ -1018,13 +1050,26 @@ class CertificateGen(object):
             'honor': {'type': 'honorcode', 'type_name': 'Honor Code'},
         }
 
-        type_map['verified']['explanation'] = "An ID verified certificate signifies that an edX user has agreed to abide by edX's honor code and completed all of the required tasks of this course under its guidelines, as well as having their photo ID checked to verify their identity."
+        type_map['verified']['explanation'] = (
+            "An ID verified certificate signifies that an edX user has "
+            "agreed to abide by edX's honor code and completed all of the "
+            "required tasks of this course under its guidelines, as well "
+            "as having their photo ID checked to verify their identity."
+        )
         type_map['verified']['img'] = '''
             <div class="wrapper--img">
-                <img class="img--idverified" src="/v2/static/images/logo-idverified.png" alt="ID Verified Certificate Logo" />
+                <img
+                    class="img--idverified"
+                    src="/v2/static/images/logo-idverified.png"
+                    alt="ID Verified Certificate Logo"
+                />
             </div>
         '''
-        type_map['honor']['explanation'] = "An honor code certificate signifies that an edX user has agreed to abide by edX's honor code and completed all of the required tasks of this course under its guidelines."
+        type_map['honor']['explanation'] = (
+            "An honor code certificate signifies that an edX user has "
+            "agreed to abide by edX's honor code and completed all of the "
+            "required tasks of this course under its guidelines."
+        )
         type_map['honor']['img'] = ""
 
         with open("{0}/{1}".format(TEMPLATE_DIR, valid_template)) as f:
@@ -1077,7 +1122,7 @@ class CertificateGen(object):
         """
         Crude method for determining whether or not a string contains
         characters we can't render nicely in particular fonts
-        
+
         FIXME: methods using this should consider using font_for_string()
         instead.
         """
@@ -1109,7 +1154,16 @@ class CertificateGen(object):
         # Japanese kanji seem to be >= 0x3000
         return self._contains_characters_above(string, 0x0500)
 
-    def _generate_stanford_SOA(self, student_name, download_dir, verify_dir, filename=TARGET_FILENAME, grade=None, designation=None, generate_date=None):
+    def _generate_stanford_SOA(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+        generate_date=None,
+    ):
         """Generate a PDF certificate, signature and html files for validation.
 
         REQUIRED PARAMETERS:
@@ -1151,10 +1205,26 @@ class CertificateGen(object):
         addMapping('SourceSansPro-Light', 1, 1, 'SourceSansPro-SemiboldItalic')
         addMapping('SourceSansPro-Regular', 0, 0, 'SourceSansPro-Regular')
 
-        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light')
-        styleSourceSansPro = ParagraphStyle(name="sourcesans-regular", leading=10, fontName='SourceSansPro-Regular')
-        styleSourceSansProLight = ParagraphStyle(name="sourcesans-light", leading=10, fontName='SourceSansPro-Light')
+        styleArial = ParagraphStyle(
+            name="arial",
+            leading=10,
+            fontName='Arial Unicode',
+        )
+        styleOpenSansLight = ParagraphStyle(
+            name="opensans-light",
+            leading=10,
+            fontName='OpenSans-Light',
+        )
+        styleSourceSansPro = ParagraphStyle(
+            name="sourcesans-regular",
+            leading=10,
+            fontName='SourceSansPro-Regular',
+        )
+        styleSourceSansProLight = ParagraphStyle(
+            name="sourcesans-light",
+            leading=10,
+            fontName='SourceSansPro-Light',
+        )
 
         # Text is overlayed top to bottom
         #   * Issued date (top right corner)
@@ -1168,9 +1238,9 @@ class CertificateGen(object):
         standardgray = colors.Color(0.302, 0.306, 0.318)
 
         LEFT_INDENT = 55  # mm from the left side
-        DATE_INDENT = 45 # mm from the right side for Date
+        DATE_INDENT = 45  # mm from the right side for Date
 
-        ####### Issued ..
+        # Issued ..
         style = styleSourceSansProLight
         style.fontSize = 12
         style.textColor = standardgray
@@ -1190,7 +1260,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (WIDTH - DATE_INDENT - width) * mm, 159 * mm)
 
-        ####### Certify That
+        # Certify That
         styleSourceSansPro.fontSize = 14
         styleSourceSansPro.textColor = standardgray
         styleSourceSansPro.alignment = TA_LEFT
@@ -1202,7 +1272,7 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 135 * mm)
 
-        #######  Student name
+        #  Student name
         # default is to use the DejaVu font for the name, will fall back
         # to Arial if there are unusual characters
         style = styleOpenSansLight
@@ -1232,10 +1302,10 @@ class CertificateGen(object):
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, nameYOffset * mm)
 
-        ####### Successfully completed
+        # Successfully completed
         paragraph_string_interstitial = ' '
         successfully_completed = "has successfully completed{0}a free online offering of"
-        
+
         # Add distinction here
         if grade:
             tmp = self.interstitial_texts.get(grade, paragraph_string_interstitial)
@@ -1248,23 +1318,26 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 104.5 * mm)
 
-        ###### Honor code
+        # Honor code
         if verify_me_p:
             styleSourceSansPro.fontSize = 9
             styleSourceSansPro.alignment = TA_CENTER
-            paragraph_string = "Authenticity of this {cert_label} can be verified at " \
-                 "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
-                 "<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>"
-            paragraph_string = paragraph_string.format(cert_label=self.cert_label_singular,
-                    verify_url=settings.CERT_VERIFY_URL,
-                    verify_path=S3_VERIFY_PATH,
-                    verify_uuid=verify_uuid)
+            paragraph_string = (
+                "Authenticity of this {cert_label} can be verified at "
+                "<a href='{verify_url}/{verify_path}/{verify_uuid}'>"
+                "<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>"
+            )
+            paragraph_string = paragraph_string.format(
+                cert_label=self.cert_label_singular,
+                verify_url=settings.CERT_VERIFY_URL,
+                verify_path=S3_VERIFY_PATH,
+                verify_uuid=verify_uuid,
+            )
             paragraph = Paragraph(paragraph_string, styleSourceSansPro)
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            #paragraph.drawOn(c, 0 * mm, 31 * mm)
+            # paragraph.drawOn(c, 0 * mm, 31 * mm)
             paragraph.drawOn(c, -275 * mm, 31 * mm)
 
-        ########
         c.showPage()
         c.save()
 
@@ -1323,8 +1396,13 @@ class CertificateGen(object):
         WIDTH, HEIGHT = landscape(letter)   # values in points, multiply by mm
 
         download_uuid = uuid.uuid4().hex
-        download_url  = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(BUCKET, S3_CERT_PATH, download_uuid, filename)
-        filename      = os.path.join(download_dir, download_uuid, filename)
+        download_url = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(
+            BUCKET,
+            S3_CERT_PATH,
+            download_uuid,
+            filename,
+        )
+        filename = os.path.join(download_dir, download_uuid, filename)
         self._ensure_dir(filename)
 
         # Manipulate student titles
@@ -1342,14 +1420,14 @@ class CertificateGen(object):
         addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
         addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
         addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-        addMapping('DroidSerif',     0, 0, 'DroidSerif')
-        addMapping('DroidSerif',     0, 1, 'DroidSerif-Italic')
-        addMapping('DroidSerif',     1, 0, 'DroidSerif-Bold')
-        addMapping('DroidSerif',     1, 1, 'DroidSerif-BoldItalic')
+        addMapping('DroidSerif', 0, 0, 'DroidSerif')
+        addMapping('DroidSerif', 0, 1, 'DroidSerif-Italic')
+        addMapping('DroidSerif', 1, 0, 'DroidSerif-Bold')
+        addMapping('DroidSerif', 1, 1, 'DroidSerif-BoldItalic')
 
-        styleArial         = ParagraphStyle(name="arial",          leading=10, fontName='Arial Unicode',  allowWidows=0)
+        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode', allowWidows=0)
         styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light', allowWidows=0)
-        styleDroidSerif    = ParagraphStyle(name="droidserif",     leading=10, fontName='DroidSerif',     allowWidows=0)
+        styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
 
         # This file is overlaid on the template certificate
         overlay_pdf_buffer = StringIO.StringIO()
@@ -1369,20 +1447,20 @@ class CertificateGen(object):
         #   * "is awarded/was designated.."
         #   * MD/DO;AHP corner marker
 
-        #######  Student name
+        # Student name
 
         # These are ordered by preference; cf. font_for_string() above
-        fontlist = [('DroidSerif',     'DroidSerif.ttf',     styleDroidSerif),
+        fontlist = [('DroidSerif', 'DroidSerif.ttf', styleDroidSerif),
                     ('OpenSans-Light', 'OpenSans-Light.ttf', styleOpenSansLight),
-                    ('Arial Unicode',  'Ariel Unicode.ttf',  styleArial)]
+                    ('Arial Unicode', 'Ariel Unicode.ttf', styleArial)]
 
         (fonttag, fontfile, style) = font_for_string(fontlist, student_name)
         style.alignment = TA_CENTER
-        width           = 9999    # Fencepost width is way too wide
-        nameYOffset     = 146     # by eye, looks good for 34 pt font
-        fontsize        = 36      # good default giant text size: 1/2"
-        indent          = 0       # initialize while loop
-        max_width       = 0.8 * WIDTH  # Keep scaling until <= 80% of page
+        width = 9999    # Fencepost width is way too wide
+        nameYOffset = 146     # by eye, looks good for 34 pt font
+        fontsize = 36      # good default giant text size: 1/2"
+        indent = 0       # initialize while loop
+        max_width = 0.8 * WIDTH  # Keep scaling until <= 80% of page
 
         while width > max_width:
             style.fontSize = fontsize
@@ -1393,13 +1471,13 @@ class CertificateGen(object):
 
         draw_centered_text("<b>{0}</b>".format(student_name), style, nameYOffset)
 
-        ####### Enduring material titled
+        # Enduring material titled
         style = styleDroidSerif
         style.alignment = TA_CENTER
         style.fontSize = 28
         draw_centered_text("<b>{0}</b>".format(self.long_course.decode('utf-8')), style, 119)
 
-        ####### Issued on date...
+        # Issued on date...
         style.fontSize = 26
         if generate_date:
             paragraph_string = "{0}".format(prettify_isodate(generate_date))
@@ -1410,27 +1488,30 @@ class CertificateGen(object):
             paragraph_string = "{0}".format(self.issued_date)
         draw_centered_text("<b>{0}</b>".format(paragraph_string), style, 95)
 
-        ####### Credits statement
+        # Credits statement
         style.fontSize = 18
         if gets_md_cert:
-            paragraph_string = "and is awarded 30.0 <i>AMA PRA Category 1 Credits(s)</i><super><font size=13>TM.</font></super>"
+            paragraph_string = "and is awarded 30.0 " \
+                "<i>AMA PRA Category 1 Credits(s)</i>" \
+                "<super><font size=13>TM.</font></super>"
         else:
-            paragraph_string = "The activity was designated for 30.0 <i>AMA PRA Category 1 Credits(s)</i><super><font size=13>TM.</font></super>"
+            paragraph_string = "The activity was designated for 30.0 " \
+                "<i>AMA PRA Category 1 Credits(s)</i>" \
+                "<super><font size=13>TM.</font></super>"
         draw_centered_text(paragraph_string, style, 80)
 
-        ####### MD/DO vs AHP tags
+        # MD/DO vs AHP tags
         style.fontSize = 8
         style.alignment = TA_LEFT
         if gets_md_cert:
             paragraph_string = "MD/DO"
         else:
             paragraph_string = "AHP"
-        indent    = WIDTH - 72         # One inch in from right edge
+        indent = WIDTH - 72         # One inch in from right edge
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrap(WIDTH, HEIGHT)
         paragraph.drawOn(c, indent, 14.9 * mm)
 
-        ########
         c.showPage()
         c.save()
 
@@ -1449,5 +1530,3 @@ class CertificateGen(object):
             output.write(ostream)
 
         return (download_uuid, 'No Verification', download_url)
-
-
