@@ -43,7 +43,7 @@ class XQueuePullManager(object):
                 raise Exception("Invalid return code in reply resp:{0}".format(
                     str(response)))
         except (Exception, ConnectionError, Timeout) as e:
-            log.critical("Unable to connect to queue: {0}".format(e))
+            log.critical("Unable to connect to queue xqueue: {0}".format(e))
             raise
 
     def get_length(self):
@@ -74,7 +74,7 @@ class XQueuePullManager(object):
             request = self.session.get('{0}/xqueue/get_submission/'.format(
                 self.url), params={'queue_name': self.queue_name})
         except (ConnectionError, Timeout) as e:
-            log.critical("Unable to get submission from queue: {0}".format(e))
+            log.critical("Unable to get submission from queue xqueue: {0}".format(e))
             raise
 
         try:
@@ -87,7 +87,7 @@ class XQueuePullManager(object):
             return json.loads(response['content'])
 
         except (Exception, ValueError, KeyError) as e:
-            log.critical("Unable to parse queue message: {0} response: {1}".format(e, request.text))
+            log.critical("Unable to parse xqueue message: {0} response: {1}".format(e, request.text))
             raise
 
     def respond(self, xqueue_reply):
