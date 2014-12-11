@@ -329,7 +329,7 @@ class CertificateGen(object):
                             except:
                                 raise
                             else:
-                                log.info('uploaded {0} to {1}'.format(local_path, dest_path))
+                                log.info("uploaded {local} to {s3path}".format(local=local_path, s3path=dest_path))
 
                         if copy_to_webroot:
                             try:
@@ -340,7 +340,7 @@ class CertificateGen(object):
                             except:
                                 raise
                             else:
-                                log.info('published {0} to {1}'.format(local_path, publish_dest))
+                                log.info("published {local} to {web}".format(local=local_path, web=publish_dest))
 
         if cleanup:
             for working_dir in (certificates_path, verify_path):
