@@ -131,9 +131,20 @@ def font_for_string(fontlist, ustring):
     # TODO: There's probably a way to do this by consulting reportlab that
     #       doesn't require re-loading the font files at all
     ustring = unicode(ustring)
+    if fontlist and not ustring:
+        return fontlist[0]
     for fonttuple in fontlist:
         fonttag = fonttuple[0]
         codepoints = FONT_CHARACTER_TABLES.get(fonttag, [])
+        if not codepoints:
+            warnstring = "Missing or invalid font specification {fonttag} " \
+                         "rendering string '{ustring}'.\nFontlist: {fontlist}".format(
+                             fonttag=fonttag,
+                             ustring=ustring.encode('utf-8'),
+                             fontlist=fontlist,
+                            )
+            log.warning(warnstring)
+            continue
         OK = reduce(lambda x, y: x and y, (ord(c) in codepoints for c in ustring))
         if OK:
             return fonttuple
