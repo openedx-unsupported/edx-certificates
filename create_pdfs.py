@@ -90,9 +90,7 @@ def main():
     else:
         course_list = settings.CERT_DATA.keys()
 
-    upload_files = True
-    if args.no_upload:
-        upload_files = False
+    upload_files = not args.no_upload
 
     for course in course_list:
         if args.name:
