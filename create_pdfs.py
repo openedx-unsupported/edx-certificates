@@ -124,7 +124,7 @@ def main():
             (download_uuid, verify_uuid,
                 download_url) = cert.create_and_upload(name, upload=upload_files, copy_to_webroot=False,
                                                        cleanup=False, designation=title, grade=grade)
-            certificate_data.append((name, download_url))
+            certificate_data.append((name, course, long_org, long_course, download_url))
             gen_dir = os.path.join(cert.dir_prefix, S3_CERT_PATH, download_uuid)
             copy_dest = '{copy_dir}/{course}-{name}.pdf'.format(
                 copy_dir=copy_dir,
@@ -146,9 +146,8 @@ def main():
     if args.report_file:
         try:
             with open(args.report_file, 'wb') as file_report:
-                csv_writer = csv.writer(file_report, quoting=csv.QUOTE_MINIMAL)
-                for row in certificate_data:
-                    csv_writer.writerow(row)
+                csv_writer = csv.writer(file_report, quoting=csv.QUOTE_ALL)
+                csv_writer.writerows(certificate_data)
             should_write_report_to_stdout = False
         except IOError as error:
             LOG.error("Unable to open report file: %s", error)
