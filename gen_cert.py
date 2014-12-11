@@ -295,6 +295,8 @@ class CertificateGen(object):
         download_uuid = None
         verify_uuid = None
         download_url = None
+        s3_conn = None
+        bucket = None
 
         certificates_path = os.path.join(self.dir_prefix, S3_CERT_PATH)
         verify_path = os.path.join(self.dir_prefix, S3_VERIFY_PATH)
@@ -305,28 +307,45 @@ class CertificateGen(object):
                                                                                 grade=grade,
                                                                                 designation=designation,)
 
-        # upload generated certificate and verification files to S3
-        for dirpath, dirnames, filenames in os.walk(self.dir_prefix):
-            for filename in filenames:
-                local_path = os.path.join(dirpath, filename)
-                dest_path = os.path.relpath(os.path.join(dirpath, filename), start=self.dir_prefix)
-                if upload:
-                    s3_conn = boto.connect_s3(settings.CERT_AWS_ID, settings.CERT_AWS_KEY)
-                    bucket = s3_conn.get_bucket(BUCKET)
-                    key = Key(bucket, name=dest_path)
-                    log.info('uploading to {0} from {1} to {2}'.format(settings.CERT_URL, local_path, dest_path))
-                    key.set_contents_from_filename(local_path, policy='public-read')
+        # upload generated certificate and verification files to S3,
+        # or copy them to the web root. Or both.
+        my_certs_path = os.path.join(certificates_path, download_uuid)
+        my_verify_path = os.path.join(verify_path, verify_uuid)
+        if upload:
+            s3_conn = boto.connect_s3(settings.CERT_AWS_ID, settings.CERT_AWS_KEY)
+            bucket = s3_conn.get_bucket(BUCKET)
+        if upload or copy_to_webroot:
+            for subtree in (my_certs_path, my_verify_path):
+                for dirpath, dirnames, filenames in os.walk(subtree):
+                    for filename in filenames:
+                        local_path = os.path.join(dirpath, filename)
+                        dest_path = os.path.relpath(local_path, start=self.dir_prefix)
+                        publish_dest = os.path.join(cert_web_root, dest_path)
 
-                if copy_to_webroot:
-                    publish_dest = os.path.join(cert_web_root, dest_path)
-                    log.info('publishing to {0} from {1} to {2}'.format(settings.CERT_URL, local_path, publish_dest))
-                    if not os.path.exists(os.path.dirname(publish_dest)):
-                        os.makedirs(os.path.dirname(publish_dest))
-                    shutil.copy(local_path, publish_dest)
+                        if upload:
+                            try:
+                                key = Key(bucket, name=dest_path)
+                                key.set_contents_from_filename(local_path, policy='public-read')
+                            except:
+                                raise
+                            else:
+                                log.info('uploaded {0} to {1}'.format(local_path, dest_path))
+
+                        if copy_to_webroot:
+                            try:
+                                dirname = os.path.dirname(publish_dest)
+                                if not os.path.exists(dirname):
+                                    os.makedirs(dirname)
+                                shutil.copy(local_path, publish_dest)
+                            except:
+                                raise
+                            else:
+                                log.info('published {0} to {1}'.format(local_path, publish_dest))
 
         if cleanup:
-            if os.path.exists(self.dir_prefix):
-                shutil.rmtree(self.dir_prefix)
+            for working_dir in (certificates_path, verify_path):
+                if os.path.exists(working_dir):
+                    shutil.rmtree(working_dir)
 
         return (download_uuid, verify_uuid, download_url)
 
