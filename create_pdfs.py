@@ -122,7 +122,7 @@ def main():
             (download_uuid, verify_uuid,
                 download_url) = cert.create_and_upload(name, upload=upload_files, copy_to_webroot=False,
                                                        cleanup=False, designation=title, grade=grade)
-            certificate_data.append((name, course, long_org, long_course, download_url))
+            certificate_data.append((name, course, args.long_org, args.long_course, download_url))
             gen_dir = os.path.join(cert.dir_prefix, S3_CERT_PATH, download_uuid)
             copy_dest = '{copy_dir}/{course}-{name}.pdf'.format(
                 copy_dir=copy_dir,
