@@ -1478,17 +1478,16 @@ class CertificateGen(object):
         return (download_uuid, verify_uuid, download_url)
         """
 
-        # TODO: psas in generate_date
         # Landscape Letter page size is 279mm x 216 mm
         # All unexplained constants below were selected because they look good
         WIDTH, HEIGHT = landscape(letter)   # values in points, multiply by mm
 
         download_uuid = uuid.uuid4().hex
-        download_url = "https://{0}.s3.amazonaws.com/{1}/{2}/{3}".format(
-            BUCKET,
-            S3_CERT_PATH,
-            download_uuid,
-            filename,
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH,
+            uuid=download_uuid,
+            file=filename,
         )
         filename = os.path.join(download_dir, download_uuid, filename)
         self._ensure_dir(filename)
@@ -1497,8 +1496,9 @@ class CertificateGen(object):
         gets_md_cert = False
         gets_md_cert_list = self.cert_data.get('MD_CERTS', [])
         gets_no_title = self.cert_data.get('NO_TITLE', [])
+        student_name = u"{}".format(student_name.decode('utf-8'))  # Ensure consistent handling
         if designation and designation not in gets_no_title:
-            student_name = u"{}, {}".format(student_name, designation)
+            student_name = u"{}, {}".format(student_name, designation.decode('utf-8'))
         gets_md_cert = designation in gets_md_cert_list
 
         #                            0 0 - normal
@@ -1546,15 +1546,15 @@ class CertificateGen(object):
 
         (fonttag, fontfile, style) = font_for_string(fontlist, student_name)
         style.alignment = TA_CENTER
-        width = 9999    # Fencepost width is way too wide
-        nameYOffset = 146     # by eye, looks good for 34 pt font
-        fontsize = 36      # good default giant text size: 1/2"
-        indent = 0       # initialize while loop
+        width = 9999             # Fencepost width is way too wide
+        nameYOffset = 146        # by eye, looks good for 34 pt font
+        fontsize = 36            # good default giant text size: 1/2"
+        indent = 0               # initialize while loop
         max_width = 0.8 * WIDTH  # Keep scaling until <= 80% of page
 
         while width > max_width:
             style.fontSize = fontsize
-            width = stringWidth(student_name.decode('utf-8'), fonttag, fontsize)
+            width = stringWidth(student_name, fonttag, fontsize)
             if nameYOffset > 140:
                 nameYOffset = nameYOffset - math.floor((36 - fontsize) / 12)
             fontsize -= 1
@@ -1575,11 +1575,11 @@ class CertificateGen(object):
         # Credits statement
         style.fontSize = 18
         if gets_md_cert:
-            paragraph_string = "and is awarded 30.0 " \
+            paragraph_string = "and is awarded 23.5 " \
                 "<i>AMA PRA Category 1 Credits(s)</i>" \
                 "<super><font size=13>TM.</font></super>"
         else:
-            paragraph_string = "The activity was designated for 30.0 " \
+            paragraph_string = "The activity was designated for 23.5 " \
                 "<i>AMA PRA Category 1 Credits(s)</i>" \
                 "<super><font size=13>TM.</font></super>"
         draw_centered_text(paragraph_string, style, 80)
