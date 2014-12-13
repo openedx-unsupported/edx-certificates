@@ -1475,7 +1475,28 @@ class CertificateGen(object):
                         with which to stamp the cert. Defaults to CERT_DATA's
                         ISSUED_DATE, or today's date for ROLLING.
 
-        return (download_uuid, verify_uuid, download_url)
+        CONFIGURATION PARAMETERS:
+        The following items are brought in from the cert-data.yml stanza for the
+        current course:
+        MD_CERTS    - A list of all of the student titles which qualify to get the
+                      MD/DO certificate and receive CME credit
+        NO_TITLE    - A list of student titles which should be treated as
+                      equivalent to having no title at all.
+        CREDITS     - A string describing what accreditation this CME
+                      certificate is good for, e.g., "## Blabbity Blab Credits".
+        LONG_COURSE - (optional) The course title to be printed on the cert;
+                      unset means to use the value passed in as part of the
+                      certificate request.
+        ISSUED_DATE - (optional) If given, the date string which should be
+                      stamped onto each and every certificate. The value
+                      ROLLING is equivalent to leaving ISSUED_DATE unset, which
+                      stamps the certificates with the current date.
+
+        RETURNS (download_uuid, verify_uuid, download_url)
+
+        Note that CME certificates never generate verification URLs; the
+        underlying template is expected to embed contact information for
+        the relevant medical school.
         """
 
         # Landscape Letter page size is 279mm x 216 mm
@@ -1573,16 +1594,22 @@ class CertificateGen(object):
         draw_centered_text(u"<b>{0}</b>".format(paragraph_string), style, 95)
 
         # Credits statement
+        # This is pretty fundamentally not internationalizable; like the rest of the certificate template renderers
+        # we do text interpolation that assumes English subject/object relationships. If this language needs to be
+        # varied, the best place to do that is probably a forked rendering method. There is some additional
+        # information in the documentation.
         style.fontSize = 18
-        if gets_md_cert:
-            paragraph_string = "and is awarded 23.5 " \
-                "<i>AMA PRA Category 1 Credits(s)</i>" \
-                "<super><font size=13>TM.</font></super>"
-        else:
-            paragraph_string = "The activity was designated for 23.5 " \
-                "<i>AMA PRA Category 1 Credits(s)</i>" \
-                "<super><font size=13>TM.</font></super>"
-        draw_centered_text(paragraph_string, style, 80)
+        credit_info = self.cert_data.get('CREDITS', '')
+        if credit_info:
+            if gets_md_cert:
+                paragraph_string = u"and is awarded {credit_info}".format(
+                    credit_info=credit_info.decode('utf-8'),
+                )
+            else:
+                paragraph_string = u"The activity was designated for {credit_info}".format(
+                    credit_info=credit_info.decode('utf-8'),
+                )
+            draw_centered_text(paragraph_string, style, 80)
 
         # MD/DO vs AHP tags
         style.fontSize = 8
