@@ -47,20 +47,25 @@ def parse_args(args=sys.argv[1:]):
     parser.add_argument('-c', '--course-id', help='optional course-id')
     parser.add_argument('-n', '--name', help='optional name for the cert')
     parser.add_argument('-t', '--template-file', help='optional template file')
-    parser.add_argument('-o', '--long-org', help='optional long org')
-    parser.add_argument('-l', '--long-course', help='optional long course')
+    parser.add_argument('-o', '--long-org', help='optional long org', default='')
+    parser.add_argument('-l', '--long-course', help='optional long course', default='')
     parser.add_argument('-i', '--issued-date', help='optional issue date')
-    parser.add_argument('-U', '--no-upload', help='skip s3 upload step', action="store_true")
-    parser.add_argument('-R', '--random-title', help='add random title to name')
-    parser.add_argument('-f', '--input-file',
-                        help='optional input file for names, one name per line')
+    parser.add_argument('-T', '--assign-title', help='add random title after name', default=False, action="store_true")
+    parser.add_argument('-f', '--input-file', help='optional input file for names, one name per line')
     parser.add_argument(
         '-r',
         '--report-file',
         help='optional report file for generated output',
     )
-    parser.add_argument('-G', '--grade-text',
-                        help='optional grading label to apply')
+    parser.add_argument(
+        '-R',
+        '--no-report',
+        help='Do not comment on generated output',
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument('-G', '--grade-text', help='optional grading label to apply')
+    parser.add_argument('-U', '--no-upload', help='skip s3 upload step', default=False, action="store_true")
 
     return parser.parse_args()
 
@@ -113,9 +118,9 @@ def main():
                 issued_date=args.issued_date,
             )
             title = None
-            if args.random_title:
+            if args.assign_title:
                 title = random.choice(stanford_cme_titles)[0]
-                print "generating random title", name, title
+                print "assigning random title", name, title
             grade = None
             if args.grade_text:
                 grade = args.grade_text
@@ -140,7 +145,7 @@ def main():
                 raise
             print "Created {0}".format(copy_dest)
 
-    should_write_report_to_stdout = True
+    should_write_report_to_stdout = not args.no_report
     if args.report_file:
         try:
             with open(args.report_file, 'wb') as file_report:
