@@ -1640,7 +1640,20 @@ class CertificateGen(object):
                         with which to stamp the cert. Defaults to CERT_DATA's
                         ISSUED_DATE, or today's date for ROLLING.
 
-        return (download_uuid, verify_uuid, download_url)
+        CONFIGURATION PARAMETERS:
+                The following items are brought in from the cert-data.yml stanza for the
+                current course:
+        LONG_COURSE       - (optional) The course title to be printed on the cert;
+                            unset means to use the value passed in as part of the
+                            certificate request.
+        ISSUED_DATE       - (optional) If given, the date string which should be
+                            stamped onto each and every certificate. The value
+                            ROLLING is equivalent to leaving ISSUED_DATE unset, which
+                            stamps the certificates with the current date.
+        HAS_DISCLAIMER    - (optional) If given, the programmatic disclaimer that
+                            is usually rendered at the bottom of the page, is not.
+
+        RETURNS (download_uuid, verify_uuid, download_url)
         """
 
         verify_me_p = self.cert_data.get('VERIFY', True)
@@ -1661,6 +1674,7 @@ class CertificateGen(object):
 
         WIDTH, HEIGHT = landscape(A4)  # Width and Height of landscape canvas (in points)
         MAX_GEN_WIDTH = WIDTH * .5  # Width to which to constrain text block
+        MAX_FULL_WIDTH = WIDTH * .72  # Width to which to constrian full page text blocks
         GUTTER_WIDTH = 120  # Space from the left and right sides (in points)
         GUTTER_WIDTH = 120  # Space from the right side for Date (in points)
         DATE_INDENT_TOP = 112  # Space from top for Date (in points)
@@ -1705,8 +1719,8 @@ class CertificateGen(object):
             textColor=CARDINAL_RED,
             alignment=TA_LEFT,
         )
-        style_small_honor_text = ParagraphStyle(
-            name="small-honor-text",
+        style_small_text = ParagraphStyle(
+            name="small-text",
             fontSize=7.5,
             leading=10,
             textColor=STANDARD_GRAY,
@@ -1833,6 +1847,24 @@ class CertificateGen(object):
 
         paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
 
+        # SECTION: disclaimer text
+        print_disclaimer = not self.cert_data.get('HAS_DISCLAIMER', False)
+        disclaimer_text = getattr(settings, 'CERTS_SITE_DISCLAIMER_TEXT', '')
+        if print_disclaimer and disclaimer_text:
+            (fonttag, fontfile, disclaimer_style) = font_for_string(
+                fontlist_with_style(style_small_text),
+                disclaimer_text,
+            )
+
+            max_height = disclaimer_style.leading * 3  # allow for up to 9 lines of text
+            max_width = MAX_FULL_WIDTH
+            yOffset = 89  # distance from bottom of page (in points)
+
+            paragraph = Paragraph(disclaimer_text, disclaimer_style)
+            width, height = paragraph.wrapOn(PAGE, max_width, max_height)
+
+            paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
+
         # SECTION: Honor code
         if verify_me_p:
             paragraph_string = u"Authenticity of this {cert_label} can be verified at " \
@@ -1847,12 +1879,12 @@ class CertificateGen(object):
             )
 
             (fonttag, fontfile, honor_style) = font_for_string(
-                fontlist_with_style(style_small_honor_text),
+                fontlist_with_style(style_small_text),
                 achievements_paragraph,
             )
 
             max_height = 10
-            max_width = WIDTH * .72  # set maximum width for verification link line of text
+            max_width = MAX_FULL_WIDTH
 
             paragraph = Paragraph(paragraph_string, honor_style)
             paragraph.wrapOn(PAGE, max_width, max_height)

@@ -73,6 +73,9 @@ S3_VERIFY_PATH = 'cert'
 CERTS_ARE_CALLED = 'certificate'
 CERTS_ARE_CALLED_PLURAL = 'certificates'
 
+# Programmatic disclaimer text
+CERTS_SITE_DISCLAIMER_TEXT = ''
+
 # These are initialized below, after the environment is read
 CERT_URL = ''
 CERT_DOWNLOAD_URL = ''
@@ -98,6 +101,7 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     S3_VERIFY_PATH = ENV_TOKENS.get('S3_VERIFY_PATH', S3_VERIFY_PATH)
     CERTS_ARE_CALLED = ENV_TOKENS.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
     CERTS_ARE_CALLED_PLURAL = ENV_TOKENS.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
+    CERTS_SITE_DISCLAIMER_TEXT = ENV_TOKENS.get('CERT_SITE_DISCLAIMER_TEXT', CERTS_SITE_DISCLAIMER_TEXT)
     LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
     local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
     LOGGING_DEV_ENV = ENV_TOKENS.get('LOGGING_DEV_ENV', True)
