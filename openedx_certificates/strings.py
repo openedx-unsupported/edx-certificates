@@ -16,7 +16,7 @@ MESSAGE_GENERATE = (
     "Generating certificate for user %s (%s), "
     "in %s, with grade %s"
 )
-MESSAGE_GET = "xqueue response: %s"
+MESSAGE_GET = "XQueue response: %s"
 MESSAGE_ITERATIONS = "%s iterations remaining"
 MESSAGE_LENGTH = "queue length: %s: %s"
 MESSAGE_POST = "Posting result to the LMS: %s"

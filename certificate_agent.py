@@ -21,6 +21,7 @@ import sys
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
+from openedx_certificates.monitor import step
 from openedx_certificates.queue_xqueue import XQueuePullManager
 import settings
 
@@ -88,7 +89,7 @@ def main(args):
     )
     seconds_to_sleep = float(args.sleep_seconds)
     iterations = float('inf')
-    manager.step(seconds_to_sleep, iterations)
+    step(manager, seconds_to_sleep, iterations)
 
 
 if __name__ == '__main__':
