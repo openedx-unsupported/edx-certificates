@@ -21,7 +21,7 @@ import sys
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-from openedx_certificates.monitor import step
+from openedx_certificates.monitor import XQueueMonitor
 from openedx_certificates.queue_xqueue import XQueuePullManager
 import settings
 
@@ -85,11 +85,12 @@ def main(args):
         args.xqueue_name,
         (args.basic_auth_username, args.basic_auth_password),
         (args.xqueue_auth_username, args.xqueue_auth_password),
-        (args.aws_id, args.aws_key),
     )
+    auth_aws = (args.aws_id, args.aws_key)
     seconds_to_sleep = float(args.sleep_seconds)
     iterations = float('inf')
-    step(manager, seconds_to_sleep, iterations)
+    monitor = XQueueMonitor(manager, auth_aws)
+    monitor.step(seconds_to_sleep, iterations)
 
 
 if __name__ == '__main__':

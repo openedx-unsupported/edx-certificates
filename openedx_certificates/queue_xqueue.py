@@ -22,7 +22,7 @@ class XQueuePullManager(object):
     Provide an interface to the XQueue server
     """
 
-    def __init__(self, url, name, auth_basic, auth_xqueue, auth_aws):
+    def __init__(self, url, name, auth_basic, auth_xqueue):
         """
         Initialize a new XQueuePullManager
 
@@ -34,14 +34,11 @@ class XQueuePullManager(object):
         :type auth_basic: tuple
         :param auth_xqueue: A tuple of (username, password)
         :type auth_xqueue: tuple
-        :param auth_aws: A tuple of (aws_id, aws_key)
-        :type auth_aws: tuple
         """
         self.url = url
         self.name = name
         self.auth_basic = auth_basic
         self.auth_xqueue = auth_xqueue
-        self.auth_aws = auth_aws
         self.session = None
 
     def __len__(self):
@@ -214,4 +211,4 @@ def _parse_xqueue_response(certificate_data):
             'delete_verify_uuid',
         ]
     }
-    return (body, header)
+    return (header, body)
