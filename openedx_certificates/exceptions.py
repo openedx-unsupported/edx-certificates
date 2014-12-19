@@ -5,6 +5,6 @@ Raise custom exceptions
 
 class InvalidReturnCode(Exception):
     """
-    Raise when reponse contains invalid return_code
+    Raise when XQueue reponse contains an invalid return_code
     """
     pass
