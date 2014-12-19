@@ -48,7 +48,6 @@ class XQueuePullManager(object):
         self.auth_aws = auth_aws
         self.session = None
 
-    # TODO: should we just pop and handle the empty case?
     def __len__(self):
         """
         Return the length of the XQueue
