@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 XQueue management wrapper
 """
@@ -5,10 +6,10 @@ import json
 
 import logging
 import requests
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
 
 import settings
-from gen_cert import CertificateGen
 from openedx_certificates.exceptions import InvalidReturnCode
 from openedx_certificates import strings
 
@@ -21,6 +22,15 @@ class XQueuePullManager(object):
     """
     Provide an interface to the XQueue server
     """
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if len(self):
+            return self.peek()
+        else:
+            raise StopIteration
 
     def __init__(self, url, name, auth_basic, auth_xqueue):
         """
@@ -45,7 +55,6 @@ class XQueuePullManager(object):
         """
         Return the length of the XQueue
 
-        :raises: ConnectionError, Timeout, InvalidReturnCode
         :returns: int -- the XQueue length
         """
         self._try_login()
@@ -74,7 +83,6 @@ class XQueuePullManager(object):
         """
         Get submission from the XQueue server
 
-        :raises: ConnectionError, Timeout, ValueError, KeyError, InvalidReturnCode
         :returns: dict -- a single submission
         """
         self._try_login()
@@ -86,7 +94,7 @@ class XQueuePullManager(object):
             },
         )
         LOG.info(strings.MESSAGE_RESPONSE, response)
-        content = json.loads(response['content'])
+        content = json.loads(response.get('content', '{}'))
         return _parse_xqueue_response(content)
 
     def push(self, header, **kwargs):
@@ -139,12 +147,11 @@ class XQueuePullManager(object):
         :type auth_basic: tuple
         :param auth_xqueue: A tuple of (username, password)
         :type auth_xqueue: tuple
-        :raises: ConnectionError, Timeout, ValueError, InvalidReturnCode
         """
         if not self.session:
             self.session = requests.Session()
             self.session.auth = self.auth_basic
-            _request(
+            response = _request(
                 self.session.post,
                 self._get_method_url('login'),
                 data={
@@ -152,6 +159,8 @@ class XQueuePullManager(object):
                     'password': self.auth_xqueue[1],
                 },
             )
+            if not response:
+                return False
         return True
 
 
@@ -173,8 +182,6 @@ def _validate(response):
     return True
 
 
-# TODO: this should handle errors
-# and return None when SHTF
 def _request(method, url, **kwargs):
     """
     Make a request to the XQueue server
@@ -183,12 +190,23 @@ def _request(method, url, **kwargs):
     :type method: str
     :param url: The server URL
     :type url: str
-    :raises: ConnectionError, Timeout, ValueError, InvalidReturnCode
     :returns: dict -- A dictionary of the JSON response
     """
-    request = method(url, **kwargs)
-    response = request.json()
-    _validate(response)
+    try:
+        request = method(url, **kwargs)
+    except (ConnectionError, Timeout) as error:
+        print('womp!', error)
+        return None
+    try:
+        response = request.json()
+    except ValueError as error:
+        print('womp!', error)
+        return None
+    try:
+        _validate(response)
+    except InvalidReturnCode as error:
+        print('womp!', error)
+        return None
     return response
 
 

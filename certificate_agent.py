@@ -90,7 +90,7 @@ def main(args):
     seconds_to_sleep = float(args.sleep_seconds)
     iterations = float('inf')
     monitor = XQueueMonitor(manager, auth_aws)
-    monitor.step(seconds_to_sleep, iterations)
+    monitor.process()
 
 
 if __name__ == '__main__':
