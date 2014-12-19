@@ -194,16 +194,18 @@ class CertificateGen(object):
         dir_prefix   - Temporary directory for file generation. Ceritificates
                        and signatures are copied here temporarily before they
                        are uploaded to S3
-        template_pdf - Template (filename.pdf) to use for the certificate
-                       generation.
+        template_pdf - (optional) Template (filename.pdf) to use for the
+                       certificate generation.
         aws_id       - necessary for S3 uploads
         aws_key      - necessary for S3 uploads
 
         course_id is used to look up extra data from settings.CERT_DATA,
         including (but not necessarily limited to):
-          * LONG_ORG    - long name for the organization
-          * ISSUED_DATE - month, year that corresponds to the
-                          run of the course
+          * LONG_ORG     - long name for the organization
+          * ISSUED_DATE  - month, year that corresponds to the
+                           run of the course
+          * TEMPLATEFILE - the template pdf filename to use, equivalent to
+                           template_pdf parameter
         """
         if dir_prefix is None:
             dir_prefix = tempfile.mkdtemp(prefix=TMP_GEN_DIR)
@@ -245,9 +247,14 @@ class CertificateGen(object):
         self.template_type = 'honor'
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
+        # Defaults to calculating template filename from cert version and course
+        # id. If TEMPLATEFILE is given in cert-data, use that template instead.
+        # If template_pdf comes in as part of object initialization (e.g., from
+        # the xqueue), then use that instead.
+        if not template_pdf:
+            template_pdf = cert_data.get('TEMPLATEFILE', None)
         template_prefix = '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
-        template_pdf_filename = "{0}/certificate-template-{1}-{2}.pdf".format(
-            template_prefix, self.org, self.course)
+        template_pdf_filename = "{0}/certificate-template-{1}-{2}.pdf".format(template_prefix, self.org, self.course)
         if template_pdf:
             template_pdf_filename = "{0}/{1}".format(template_prefix, template_pdf)
             if 'verified' in template_pdf:
@@ -1265,7 +1272,21 @@ class CertificateGen(object):
                         with which to stamp the cert. Defaults to CERT_DATA's
                         ISSUED_DATE, or today's date for ROLLING.
 
-        return (download_uuid, verify_uuid, download_url)
+        CONFIGURATION PARAMETERS:
+            The following items are brought in from the cert-data.yml stanza for the
+        current course:
+        LONG_COURSE  - (optional) The course title to be printed on the cert;
+                       unset means to use the value passed in as part of the
+                       certificate request.
+        ISSUED_DATE  - (optional) If given, the date string which should be
+                       stamped onto each and every certificate. The value
+                       ROLLING is equivalent to leaving ISSUED_DATE unset, which
+                       stamps the certificates with the current date.
+        TEMPLATEFILE - (optional) If given, the filename referred to by
+                       TEMPLATEFILE will be used as the template over which
+                       to render.
+
+        RETURNS (download_uuid, verify_uuid, download_url)
         """
 
         verify_me_p = self.cert_data.get('VERIFY', True)
@@ -1478,19 +1499,22 @@ class CertificateGen(object):
         CONFIGURATION PARAMETERS:
         The following items are brought in from the cert-data.yml stanza for the
         current course:
-        MD_CERTS    - A list of all of the student titles which qualify to get the
-                      MD/DO certificate and receive CME credit
-        NO_TITLE    - A list of student titles which should be treated as
-                      equivalent to having no title at all.
-        CREDITS     - A string describing what accreditation this CME
-                      certificate is good for, e.g., "## Blabbity Blab Credits".
-        LONG_COURSE - (optional) The course title to be printed on the cert;
-                      unset means to use the value passed in as part of the
-                      certificate request.
-        ISSUED_DATE - (optional) If given, the date string which should be
-                      stamped onto each and every certificate. The value
-                      ROLLING is equivalent to leaving ISSUED_DATE unset, which
-                      stamps the certificates with the current date.
+        MD_CERTS     - A list of all of the student titles which qualify to get the
+                       MD/DO certificate and receive CME credit
+        NO_TITLE     - A list of student titles which should be treated as
+                       equivalent to having no title at all.
+        CREDITS      - A string describing what accreditation this CME
+                       certificate is good for, e.g., "## Blabbity Blab Credits".
+        LONG_COURSE  - (optional) The course title to be printed on the cert;
+                       unset means to use the value passed in as part of the
+                       certificate request.
+        ISSUED_DATE  - (optional) If given, the date string which should be
+                       stamped onto each and every certificate. The value
+                       ROLLING is equivalent to leaving ISSUED_DATE unset, which
+                       stamps the certificates with the current date.
+        TEMPLATEFILE - (optional) If given, the filename referred to by
+                       TEMPLATEFILE will be used as the template over which
+                       to render.
 
         RETURNS (download_uuid, verify_uuid, download_url)
 
@@ -1661,24 +1685,27 @@ class CertificateGen(object):
 
         OPTIONAL PARAMETERS:
         filename      - the filename to write out, e.g., 'Statement.pdf'.
-                        Defaults to settings.TARGET_FILENAME
+                        Defaults to settings.TARGET_FILENAME.
         grade         - the grade received by the student. Defaults to 'Pass'
         generate_date - specifies an ISO formatted date (i.e., '2012-02-02')
                         with which to stamp the cert. Defaults to CERT_DATA's
                         ISSUED_DATE, or today's date for ROLLING.
 
         CONFIGURATION PARAMETERS:
-                The following items are brought in from the cert-data.yml stanza for the
-                current course:
-        LONG_COURSE       - (optional) The course title to be printed on the cert;
-                            unset means to use the value passed in as part of the
-                            certificate request.
-        ISSUED_DATE       - (optional) If given, the date string which should be
-                            stamped onto each and every certificate. The value
-                            ROLLING is equivalent to leaving ISSUED_DATE unset, which
-                            stamps the certificates with the current date.
-        HAS_DISCLAIMER    - (optional) If given, the programmatic disclaimer that
-                            is usually rendered at the bottom of the page, is not.
+            The following items are brought in from the cert-data.yml stanza for the
+        current course:
+        LONG_COURSE    - (optional) The course title to be printed on the cert;
+                         unset means to use the value passed in as part of the
+                         certificate request.
+        ISSUED_DATE    - (optional) If given, the date string which should be
+                         stamped onto each and every certificate. The value
+                         ROLLING is equivalent to leaving ISSUED_DATE unset, which
+                         stamps the certificates with the current date.
+        HAS_DISCLAIMER - (optional) If given, the programmatic disclaimer that
+                         is usually rendered at the bottom of the page, is not.
+        TEMPLATEFILE   - (optional) If given, the filename referred to by
+                         TEMPLATEFILE will be used as the template over which
+                         to render.
 
         RETURNS (download_uuid, verify_uuid, download_url)
         """
