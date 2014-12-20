@@ -80,16 +80,7 @@ def parse_args():
 
 
 def main(args):
-    manager = XQueuePullManager(
-        args.xqueue_url,
-        args.xqueue_name,
-        (args.basic_auth_username, args.basic_auth_password),
-        (args.xqueue_auth_username, args.xqueue_auth_password),
-    )
-    auth_aws = (args.aws_id, args.aws_key)
-    seconds_to_sleep = float(args.sleep_seconds)
-    iterations = float('inf')
-    monitor = XQueueMonitor(manager, auth_aws)
+    monitor = XQueueMonitor(args)
     monitor.process()
 
 

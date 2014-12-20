@@ -14,14 +14,20 @@ LOG = logging.getLogger(__name__)
 
 
 class XQueueMonitor(object):
-    def __init__(self, xqueue, auth_aws, seconds_to_sleep=5):
+    def __init__(self, args):
         """
         :param seconds_to_sleep: Seconds to sleep between failed requests
         :type seconds_to_sleep: int
         """
-        self.xqueue = xqueue
-        self.auth_aws = auth_aws
-        self.seconds_to_sleep = seconds_to_sleep
+        self.auth_aws_id = args.aws_id
+        self.auth_aws_key = args.aws_key
+        self.seconds_to_sleep = args.sleep_seconds
+        self.xqueue = XQueuePullManager(
+            args.xqueue_url,
+            args.xqueue_name,
+            (args.basic_auth_username, args.basic_auth_password),
+            (args.xqueue_auth_username, args.xqueue_auth_password),
+        )
 
     def process(self):
         """
@@ -70,8 +76,8 @@ class XQueueMonitor(object):
             certificate_generator = CertificateGen(
                 body['course_id'],
                 body['template_pdf'],
-                aws_id=self.auth_aws[0],
-                aws_key=self.auth_aws[1],
+                aws_id=self.auth_aws_id,
+                aws_key=self.auth_aws_key,
                 long_course=body['course_name'],
                 issued_date=body['issued_date'],
             )
