@@ -25,6 +25,18 @@ class QueueTest(unittest.TestCase):
         self._mock_login_good()
 
     @responses.activate
+    def test_login_xqueue_fail(self):
+        self._mock_xqueue_login_fail()
+
+    @responses.activate
+    def test_iter_one(self):
+        self._mock_len(1)
+        self._mock_pop_good()
+        for response in self.manager:
+            self.assertIsNotNone(response)
+            break
+
+    @responses.activate
     def test_init_fail_auth_basic(self):
         self._mock_login_bad()
         self.manager.auth_basic = (
@@ -151,6 +163,18 @@ class QueueTest(unittest.TestCase):
                 "content": json.dumps({
                     "key": "value",
                 }),
+            }),
+            content_type='application/json',
+            status=200,
+        )
+
+    def _mock_xqueue_login_fail(self):
+        responses.add(
+            responses.POST,
+            re.compile(r'https://example\.com/xqueue/login/'),
+            body=json.dumps({
+                "return_code": 1,
+                "content": "value"
             }),
             content_type='application/json',
             status=200,
