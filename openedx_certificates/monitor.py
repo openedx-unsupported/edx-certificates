@@ -13,7 +13,7 @@ logging.config.dictConfig(settings.LOGGING)
 LOG = logging.getLogger(__name__)
 
 
-class XQueueMonitor(object):
+class QueueMonitor(object):
     def __init__(self, args):
         """
         :param seconds_to_sleep: Seconds to sleep between failed requests
@@ -92,7 +92,7 @@ class XQueueMonitor(object):
         # pdf we will let the LMS know so it can be
         # re-submitted, the LMS will update the state to error
         """
-        exc_type, ___, exc_tb = sys.exc_info()
+        exc_type, dummy0, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         error_reason = strings.ERROR_EXCEPTION.format(
             username=body['username'],

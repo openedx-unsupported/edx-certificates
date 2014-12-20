@@ -80,7 +80,7 @@ def parse_args():
 
 
 def main(args):
-    monitor = XQueueMonitor(args)
+    monitor = QueueMonitor(args)
     monitor.process()
 
 
