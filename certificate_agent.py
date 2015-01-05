@@ -11,22 +11,18 @@ generation, it does the following:
     * Pull a single certificate request
     * Process the request
     * Post a result back to the xqueue server
-
-A global exception handler will catch any error during the certificate
-generation process and post a result back to the LMS indicating there
-was a problem.
 """
 
 import sys
 
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-from openedx_certificates.monitor import XQueueMonitor
-from openedx_certificates.queue_xqueue import XQueuePullManager
+from openedx_certificates.monitor import QueueMonitor
 import settings
 
 
-def parse_args():
+def _parse_args(argv=None):
+    # TODO: docstring
     parser = ArgumentParser(
         description=__doc__,
         formatter_class=RawTextHelpFormatter,
@@ -76,14 +72,16 @@ def parse_args():
         default=5,
         help='Number of seconds to sleep when XQueue is empty',
     )
-    return parser.parse_args()
+    args = parser.parse_args(argv)
+    args = vars(args)
+    return args
 
 
-def main(args):
+def main(argv=sys.argv):
+    args = _parse_args(argv)
     monitor = QueueMonitor(args)
     monitor.process()
 
 
 if __name__ == '__main__':
-    args = parse_args()
-    main(args)
+    main()

@@ -1,15 +1,10 @@
 # -*- coding: utf-8 -*-
 import json
-import requests
 import responses
 import re
 import unittest
 
-from requests.exceptions import ConnectionError
-
 import settings
-from mock import patch
-from openedx_certificates.queue_xqueue import InvalidReturnCode
 from openedx_certificates.queue_xqueue import XQueuePullManager
 
 
@@ -35,6 +30,13 @@ class QueueTest(unittest.TestCase):
         for response in self.manager:
             self.assertIsNotNone(response)
             break
+
+    @responses.activate
+    def test_iter_none(self):
+        self._mock_len(0)
+        for response in self.manager:
+            # we should never reach this
+            self.assertTrue(False)
 
     @responses.activate
     def test_init_fail_auth_basic(self):

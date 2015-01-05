@@ -8,6 +8,7 @@ import logging
 import settings
 from gen_cert import CertificateGen
 from openedx_certificates import strings
+from openedx_certificates.queue_xqueue import XQueuePullManager
 
 logging.config.dictConfig(settings.LOGGING)
 LOG = logging.getLogger(__name__)
@@ -19,29 +20,32 @@ class QueueMonitor(object):
         :param seconds_to_sleep: Seconds to sleep between failed requests
         :type seconds_to_sleep: int
         """
-        self.auth_aws_id = args.aws_id
-        self.auth_aws_key = args.aws_key
-        self.seconds_to_sleep = args.sleep_seconds
+        self.auth_aws_id = args.get('aws_id')
+        self.auth_aws_key = args.get('aws_key')
+        self.seconds_to_sleep = args.get('sleep_seconds')
         self.xqueue = XQueuePullManager(
-            args.xqueue_url,
-            args.xqueue_name,
-            (args.basic_auth_username, args.basic_auth_password),
-            (args.xqueue_auth_username, args.xqueue_auth_password),
+            args.get('xqueue_url'),
+            args.get('xqueue_name'),
+            (args.get('basic_auth_username'), args.get('basic_auth_password')),
+            (args.get('xqueue_auth_username'), args.get('xqueue_auth_password')),
         )
 
-    def process(self):
+    def process(self, iterations=float('inf')):
         """
         Process the XQueue
         """
         course_id_previous = None
         certificate_generator = None
-        while True:
+        while iterations > 0:
+            iterations -= 1
             for response in self.xqueue:
                 header, body = response
                 if course_id_previous != body['course_id']:
                     course_id_previous = body['course_id']
                     certificate_generator = self._get_certificate_generator(header, body)
                 self._create_and_upload(certificate_generator, header, body)
+                if iterations < 1:
+                    break
             time.sleep(self.seconds_to_sleep)
 
     def _create_and_upload(self, certificate_generator, header, body):

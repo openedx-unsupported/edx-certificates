@@ -24,9 +24,15 @@ class XQueuePullManager(object):
     """
 
     def __iter__(self):
+        """
+        Allow the queue to be iterated over
+        """
         return self
 
     def next(self):
+        """
+        Return the next item in the XQueue
+        """
         if len(self):
             return self.peek()
         else:
@@ -67,7 +73,7 @@ class XQueuePullManager(object):
         )
         try:
             length = int(response.get('content', 0))
-        except ValueError as error:
+        except (ValueError, AttributeError) as error:
             length = 0
             LOG.error(strings.ERROR_LEN, error)
         LOG.debug(strings.MESSAGE_LENGTH, length, self)
@@ -195,17 +201,14 @@ def _request(method, url, **kwargs):
     try:
         request = method(url, **kwargs)
     except (ConnectionError, Timeout) as error:
-        print('womp!', error)
         return None
     try:
         response = request.json()
     except ValueError as error:
-        print('womp!', error)
         return None
     try:
         _validate(response)
     except InvalidReturnCode as error:
-        print('womp!', error)
         return None
     return response
 
