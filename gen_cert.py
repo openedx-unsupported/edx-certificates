@@ -247,12 +247,10 @@ class CertificateGen(object):
         self.template_type = 'honor'
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
-        # Defaults to calculating template filename from cert version and course
-        # id. If TEMPLATEFILE is given in cert-data, use that template instead.
-        # If template_pdf comes in as part of object initialization (e.g., from
-        # the xqueue), then use that instead.
-        if not template_pdf:
-            template_pdf = cert_data.get('TEMPLATEFILE', None)
+        # If TEMPLATEFILE is set in cert-data.yml, this value has top priority.
+        # Else if a value is passed in to the constructor (eg, from xqueue), it is used,
+        # Else, the filename is calculated from the version and course_id.
+        template_pdf = cert_data.get('TEMPLATEFILE', template_pdf)
         template_prefix = '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
         template_pdf_filename = "{0}/certificate-template-{1}-{2}.pdf".format(template_prefix, self.org, self.course)
         if template_pdf:
