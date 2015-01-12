@@ -9,3 +9,4 @@ python-bidi==0.3.4
 PyYAML==3.11
 reportlab==3.1.8
 requests==2.3.0
+responses==0.3.0

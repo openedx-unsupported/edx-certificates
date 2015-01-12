@@ -81,6 +81,13 @@ CERT_URL = ''
 CERT_DOWNLOAD_URL = ''
 CERT_VERIFY_URL = ''
 
+QUEUE_AUTH_USER = None
+QUEUE_AUTH_PASS = None
+QUEUE_USER = None
+QUEUE_PASS = None
+QUEUE_URL = 'https://example.com'
+QUEUE_NAME = None
+
 # load settings from env.json and auth.json
 if os.path.isfile(ENV_ROOT / "env.json"):
     with open(ENV_ROOT / "env.json") as env_file:

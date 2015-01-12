@@ -83,11 +83,18 @@ certificate generation, it does the following:
 A global exception handler will catch any error during the certificate
 generation process and post a result back to the LMS via the xqueue server
 indicating there was a problem.
-    
+
     optional arguments:
-      -h, --help         show this help message and exit
-      --aws-id AWS_ID    AWS ID for write access to the S3 bucket
-      --aws-key AWS_KEY  AWS KEY for write access to the S3 bucket
+      -h, --help                show this help message and exit
+      --aws-id AWS_ID           AWS ID for write access to the S3 bucket
+      --aws-key AWS_KEY         AWS KEY for write access to the S3 bucket
+      --basic-auth-username     Username for basic HTTP authentication
+      --basic-auth-password     Password for basic HTTP authentication
+      --xqueue-auth-username    Username for XQueue authentication
+      --xqueue-auth-password    Password for XQueue authentication
+      --xqueue-url              URL for XQueue server
+      --xqueue-name             Name for XQueue bucket
+      --sleep-seconds           Number of seconds to sleep when XQueue is empty
 
 
 ## Generation overview

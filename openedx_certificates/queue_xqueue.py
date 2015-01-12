@@ -1,110 +1,235 @@
+# -*- coding: utf-8 -*-
+"""
+XQueue management wrapper
+"""
 import json
+
 import logging
-
 import requests
-from requests.exceptions import ConnectionError, Timeout
+from requests.exceptions import ConnectionError
+from requests.exceptions import Timeout
+
+import settings
+from openedx_certificates.exceptions import InvalidReturnCode
+from openedx_certificates import strings
+
+logging.config.dictConfig(settings.LOGGING)
+LOG = logging.getLogger(__name__)
 
 
-log = logging.getLogger(__name__)
-
-
+# TODO: rename class?
 class XQueuePullManager(object):
     """
-    XQueuePullManager provides an interface to
-    the xqueue server for the pull interface
-
-    Methods for getting the queue length,
-    retrieving a single item from the queue
-    and posting a response.
+    Provide an interface to the XQueue server
     """
 
-    def __init__(self, queue_url, queue_name, queue_auth_user, queue_auth_pass, queue_user, queue_pass):
-        self.url = queue_url
-        self.queue_name = queue_name
-        self.auth_user = queue_auth_user
-        self.auth_pass = queue_auth_pass
-        self.queue_user = queue_user
-        self.queue_pass = queue_pass
-        self._login()
-
-    def _login(self):
+    def __iter__(self):
         """
-        Login to the xqueue server
+        Allow the queue to be iterated over
         """
+        return self
 
+    def next(self):
+        """
+        Return the next item in the XQueue
+        """
+        if len(self):
+            return self.peek()
+        else:
+            raise StopIteration
+
+    def __init__(self, url, name, auth_basic, auth_xqueue):
+        """
+        Initialize a new XQueuePullManager
+
+        :param url: The base URL of the XQueue server
+        :type url: str
+        :param name: The name of the XQueue server
+        :type name: str
+        :param auth_basic: A tuple of (username, password)
+        :type auth_basic: tuple
+        :param auth_xqueue: A tuple of (username, password)
+        :type auth_xqueue: tuple
+        """
+        self.url = url
+        self.name = name
+        self.auth_basic = auth_basic
+        self.auth_xqueue = auth_xqueue
+        self.session = None
+
+    def __len__(self):
+        """
+        Return the length of the XQueue
+
+        :returns: int -- the XQueue length
+        """
+        self._try_login()
+        response = _request(
+            self.session.get,
+            self._get_method_url('get_queuelen'),
+            params={
+                'queue_name': self.name,
+            },
+        )
         try:
-            self.session = requests.Session()
-            self.session.auth = (self.auth_user, self.auth_pass)
-            request = self.session.post('{0}/xqueue/login/'.format(self.url),
-                                        data={'username': self.queue_user,
-                                              'password': self.queue_pass})
-            response = json.loads(request.text)
-            if response['return_code'] != 0:
-                raise Exception("Invalid return code in reply resp:{0}".format(
-                    str(response)))
-        except (Exception, ConnectionError, Timeout) as e:
-            log.critical("Unable to connect to queue xqueue: {0}".format(e))
-            raise
-
-    def get_length(self):
-        """
-        Returns the length of the queue
-        """
-
-        try:
-            request = self.session.get('{0}/xqueue/get_queuelen/'.format(
-                self.url), params={'queue_name': self.queue_name})
-            response = json.loads(request.text)
-            if response['return_code'] != 0:
-                raise Exception("Invalid return code in reply")
-            length = int(response['content'])
-        except (ValueError, Exception, ConnectionError, Timeout) as e:
-            log.critical("Unable to get queue length: {0}".format(e))
-            raise
-
+            length = int(response.get('content', 0))
+        except (ValueError, AttributeError) as error:
+            length = 0
+            LOG.error(strings.ERROR_LEN, error)
+        LOG.debug(strings.MESSAGE_LENGTH, length, self)
         return length
 
-    def get_submission(self):
-        """
-        Gets a single submission from the xqueue
-        server and returns the payload as a dictionary
-        """
-
-        try:
-            request = self.session.get('{0}/xqueue/get_submission/'.format(
-                self.url), params={'queue_name': self.queue_name})
-        except (ConnectionError, Timeout) as e:
-            log.critical("Unable to get submission from queue xqueue: {0}".format(e))
-            raise
-
-        try:
-            response = json.loads(request.text)
-            log.debug('response from get_submission: {0}'.format(response))
-            if response['return_code'] != 0:
-                log.critical("response: {0}".format(request.text))
-                raise Exception("Invalid return code in reply")
-
-            return json.loads(response['content'])
-
-        except (Exception, ValueError, KeyError) as e:
-            log.critical("Unable to parse xqueue message: {0} response: {1}".format(e, request.text))
-            raise
-
-    def respond(self, xqueue_reply):
-        """Post xqueue_reply to qserver for posting back to LMS"""
-
-        try:
-            request = self.session.post('{0}/xqueue/put_result/'.format(
-                self.url), data=xqueue_reply)
-            log.info('Response: {0}'.format(request.text))
-
-        except (ConnectionError, Timeout) as e:
-            log.critical("Connection error posting response to the LMS: {0}".format(e))
-            raise
-        response = json.loads(request.text)
-        if response['return_code'] != 0:
-            log.critical("response: {0}".format(request.text))
-            raise Exception("Invalid return code in reply")
-
     def __str__(self):
+        """
+        Stringify self as the URL
+        """
         return self.url
+
+    def peek(self):
+        """
+        Get submission from the XQueue server
+
+        :returns: dict -- a single submission
+        """
+        self._try_login()
+        response = _request(
+            self.session.get,
+            self._get_method_url('get_submission'),
+            params={
+                'queue_name': self.name,
+            },
+        )
+        LOG.info(strings.MESSAGE_RESPONSE, response)
+        content = json.loads(response.get('content', '{}'))
+        return _parse_xqueue_response(content)
+
+    def push(self, header, **kwargs):
+        self._post(header, **kwargs)
+
+    def pop(self, header, **kwargs):
+        self._post(header, **kwargs)
+
+    def _post(self, header, **kwargs):
+        """
+        Reply to LMS with creation result
+
+        :param header: A dictionary of request headers
+        :type header: dict
+        :param kwargs: The request body
+        :type header: dict
+        """
+        data = {
+            'xqueue_header': json.dumps(header),
+            'xqueue_body': json.dumps(kwargs),
+        }
+        LOG.info(strings.MESSAGE_POST, data)
+        self._try_login()
+        response = _request(
+            self.session.post,
+            self._get_method_url('put_result'),
+            data=data,
+        )
+        LOG.info(strings.MESSAGE_RESPONSE, response)
+        return response
+
+    def _get_method_url(self, method):
+        """
+        Build an XQueue request URL
+
+        :param method: The method to be called on the XQueue server
+        :type method: str
+        :returns: str -- the method's XQueue URL
+        """
+        return "{url_base}/xqueue/{method}/".format(
+            url_base=self.url,
+            method=method,
+        )
+
+    def _try_login(self):
+        """
+        Login to the XQueue server, if not already
+
+        :param auth_basic: A tuple of (username, password)
+        :type auth_basic: tuple
+        :param auth_xqueue: A tuple of (username, password)
+        :type auth_xqueue: tuple
+        """
+        if not self.session:
+            self.session = requests.Session()
+            self.session.auth = self.auth_basic
+            response = _request(
+                self.session.post,
+                self._get_method_url('login'),
+                data={
+                    'username': self.auth_xqueue[0],
+                    'password': self.auth_xqueue[1],
+                },
+            )
+            if not response:
+                return False
+        return True
+
+
+def _validate(response):
+    """
+    Check for a valid return code in XQueue response
+
+    :param response: The server response
+    :type response: dict
+    :raises: InvalidReturnCode
+    :returns: bool - Whether or not the response is valid
+    """
+    return_code = response.get('return_code')
+    if return_code != 0:
+        raise InvalidReturnCode(strings.ERROR_VALIDATE.format(
+            return_code,
+            response,
+        ))
+    return True
+
+
+def _request(method, url, **kwargs):
+    """
+    Make a request to the XQueue server
+
+    :param method: The method to be executed by the server
+    :type method: str
+    :param url: The server URL
+    :type url: str
+    :returns: dict -- A dictionary of the JSON response
+    """
+    try:
+        request = method(url, **kwargs)
+    except (ConnectionError, Timeout) as error:
+        return None
+    try:
+        response = request.json()
+    except ValueError as error:
+        return None
+    try:
+        _validate(response)
+    except InvalidReturnCode as error:
+        return None
+    return response
+
+
+def _parse_xqueue_response(certificate_data):
+    header = json.loads(certificate_data.get('xqueue_header', '{}'))
+    response = json.loads(certificate_data.get('xqueue_body', '{}'))
+    body = {
+        key: response.get(key, None)
+        for key in [
+            'action',
+            'username',
+            'course_id',
+            'course_name',
+            'name',
+            'template_pdf',
+            'grade',
+            'issued_date',
+            'designation',
+            'delete_download_uuid',
+            'delete_verify_uuid',
+        ]
+    }
+    return (header, body)
