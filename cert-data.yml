@@ -1,12 +1,12 @@
 ---
 edX/DemoX/Demo_Course:
   ISSUED_DATE: Jan. 1st, 1970
-  LONG_COURSE: Sample course
+  LONG_COURSE: Sample course with some utf-8 char like è
   LONG_ORG: Sample Org
 
 edX/DemoX_v3/Demo_Course_v3:
   LONG_ORG: Sample Org v3
-  LONG_COURSE: Computer Science 101
+  LONG_COURSE: Computer Science 101 with utf-8 char like à
   VERSION: 3_dynamic
   interstitial:
     Pass: 'This person passed.'

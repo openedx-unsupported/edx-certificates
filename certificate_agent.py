@@ -98,7 +98,7 @@ def main():
                     template_pdf,
                     aws_id=args.aws_id,
                     aws_key=args.aws_key,
-                    long_course=course_name,
+                    long_course=course_name.encode('utf-8'),
                     issued_date=issued_date,
                 )
                 last_course = course_id
