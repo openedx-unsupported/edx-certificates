@@ -36,6 +36,7 @@ from boto.s3.key import Key
 from bidi.algorithm import get_display
 import arabic_reshaper
 
+from opaque_keys.edx.keys import CourseKey
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
@@ -189,7 +190,7 @@ class CertificateGen(object):
 
         Multiple certificates can be generated and uploaded for a single course.
 
-        course_id    - Full course_id (ex: MITx/6.00x/2012_Fall)
+        course_id    - Full course_id (ex: course-v1:MITx+6.00x+1T2015)
         course_name  - Human readable course title (ex: Introduction to Curling)
         dir_prefix   - Temporary directory for file generation. Ceritificates
                        and signatures are copied here temporarily before they
@@ -233,12 +234,11 @@ class CertificateGen(object):
             log.critical("Unable to lookup long names for course {0}".format(course_id))
             raise
 
-        # split the org and course from the course_id
-        # if COURSE or ORG is set in the configuration
-        # dictionary, use that instead
-        tmp_org, tmp_course, tmp_run = course_id.split('/')
-        self.course = cert_data.get('COURSE', tmp_course)
-        self.org = cert_data.get('ORG', tmp_org)
+        # if COURSE or ORG is set in the configuration attempt to parse.
+        # This supports both new and old style course keys.
+        course_key = CourseKey.from_string(course_id)
+        self.course = cert_data.get('COURSE', course_key.course)
+        self.org = cert_data.get('ORG', course_key.org)
 
         # get the template version based on the course settings in the
         # certificates repo, with sensible defaults so that we can generate

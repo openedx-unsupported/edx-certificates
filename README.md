@@ -55,13 +55,13 @@ Generating sample certificates
     ```shell
     cd edx-certificates
     python create_pdfs.py \
-        --course-id 'edX/DemoX/Demo_Course' \
+        --course-id 'course-v1:edX+DemoX+Demo_Course' \
         --name 'Guido' \
         --no-upload \
         ;
     ```
 
-    - `edX/DemoX/Demo_Course` should be a valid course id found in
+    - `course-v1:edX+DemoX+Demo_Course` should be a valid course id found in
       `${CERT_PRIVATE_DIR}`
 
     - View all options with:
