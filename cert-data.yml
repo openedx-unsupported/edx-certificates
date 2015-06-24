@@ -19,3 +19,18 @@ course-v1:edX+DemoX_v3+Demo_Course_v3:
   interstitial:
     Pass: 'This person passed.'
     Distinction: 'This person is a complete overachiever!'
+
+translation/test/course:
+  LONG_ORG: Sample Org v3
+  VERSION: 3_dynamic
+  TEMPLATEFILE: certificate-template-edX-DemoX_v3.pdf
+  interstitial:
+    Pass: 'Para recibir una declaración de cumplimiento, los participantes deberán obtener 70 o más, de los 100 puntos posibles, en los exámenes en línea.'
+    Distinctión: 'Para recibir una declaración de cumplimiento con distinctión, los participantes deberán obtener 90 o más, de los 100 puntos posibles, en los exámenes en línea.'
+  locale: 'es_419'
+  translations:
+    es_419:
+      success_text: 'ha completado exitosamente el curso gratuito en línea '
+      grade_interstitial: "con {grade}."
+      disclaimer_text: '<b>ATENCIÓN:</b> ALGUNOS DE LOS CURSOS EN LÍNEA PODRÍAN USAR CONTENIDO DE LOS CURSOS REGULARES DE STANFORD UNIVERSITY PERO ESTO NO INDICA QUE SON EQUIVALENTES. ESTA DECLARACIÓN NO AFIRMA DE NINGUNA MANERA QUE EL PARTICIPANTE HA SIDO MATRICULADO COMO ESTUDIANTE REGULAR DE STANFORD UNIVERSITY. TAMPOCO CONFIERE NINGUNA CALIFICACIÓN, CRÉDITO DEL CURSO, O GRADO ACADÉMICO DE STANFORD UNIVERSITY, NI CONFIRMA LA IDENTIDAD DEL PARTICIPANTE.'
+      verify_text: 'La autenticidad se puede confirmar en {verify_link}'

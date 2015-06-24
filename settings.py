@@ -74,7 +74,12 @@ CERTS_ARE_CALLED = 'certificate'
 CERTS_ARE_CALLED_PLURAL = 'certificates'
 
 # Programmatic disclaimer text
-CERTS_SITE_DISCLAIMER_TEXT = ''
+CERTS_SITE_DISCLAIMER_TEXT = (
+    '<b>PLEASE NOTE:</b> SOME ONLINE COURSES MAY DRAW ON MATERIAL FROM COURSES TAUGHT ON-CAMPUS BUT THEY ARE NOT '
+    'EQUIVALENT TO ON-CAMPUS COURSES. THIS STATEMENT DOES NOT AFFIRM THAT THIS PARTICIPANT WAS ENROLLED AS A STUDENT '
+    'AT STANFORD UNIVERSITY IN ANY WAY. IT DOES NOT CONFER A STANFORD UNIVERSITY GRADE, COURSE CREDIT OR DEGREE, AND '
+    'IT DOES NOT VERIFY THE IDENTITY OF THE PARTICIPANT.'
+)
 
 # These are initialized below, after the environment is read
 CERT_URL = ''
@@ -142,3 +147,14 @@ TEMPLATE_DIR = os.path.join(CERT_PRIVATE_DIR, TEMPLATE_DATA_SUBDIR)
 
 with open(os.path.join(CERT_PRIVATE_DIR, CERT_DATA_FILE)) as f:
     CERT_DATA = yaml.load(f.read().decode("utf-8"))
+
+# Locale and Translations
+DEFAULT_LOCALE = 'en_US'
+DEFAULT_TRANSLATIONS = {
+    'en_US': {
+        'success_text': u'has successfully completed a free online offering of',
+        'grade_interstitial': u"with {grade}.",
+        'disclaimer_text': CERTS_SITE_DISCLAIMER_TEXT,
+        'verify_text': u"Authenticity can be verified at {verify_link}",
+    },
+}
