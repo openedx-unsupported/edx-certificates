@@ -142,3 +142,15 @@ TEMPLATE_DIR = os.path.join(CERT_PRIVATE_DIR, TEMPLATE_DATA_SUBDIR)
 
 with open(os.path.join(CERT_PRIVATE_DIR, CERT_DATA_FILE)) as f:
     CERT_DATA = yaml.load(f.read().decode("utf-8"))
+
+# Locale and Translations
+DEFAULT_LOCALE = 'en_US'
+DEFAULT_DATE_FORMAT = '%B %d, %Y'
+DEFAULT_TRANSLATIONS = {
+    'en_US': {
+        "success_text": u"has successfully completed a free online offering of",
+        "interstitial_intro": u"with",
+        "disclaimer": CERTS_SITE_DISCLAIMER_TEXT,
+        "verify_text": u"Authenticity can be verified at ",
+    },
+}
