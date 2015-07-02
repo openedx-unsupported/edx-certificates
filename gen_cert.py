@@ -128,7 +128,7 @@ def font_for_string(fontlist, ustring):
                              fonttag=fonttag,
                              ustring=ustring.encode('utf-8'),
                              fontlist=fontlist,
-                            )
+                         )
             log.warning(warnstring)
             continue
         OK = reduce(lambda x, y: x and y, (ord(c) in codepoints for c in ustring))
