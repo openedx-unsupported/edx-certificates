@@ -1,13 +1,7 @@
-# edx-certificates
+# openedx-certificates
 
-This is the code we use the generate certificates at edX.
-
-
-
-# Generate edX certificates
-
-This script will continuously monitor an xqueue queue
-for the purpose of generating a course certificate for a user.
+This script will continuously monitor an XQueue to generate course
+certificates for users.
 
 
 Generating sample certificates
@@ -20,7 +14,7 @@ Generating sample certificates
 
 2. Clone the certificate repo 
     ```shell
-    git clone https://github.com/edx/edx-certificates.git
+    git clone https://github.com/Stanford-Online/openedx-certificates.git
     ```
 
 3. Clone the internal certificate repo for templates and private data (optional) 
@@ -30,7 +24,7 @@ Generating sample certificates
 
 4. Install the python requirements into the virtualenv 
     ```shell
-    pip install -r edx-certificates/requirements.txt
+    pip install -r openedx-certificates/requirements.txt
     ```
 
 5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
@@ -53,7 +47,7 @@ Generating sample certificates
 
 7. In the edx-certificates directory generate a sample certificate:
     ```shell
-    cd edx-certificates
+    cd openedx-certificates
     python create_pdfs.py \
         --course-id 'course-v1:edX+DemoX+Demo_Course' \
         --name 'Guido' \
@@ -193,4 +187,3 @@ To run the test suite:
   desire to see it replaced by smarter intermediate layers that use celery task
   queues or similar. This repo should be sufficiently modular that only
   queue.py should need to be changed to work this way.
-
