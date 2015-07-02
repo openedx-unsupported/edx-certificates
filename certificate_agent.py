@@ -102,12 +102,6 @@ def main():
                     issued_date=issued_date,
                 )
                 last_course = course_id
-            if action in ['remove', 'regen']:
-                cert.delete_certificate(xqueue_body['delete_download_uuid'],
-                                        xqueue_body['delete_verify_uuid'])
-                if action in ['remove']:
-                    continue
-
         except (TypeError, ValueError, KeyError, IOError) as e:
             log.critical('Unable to parse queue submission ({0}) : {1}'.format(e, certdata))
             if settings.DEBUG:
