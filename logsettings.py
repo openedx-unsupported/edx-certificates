@@ -11,8 +11,7 @@ def get_logger_config(log_dir,
                       edx_filename="edx.log",
                       dev_env=False,
                       debug=False,
-                      local_loglevel='INFO',
-                      service_variant=None):
+                      local_loglevel='INFO'):
 
     """
     Return the appropriate logging config dictionary. You should assign the
@@ -26,7 +25,6 @@ def get_logger_config(log_dir,
 
     "edx_filename" are ignored unless dev_env
     is set to true since otherwise logging is handled by rsyslogd.
-
     """
 
     # Revert to INFO if an invalid string is passed in
@@ -34,11 +32,18 @@ def get_logger_config(log_dir,
         local_loglevel = 'INFO'
 
     hostname = platform.node().split(".")[0]
-    syslog_format = ("[service_variant={service_variant}]"
-                     "[%(name)s][env:{logging_env}] %(levelname)s "
-                     "[{hostname}  %(process)d] [%(filename)s:%(lineno)d] "
-                     "- %(message)s").format(service_variant=service_variant,
-                                             logging_env=logging_env, hostname=hostname)
+    syslog_format = (
+        "[service_variant=certs]"
+        "[%(name)s]"
+        "[env:{logging_env}] "
+        "%(levelname)s "
+        "[{hostname}  %(process)d] "
+        "[%(filename)s:%(lineno)d] "
+        "- %(message)s"
+    ).format(
+        logging_env=logging_env,
+        hostname=hostname,
+    )
 
     handlers = ['console', 'local']
 
