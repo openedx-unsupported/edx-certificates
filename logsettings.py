@@ -27,10 +27,6 @@ def get_logger_config(log_dir,
     is set to true since otherwise logging is handled by rsyslogd.
     """
 
-    # Revert to INFO if an invalid string is passed in
-    if local_loglevel not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
-        local_loglevel = 'INFO'
-
     hostname = platform.node().split(".")[0]
     syslog_format = (
         "[service_variant=certs]"
