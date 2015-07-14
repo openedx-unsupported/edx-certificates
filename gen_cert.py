@@ -211,7 +211,7 @@ class CertificateGen(object):
         # lookup long names from the course_id
         try:
             self.long_org = long_org or cert_data.get('LONG_ORG', '').encode('utf-8') or settings.DEFAULT_ORG
-            self.long_course = long_course or cert_data.get('LONG_COURSE', '').encode('utf-8')
+            self.long_course = cert_data.get('LONG_COURSE', '').encode('utf-8') or long_course or ''
             self.issued_date = issued_date or cert_data.get('ISSUED_DATE', '').encode('utf-8') or 'ROLLING'
             self.interstitial_texts = collections.defaultdict(interstitial_factory())
             interstitial_dict = {
