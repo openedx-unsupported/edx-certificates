@@ -59,8 +59,8 @@ def test_cert_gen():
                 v = gpg.verify_file(f, sig)
             assert_true(v is not None and v.trust_level >= v.TRUST_FULLY)
 
-        # And of course we have a download file, right?
-        assert_true(set(download_files) == DOWNLOAD_FILES)
+            # And of course we have a download file, right?
+            assert_true(set(download_files) == DOWNLOAD_FILES)
 
         # Remove files
         if os.path.exists(tmpdir):

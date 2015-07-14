@@ -128,7 +128,7 @@ def font_for_string(fontlist, ustring):
                              fonttag=fonttag,
                              ustring=ustring.encode('utf-8'),
                              fontlist=fontlist,
-                            )
+                         )
             log.warning(warnstring)
             continue
         OK = reduce(lambda x, y: x and y, (ord(c) in codepoints for c in ustring))
@@ -257,10 +257,6 @@ class CertificateGen(object):
         self.cert_label_singular = cert_data.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
         self.cert_label_plural = cert_data.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
         self.course_association_text = cert_data.get('COURSE_ASSOCIATION_TEXT', 'a course of study')
-
-    def delete_certificate(self, delete_download_uuid, delete_verify_uuid):
-        # TODO remove/archive an existing certificate
-        raise NotImplementedError
 
     def create_and_upload(
         self,
