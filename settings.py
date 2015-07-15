@@ -110,12 +110,13 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
     local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
     LOGGING_DEV_ENV = ENV_TOKENS.get('LOGGING_DEV_ENV', True)
-    LOGGING = get_logger_config(LOG_DIR,
-                                logging_env=ENV_TOKENS.get('LOGGING_ENV', 'dev'),
-                                local_loglevel=local_loglevel,
-                                debug=False,
-                                dev_env=LOGGING_DEV_ENV,
-                                service_variant=os.environ.get('SERVICE_VARIANT', None))
+    LOGGING = get_logger_config(
+        LOG_DIR,
+        logging_env=ENV_TOKENS.get('LOGGING_ENV', 'dev'),
+        local_loglevel=local_loglevel,
+        debug=False,
+        dev_env=LOGGING_DEV_ENV,
+    )
     CERT_PRIVATE_DIR = ENV_TOKENS.get('CERT_PRIVATE_DIR', CERT_PRIVATE_DIR)
 
 # This is the base URL used for logging CERT uploads to s3
