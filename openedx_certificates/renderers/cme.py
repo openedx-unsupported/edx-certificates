@@ -63,9 +63,9 @@ class CmeRenderer(object):
             apply_style_to_font_list(self.font_list, style),
             student_name
         )
-        max_font_size_in_points = 42
-        max_leading = max_font_size_in_points * 1.3
-        max_height = max_font_size_in_points * 1.3
+        max_font_size_in_points = 36
+        max_leading = max_font_size_in_points * 1.5
+        max_height = max_font_size_in_points * 1.5
         position_bottom_mininum = 370     # distance from bottom of page (in points)
         paragraph = autoscale_text(
             self.page,
@@ -91,9 +91,9 @@ class CmeRenderer(object):
             apply_style_to_font_list(self.font_list, style),
             course_title
         )
-        max_font_size_in_points = 36
-        max_leading = max_font_size_in_points * 1.1
-        max_height = max_font_size_in_points * 3.1
+        max_font_size_in_points = 32
+        max_leading = max_font_size_in_points * 1.3
+        max_height = max_font_size_in_points * 3.3
         position_bottom_mininum = 210
         paragraph = autoscale_text(
             self.page,
