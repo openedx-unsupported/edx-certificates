@@ -67,6 +67,26 @@ def test_cert_gen():
             shutil.rmtree(tmpdir)
 
 
+def test_designation():
+    """
+    Generate a test certificate with designation text
+    """
+    for course_id in settings.CERT_DATA.keys():
+        designation = 'PharmD'
+        tmpdir = tempfile.mkdtemp()
+        cert = CertificateGen(course_id)
+        (download_uuid, verify_uuid, download_url) = cert.create_and_upload(
+            'John Smith',
+            upload=False,
+            copy_to_webroot=True,
+            cert_web_root=tmpdir,
+            cleanup=True,
+            designation=designation,
+        )
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+
 def test_cert_names():
     """Generate certificates for all names in NAMES without saving or uploading"""
     # XXX: This is meant to catch unicode rendering problems, but does it?
