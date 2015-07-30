@@ -59,10 +59,30 @@ def test_cert_gen():
                 v = gpg.verify_file(f, sig)
             assert_true(v is not None and v.trust_level >= v.TRUST_FULLY)
 
-        # And of course we have a download file, right?
-        assert_true(set(download_files) == DOWNLOAD_FILES)
+            # And of course we have a download file, right?
+            assert_true(set(download_files) == DOWNLOAD_FILES)
 
         # Remove files
+        if os.path.exists(tmpdir):
+            shutil.rmtree(tmpdir)
+
+
+def test_designation():
+    """
+    Generate a test certificate with designation text
+    """
+    for course_id in settings.CERT_DATA.keys():
+        designation = 'PharmD'
+        tmpdir = tempfile.mkdtemp()
+        cert = CertificateGen(course_id)
+        (download_uuid, verify_uuid, download_url) = cert.create_and_upload(
+            'John Smith',
+            upload=False,
+            copy_to_webroot=True,
+            cert_web_root=tmpdir,
+            cleanup=True,
+            designation=designation,
+        )
         if os.path.exists(tmpdir):
             shutil.rmtree(tmpdir)
 
