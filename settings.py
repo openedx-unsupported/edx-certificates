@@ -74,7 +74,12 @@ CERTS_ARE_CALLED = 'certificate'
 CERTS_ARE_CALLED_PLURAL = 'certificates'
 
 # Programmatic disclaimer text
-CERTS_SITE_DISCLAIMER_TEXT = ''
+CERTS_SITE_DISCLAIMER_TEXT = (
+    '<b>PLEASE NOTE:</b> SOME ONLINE COURSES MAY DRAW ON MATERIAL FROM COURSES TAUGHT ON-CAMPUS BUT THEY ARE NOT '
+    'EQUIVALENT TO ON-CAMPUS COURSES. THIS STATEMENT DOES NOT AFFIRM THAT THIS PARTICIPANT WAS ENROLLED AS A STUDENT '
+    'AT STANFORD UNIVERSITY IN ANY WAY. IT DOES NOT CONFER A STANFORD UNIVERSITY GRADE, COURSE CREDIT OR DEGREE, AND '
+    'IT DOES NOT VERIFY THE IDENTITY OF THE PARTICIPANT.'
+)
 
 # These are initialized below, after the environment is read
 CERT_URL = ''
@@ -105,12 +110,13 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
     local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
     LOGGING_DEV_ENV = ENV_TOKENS.get('LOGGING_DEV_ENV', True)
-    LOGGING = get_logger_config(LOG_DIR,
-                                logging_env=ENV_TOKENS.get('LOGGING_ENV', 'dev'),
-                                local_loglevel=local_loglevel,
-                                debug=False,
-                                dev_env=LOGGING_DEV_ENV,
-                                service_variant=os.environ.get('SERVICE_VARIANT', None))
+    LOGGING = get_logger_config(
+        LOG_DIR,
+        logging_env=ENV_TOKENS.get('LOGGING_ENV', 'dev'),
+        local_loglevel=local_loglevel,
+        debug=False,
+        dev_env=LOGGING_DEV_ENV,
+    )
     CERT_PRIVATE_DIR = ENV_TOKENS.get('CERT_PRIVATE_DIR', CERT_PRIVATE_DIR)
 
 # This is the base URL used for logging CERT uploads to s3
@@ -142,3 +148,14 @@ TEMPLATE_DIR = os.path.join(CERT_PRIVATE_DIR, TEMPLATE_DATA_SUBDIR)
 
 with open(os.path.join(CERT_PRIVATE_DIR, CERT_DATA_FILE)) as f:
     CERT_DATA = yaml.load(f.read().decode("utf-8"))
+
+# Locale and Translations
+DEFAULT_LOCALE = 'en_US'
+DEFAULT_TRANSLATIONS = {
+    'en_US': {
+        'success_text': u'has successfully completed a free online offering of',
+        'grade_interstitial': u"with {grade}.",
+        'disclaimer_text': CERTS_SITE_DISCLAIMER_TEXT,
+        'verify_text': u"Authenticity can be verified at {verify_link}",
+    },
+}
