@@ -209,6 +209,7 @@ class CertificateGen(object):
                            template_pdf parameter
         """
         if dir_prefix is None:
+            self._ensure_dir(TMP_GEN_DIR)
             dir_prefix = tempfile.mkdtemp(prefix=TMP_GEN_DIR)
         self._ensure_dir(dir_prefix)
         self.dir_prefix = dir_prefix

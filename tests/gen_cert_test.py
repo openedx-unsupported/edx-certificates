@@ -4,9 +4,10 @@ import os
 import shutil
 import tempfile
 import urllib2
+from mock import patch
 
 from nose.plugins.skip import SkipTest
-from nose.tools import assert_true
+from nose.tools import assert_true, assert_false
 
 import settings
 from gen_cert import CertificateGen
@@ -65,6 +66,25 @@ def test_cert_gen():
         # Remove files
         if os.path.exists(tmpdir):
             shutil.rmtree(tmpdir)
+
+
+@patch('gen_cert.TMP_GEN_DIR', new_callable=tempfile.mkdtemp)
+def test_creates_default_dir(gen_dir):
+    """Make sure the certificate generator creates the default directory if it doesn't exist."""
+    gen = None
+    try:
+        assert_true(os.path.exists(gen_dir))
+        shutil.rmtree(gen_dir)
+        assert_false(os.path.exists(gen_dir))
+        gen = CertificateGen(settings.CERT_DATA.keys()[0])
+        assert_true(os.path.exists(gen.dir_prefix))
+    finally:
+        if os.path.exists(gen_dir):
+            shutil.rmtree(gen_dir)
+        if gen:
+            # Avoid catastrophy
+            assert_true(gen.dir_prefix.startswith(gen_dir))
+            shutil.rmtree(gen.dir_prefix)
 
 
 def test_cert_names():

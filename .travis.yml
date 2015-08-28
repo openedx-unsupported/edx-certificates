@@ -1,14 +1,13 @@
 # Travis CI configuration file for running tests
 language: python
+sudo: false
 python:
   - "2.7"
-before_install:
-  - pip install pep8
-  - pep8 --verbose
 install:
   - pip install --allow-all-external -r requirements.txt
-  - pip install coverage
+  - pip install -r test_requirements.txt
 script:
+  - pep8 --verbose
   - |
     curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt -o /var/tmp/key.txt
     curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-key-ownertrust.txt -o /var/tmp/trust.txt
@@ -16,5 +15,4 @@ script:
     /usr/bin/gpg --import-ownertrust /var/tmp/trust.txt
     nosetests --with-coverage
 after_success:
-  - pip install coveralls
   - coveralls
