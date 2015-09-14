@@ -462,7 +462,8 @@ class CertificateGen(object):
         paragraph = Paragraph("{0}".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
+        #paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
+        paragraph.drawOn(c, (WIDTH/2 - RIGHT_INDENT - width) * mm, 163 * mm)
 
         # Issued ..
 
