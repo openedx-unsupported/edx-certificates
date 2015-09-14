@@ -82,18 +82,22 @@ BLANK_PDFS = {
 
 def prettify_isodate(isoformat_date):
     """Convert a string like '2012-02-02' to one like 'February 2nd, 2012'"""
+    """Espanol CL: convierte el string '2012-02-02' a 'Santiago de Chile, a 14 de Septiembre del 2014'"""
     m = RE_ISODATES.match(isoformat_date)
     if not m:
         raise TypeError("prettify_isodate called with incorrect date format: %s" % isoformat_date)
-    day_suffixes = {'1': 'st', '2': 'nd', '3': 'rd', '21': 'st', '22': 'nd', '23': 'rd', '31': 'st'}
-    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-              'August', 'September', 'October', 'November', 'December']
-    date = {'year': '', 'month': '', 'day': '', 'suffix': 'th'}
+    #day_suffixes = {'1': 'st', '2': 'nd', '3': 'rd', '21': 'st', '22': 'nd', '23': 'rd', '31': 'st'}
+    #months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+    #          'August', 'September', 'October', 'November', 'December']
+    months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+              'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    #date = {'year': '', 'month': '', 'day': '', 'suffix': 'th'}
     date['year'] = m.group('year')
     date['month'] = months[int(m.group('month')) - 1]
     date['day'] = m.group('day').lstrip('0')
-    date['suffix'] = day_suffixes.get(date['day'], 'th')
-    return "%(month)s %(day)s%(suffix)s, %(year)s" % date
+    #date['suffix'] = day_suffixes.get(date['day'], 'th')
+    #return "%(month)s %(day)s%(suffix)s, %(year)s" % date
+    return "Santiago de Chile, a %(day)s de %(month)s del %(year)s" % date
 
 
 def get_cert_date(calling_date_parameter, configured_date_parameter):
@@ -446,7 +450,8 @@ class CertificateGen(object):
         styleOpenSansLight.textColor = colors.Color(0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "CERTIFICATE"
+        #paragraph_string = "CERTIFICATE"
+        paragraph_string = "Constancia de Honor"
 
         # Right justified so we compute the width
         width = stringWidth(
@@ -467,7 +472,8 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "Issued {0}".format(self.issued_date)
+        #paragraph_string = "Issued {0}".format(self.issued_date)
+        paragraph_string = "{0}".format(self.issued_date)
 
         # Right justified so we compute the width
         width = stringWidth(
@@ -488,7 +494,8 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "This is to certify that"
+        #paragraph_string = "This is to certify that"
+        paragraph_string = " "
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
@@ -534,11 +541,17 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "successfully completed"
+        #paragraph_string = "successfully completed"
+        #if '7.00x' in self.course:
+        #    paragraph_string = "successfully completed the inaugural offering of"
+        #else:
+        #    paragraph_string = "successfully completed"
+
+        paragraph_string = "Concluyó satisfactoriamente el curso abierto"
         if '7.00x' in self.course:
-            paragraph_string = "successfully completed the inaugural offering of"
+            paragraph_string = "Concluyó satisfactoriamente el curso abierto"
         else:
-            paragraph_string = "successfully completed"
+            paragraph_string = "Concluyó satisfactoriamente el curso abierto"
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
@@ -594,9 +607,13 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "a course of study offered by <b>{0}</b>" \
-                           ", an online learning<br /><br />initiative of " \
-                           "<b>{1}</b> through <b>edX</b>.".format(
+        #paragraph_string = "a course of study offered by <b>{0}</b>" \
+        #                   ", an online learning<br /><br />initiative of " \
+        #                   "<b>{1}</b> through <b>edX</b>.".format(
+        #                       self.org, self.long_org.decode('utf-8'))
+
+        paragraph_string = "Realizado entre el 10 de agosto de 2015 y el 13 de septiembre del 2015<br/>" \
+                           "en la plataforma Uabierta de la Universidad de Chile".format(
                                self.org, self.long_org.decode('utf-8'))
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
@@ -611,11 +628,16 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_CENTER
 
-        paragraph_string = "HONOR CODE CERTIFICATE<br/>" \
-            "*Authenticity of this certificate can be verified at " \
+        #paragraph_string = "HONOR CODE CERTIFICATE<br/>" \
+        #    "*Authenticity of this certificate can be verified at " \
+        #    "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
+        #    "{verify_url}/{verify_path}/{verify_uuid}</a>"
+
+        paragraph_string = "Constancia Código de Honor<br/>" \
+            "*Este documento puede ser consultado en " \
             "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
             "{verify_url}/{verify_path}/{verify_uuid}</a>"
-
+    
         paragraph_string = paragraph_string.format(
             verify_url=settings.CERT_VERIFY_URL,
             verify_path=S3_VERIFY_PATH,
