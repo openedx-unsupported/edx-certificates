@@ -445,10 +445,10 @@ class CertificateGen(object):
 
         # CERTIFICATE
 
-        styleOpenSansLight.fontSize = 19
+        styleOpenSansLight.fontSize = 25
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
+        styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "CERTIFICATE"
         paragraph_string = "Constancia de Honor"
@@ -470,7 +470,7 @@ class CertificateGen(object):
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
+        styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "Issued {0}".format(self.issued_date)
         paragraph_string = "{0}".format(self.issued_date)
@@ -492,7 +492,7 @@ class CertificateGen(object):
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
+        styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "This is to certify that"
         paragraph_string = " "
@@ -527,7 +527,7 @@ class CertificateGen(object):
 
         style.textColor = colors.Color(
             0, 0.624, 0.886)
-        style.alignment = TA_LEFT
+        style.alignment = TA_CENTER
 
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
@@ -539,7 +539,7 @@ class CertificateGen(object):
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
+        styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "successfully completed"
         #if '7.00x' in self.course:
@@ -584,7 +584,7 @@ class CertificateGen(object):
             styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
             0, 0.624, 0.886)
-        styleOpenSans.alignment = TA_LEFT
+        styleOpenSans.alignment = TA_CENTER
 
         paragraph_string = u"<b><i>{0}: {1}</i></b>".format(
             self.course, self.long_course.decode('utf-8'))
@@ -605,14 +605,14 @@ class CertificateGen(object):
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
+        styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "a course of study offered by <b>{0}</b>" \
         #                   ", an online learning<br /><br />initiative of " \
         #                   "<b>{1}</b> through <b>edX</b>.".format(
         #                       self.org, self.long_org.decode('utf-8'))
 
-        paragraph_string = "Realizado entre el 10 de agosto de 2015 y el 13 de septiembre del 2015<br/>" \
+        paragraph_string = "Realizado entre el 10 de agosto de 2015 y el 13 de septiembre del 2015<br/><br/>" \
                            "en la plataforma Uabierta de la Universidad de Chile".format(
                                self.org, self.long_org.decode('utf-8'))
 
@@ -637,7 +637,7 @@ class CertificateGen(object):
             "*Este documento puede ser consultado en " \
             "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
             "{verify_url}/{verify_path}/{verify_uuid}</a>"
-    
+
         paragraph_string = paragraph_string.format(
             verify_url=settings.CERT_VERIFY_URL,
             verify_path=S3_VERIFY_PATH,
