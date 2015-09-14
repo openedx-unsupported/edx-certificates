@@ -30,7 +30,8 @@ TEMPLATE_DATA_SUBDIR = 'template_data'
 CERT_DATA_FILE = 'cert-data.yml'
 
 # DEFAULTS
-DEBUG = False
+#DEBUG = False
+DEBUG = True
 # This needs to be set on MacOS or anywhere you want logging to simply go
 # to an output file.
 LOGGING_DEV_ENV = True
@@ -50,7 +51,8 @@ CERT_KEY_ID = 'FEF8D954'
 # CERT_KEY_ID = ''
 
 # Specify the default name of the certificate PDF
-CERT_FILENAME = 'Certificate.pdf'
+#CERT_FILENAME = 'Certificate.pdf'
+CERT_FILENAME = 'Constancia.pdf'
 
 # Specify these credentials before running the test suite
 # or ensure that your .boto file has write permission
@@ -64,8 +66,10 @@ CERT_WEB_ROOT = '/var/tmp'
 # to the CERT_WEB_ROOT. This is not something you want to do
 # unless you are running your certificate service on a single
 # server
-COPY_TO_WEB_ROOT = False
-S3_UPLOAD = True
+#COPY_TO_WEB_ROOT = False
+#S3_UPLOAD = True
+COPY_TO_WEB_ROOT = True
+S3_UPLOAD = False
 S3_VERIFY_PATH = 'cert'
 
 # A knob to control what certs are called, some places have restrictions on the
@@ -122,6 +126,12 @@ CERT_DOWNLOAD_URL = CERT_DOWNLOAD_URL or 'https://{}.s3.amazonaws.com'.format(CE
 CERT_VERIFY_URL = CERT_VERIFY_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
 
 DEFAULT_ORG = "Some Institution"
+print "variables de prueba"
+print CERT_URL
+print CERT_DOWNLOAD_URL
+print CERT_VERIFY_URL
+print S3_UPLOAD
+print COPY_TO_WEB_ROOT
 
 if os.path.isfile(ENV_ROOT / "auth.json"):
     with open(ENV_ROOT / "auth.json") as env_file:
