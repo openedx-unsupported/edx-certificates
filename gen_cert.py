@@ -498,7 +498,7 @@ class CertificateGen(object):
         #paragraph_string = "This is to certify that"
         paragraph_string = " "
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        paragraph.wrapOn(c, 200 * mm, 214 * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
 
         #  Student name
