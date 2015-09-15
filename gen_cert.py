@@ -624,8 +624,8 @@ class CertificateGen(object):
         #                   "<b>{1}</b> through <b>edX</b>.".format(
         #                       self.org, self.long_org.decode('utf-8'))
 
-        paragraph_string = "Realizado entre el 10 de agosto de 2015 y el 13 de septiembre del 2015<br/><br/>" \
-                           "en la plataforma Uabierta de la Universidad de Chile".format(
+        paragraph_string = "Realizado entre el 10 de agosto de 2015 y el 13 de septiembre de 2015<br/><br/>" \
+                           "en la plataforma UAbierta de la Universidad de Chile".format(
                                self.org, self.long_org.decode('utf-8'))
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
