@@ -525,10 +525,10 @@ class CertificateGen(object):
         # decrease the font size
         if width > 153:
             style.fontSize = 18
-            nameYOffset = 114.5
+            nameYOffset = 115.5
         else:
             style.fontSize = 34
-            nameYOffset = 117.5
+            nameYOffset = 118.5
 
         style.textColor = colors.Color(
             0, 0.624, 0.886)
@@ -564,7 +564,7 @@ class CertificateGen(object):
         #paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
 
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 106 * mm)
 
         # Course name
 
