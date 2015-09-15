@@ -525,10 +525,10 @@ class CertificateGen(object):
         # decrease the font size
         if width > 153:
             style.fontSize = 18
-            nameYOffset = 111.5
+            nameYOffset = 118.5
         else:
             style.fontSize = 34
-            nameYOffset = 114.5
+            nameYOffset = 121.5
 
         style.textColor = colors.Color(
             0, 0.624, 0.886)
@@ -629,7 +629,8 @@ class CertificateGen(object):
                                self.org, self.long_org.decode('utf-8'))
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        paragraph.wrapOn(c, 200 * mm, 214 * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 78 * mm)
 
         # Honor code
