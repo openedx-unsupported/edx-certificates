@@ -525,10 +525,10 @@ class CertificateGen(object):
         # decrease the font size
         if width > 153:
             style.fontSize = 18
-            nameYOffset = 121.5
+            nameYOffset = 131.5
         else:
             style.fontSize = 34
-            nameYOffset = 124.5
+            nameYOffset = 134.5
 
         style.textColor = colors.Color(
             0, 0.624, 0.886)
@@ -656,8 +656,11 @@ class CertificateGen(object):
             verify_uuid=verify_uuid)
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, 0 * mm, 28 * mm)
+        #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        #paragraph.drawOn(c, 0 * mm, 28 * mm)
+        paragraph.wrapOn(c, 200 * mm, 214 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 28 * mm)
+        
 
         c.showPage()
         c.save()
