@@ -86,18 +86,18 @@ def prettify_isodate(isoformat_date):
     m = RE_ISODATES.match(isoformat_date)
     if not m:
         raise TypeError("prettify_isodate called with incorrect date format: %s" % isoformat_date)
-    #day_suffixes = {'1': 'st', '2': 'nd', '3': 'rd', '21': 'st', '22': 'nd', '23': 'rd', '31': 'st'}
-    #months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-    #          'August', 'September', 'October', 'November', 'December']
-    months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
-              'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    #date = {'year': '', 'month': '', 'day': '', 'suffix': 'th'}
+    day_suffixes = {'1': 'st', '2': 'nd', '3': 'rd', '21': 'st', '22': 'nd', '23': 'rd', '31': 'st'}
+    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
+              'August', 'September', 'October', 'November', 'December']
+    ##months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+    ##          'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    date = {'year': '', 'month': '', 'day': '', 'suffix': 'th'}
     date['year'] = m.group('year')
     date['month'] = months[int(m.group('month')) - 1]
     date['day'] = m.group('day').lstrip('0')
-    #date['suffix'] = day_suffixes.get(date['day'], 'th')
-    #return "%(month)s %(day)s%(suffix)s, %(year)s" % date
-    return "Santiago de Chile, a %(day)s de %(month)s del %(year)s" % date
+    date['suffix'] = day_suffixes.get(date['day'], 'th')
+    return "%(month)s %(day)s%(suffix)s, %(year)s" % date
+    ##return "Santiago de Chile, a %(day)s de %(month)s del %(year)s" % date
 
 
 def get_cert_date(calling_date_parameter, configured_date_parameter):
@@ -474,9 +474,9 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_CENTER
 
-        #paragraph_string = "Issued {0}".format(self.issued_date)
+        paragraph_string = "Issued {0}".format(self.issued_date)
         #paragraph_string = "{0}".format(self.issued_date)
-        paragraph_string = "Santiago de Chile, a {0}".format(self.issued_date)
+        ##paragraph_string = "Santiago de Chile, a {0}".format(self.issued_date)
 
         # Right justified so we compute the width
         width = stringWidth(
@@ -592,9 +592,10 @@ class CertificateGen(object):
             styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
             0, 0.624, 0.886)
+        styleOpenSans.line-height = 300%
         styleOpenSans.alignment = TA_CENTER
 
-        paragraph_string = u"<b style='line-height: 150%'><i>{0}: {1}</i></b>".format(
+        paragraph_string = u"<b style='line-height: 300%'><i>{0}: {1}</i></b>".format(
             self.course, self.long_course.decode('utf-8'))
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
