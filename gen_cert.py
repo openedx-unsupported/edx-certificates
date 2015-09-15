@@ -525,10 +525,10 @@ class CertificateGen(object):
         # decrease the font size
         if width > 153:
             style.fontSize = 18
-            nameYOffset = 131.5
+            nameYOffset = 111.5
         else:
             style.fontSize = 34
-            nameYOffset = 134.5
+            nameYOffset = 114.5
 
         style.textColor = colors.Color(
             0, 0.624, 0.886)
