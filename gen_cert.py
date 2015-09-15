@@ -461,8 +461,9 @@ class CertificateGen(object):
         ) / mm
         paragraph = Paragraph("{0}".format(
             paragraph_string), styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         #paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
+        paragraph.wrapOn(c, 200 * mm, 214 * mm)
         paragraph.drawOn(c, (LEFT_INDENT - width/2) * mm, 140 * mm)
 
         # Issued ..
@@ -484,8 +485,10 @@ class CertificateGen(object):
         ) / mm
         paragraph = Paragraph("<i>{0}</i>".format(
             paragraph_string), styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
+        #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        #paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
+        paragraph.wrapOn(c, 200 * mm, 214 * mm)
+        paragraph.drawOn(c, (LEFT_INDENT - width/2) * mm, 140 * mm)
 
         # This is to certify..
 
