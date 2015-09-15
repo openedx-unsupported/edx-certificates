@@ -594,7 +594,7 @@ class CertificateGen(object):
             0, 0.624, 0.886)
         styleOpenSans.alignment = TA_CENTER
 
-        paragraph_string = u"<b><i>{0}: {1}</i></b>".format(
+        paragraph_string = u"<b style='line-height: 150%'><i>{0}: {1}</i></b>".format(
             self.course, self.long_course.decode('utf-8'))
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
