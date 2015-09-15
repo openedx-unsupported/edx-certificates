@@ -464,7 +464,7 @@ class CertificateGen(object):
         #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         #paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, (LEFT_INDENT - width/2) * mm, 140 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 140 * mm)
 
         # Issued ..
 
@@ -488,7 +488,7 @@ class CertificateGen(object):
         #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         #paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, (LEFT_INDENT - width/2) * mm, 140 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 150 * mm)
 
         # This is to certify..
 
