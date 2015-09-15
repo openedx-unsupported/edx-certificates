@@ -475,7 +475,8 @@ class CertificateGen(object):
         styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "Issued {0}".format(self.issued_date)
-        paragraph_string = "{0}".format(self.issued_date)
+        #paragraph_string = "{0}".format(self.issued_date)
+        paragraph_string = "Santiago de Chile, a {0}".format(self.issued_date)
 
         # Right justified so we compute the width
         width = stringWidth(
@@ -492,17 +493,17 @@ class CertificateGen(object):
 
         # This is to certify..
 
-        styleOpenSansLight.fontSize = 12
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_CENTER
+        #styleOpenSansLight.fontSize = 12
+        #styleOpenSansLight.leading = 10
+        #styleOpenSansLight.textColor = colors.Color(
+        #    0.302, 0.306, 0.318)
+        #styleOpenSansLight.alignment = TA_CENTER
 
         #paragraph_string = "This is to certify that"
-        paragraph_string = " "
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-        paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
+        #paragraph_string = " "
+        #paragraph = Paragraph(paragraph_string, styleOpenSansLight)
+        #paragraph.wrapOn(c, 200 * mm, 214 * mm)
+        #paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
 
         #  Student name
 
@@ -559,7 +560,10 @@ class CertificateGen(object):
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        #paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
+
+        paragraph.wrapOn(c, 200 * mm, 214 * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
 
         # Course name
@@ -595,13 +599,17 @@ class CertificateGen(object):
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         if 'PH207x' in self.course:
-            paragraph.wrapOn(c, 180 * mm, HEIGHT * mm)
+            #paragraph.wrapOn(c, 180 * mm, HEIGHT * mm)
+            #paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
+            paragraph.wrapOn(c, 200 * mm, 214 * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
         elif '6.00x' in self.course:
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+            #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+            paragraph.wrapOn(c, 200 * mm, 214 * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
         else:
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+            #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+            paragraph.wrapOn(c, 200 * mm, 214 * mm)
             paragraph.drawOn(c, LEFT_INDENT * mm, 99 * mm)
 
         # A course of study..
