@@ -600,7 +600,9 @@ class CertificateGen(object):
         styleOpenSans.alignment = TA_CENTER
         styleOpenSans.leading = 21
 
-        paragraph_string = u"<b style='line-height: 2'><i>{0}: {1}</i></b>".format(
+        #paragraph_string = u"<b style='line-height: 2'><i>{0}: {1}</i></b>".format(
+        #    self.course, self.long_course.decode('utf-8'))
+        paragraph_string = u"<b style='line-height: 2'><i>{1}</i></b>".format(
             self.course, self.long_course.decode('utf-8'))
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
@@ -608,15 +610,15 @@ class CertificateGen(object):
             #paragraph.wrapOn(c, 180 * mm, HEIGHT * mm)
             #paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
             paragraph.wrapOn(c, 200 * mm, 214 * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
         elif '6.00x' in self.course:
             #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.wrapOn(c, 200 * mm, 214 * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
         else:
             #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.wrapOn(c, 200 * mm, 214 * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 99 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
 
         # A course of study..
 
