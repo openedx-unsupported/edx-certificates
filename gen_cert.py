@@ -610,15 +610,15 @@ class CertificateGen(object):
             #paragraph.wrapOn(c, 180 * mm, HEIGHT * mm)
             #paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
             paragraph.wrapOn(c, 200 * mm, 214 * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 89 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
         elif '6.00x' in self.course:
             #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.wrapOn(c, 200 * mm, 214 * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 89 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
         else:
             #paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
             paragraph.wrapOn(c, 200 * mm, 214 * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 89 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
 
         # A course of study..
 
