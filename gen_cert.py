@@ -474,9 +474,9 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_CENTER
 
-        paragraph_string = "Issued {0}".format(self.issued_date)
+        #paragraph_string = "Issued {0}".format(self.issued_date)
         #paragraph_string = "{0}".format(self.issued_date)
-        ##paragraph_string = "Santiago de Chile, a {0}".format(self.issued_date)
+        paragraph_string = "Santiago de Chile, a {0}".format(self.issued_date)
 
         # Right justified so we compute the width
         width = stringWidth(
