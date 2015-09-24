@@ -552,11 +552,11 @@ class CertificateGen(object):
         #else:
         #    paragraph_string = "successfully completed"
 
-        paragraph_string = "Concluyó satisfactoriamente el curso abierto"
+        paragraph_string = "concluyó satisfactoriamente el curso abierto"
         if '7.00x' in self.course:
-            paragraph_string = "Concluyó satisfactoriamente el curso abierto"
+            paragraph_string = "concluyó satisfactoriamente el curso abierto"
         else:
-            paragraph_string = "Concluyó satisfactoriamente el curso abierto"
+            paragraph_string = "concluyó satisfactoriamente el curso abierto"
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
@@ -632,7 +632,7 @@ class CertificateGen(object):
         #                   "<b>{1}</b> through <b>edX</b>.".format(
         #                       self.org, self.long_org.decode('utf-8'))
 
-        paragraph_string = "Realizado entre el 10 de agosto de 2015 y el 13 de septiembre de 2015<br/><br/>" \
+        paragraph_string = "realizado entre el 10 de agosto de 2015 y el 13 de septiembre de 2015<br/><br/>" \
                            "en la plataforma UAbierta de la Universidad de Chile".format(
                                self.org, self.long_org.decode('utf-8'))
 
