@@ -131,7 +131,7 @@ class CertificateGen(object):
 
         def interstitial_factory():
             """ Generate default values for interstitial_texts defaultdict """
-            return itertools.repeat(cert_data.get('interstitial', {}).get('Pass', '')).next
+            return itertools.repeat(cert_data.get('interstitial', {}).get('Pass', u'').encode('utf-8')).next
 
         # lookup long names from the course_id
         try:
@@ -1752,7 +1752,7 @@ class CertificateGen(object):
 
         # SECTION: Extra achievements
         achievements_string = ""
-        achievements_description_string = unicode(self.interstitial_texts[grade])
+        achievements_description_string = self.interstitial_texts[grade].decode('utf-8')
         if grade and grade.lower() != 'pass':
             grade_html = u"<b>{grade}</b>".format(grade=grade.decode('utf-8'))
             achievements_string = grade_interstitial.decode('utf-8').format(grade=grade_html) + '<br /><br />'
