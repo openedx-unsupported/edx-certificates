@@ -112,8 +112,8 @@ def main():
 
         try:
             log.info(
-                "Generating certificate for {username} ({name}), "
-                "in {course_id}, with grade {grade}".format(
+                u"Generating certificate for {username} ({name}), "
+                u"in {course_id}, with grade {grade}".format(
                     username=username.encode('utf-8'),
                     name=name.encode('utf-8'),
                     course_id=course_id.encode('utf-8'),
@@ -122,7 +122,7 @@ def main():
             )
             (download_uuid,
              verify_uuid,
-             download_url) = cert.create_and_upload(name.encode('utf-8'), grade=grade, designation=designation)
+             download_url) = cert.create_and_upload(name.encode('utf-8'), grade=grade.encode('utf-8'), designation=designation)
 
         except Exception as e:
             # global exception handler, if anything goes wrong
