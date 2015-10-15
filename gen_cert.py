@@ -476,7 +476,7 @@ class CertificateGen(object):
 
         #paragraph_string = "Issued {0}".format(self.issued_date)
         #paragraph_string = "{0}".format(self.issued_date)
-        paragraph_string = "Santiago de Chile, a {0}".format(self.issued_date)
+        paragraph_string = "Santiago de Chile, a 16 de octubre de 2015".format(self.issued_date)
 
         # Right justified so we compute the width
         width = stringWidth(
@@ -523,12 +523,19 @@ class CertificateGen(object):
 
         # We will wrap at 200mm in, so if we reach the end (200-47)
         # decrease the font size
+        #if width > 153:
+        #    style.fontSize = 18
+        #    nameYOffset = 115.5
+        #else:
+        #    style.fontSize = 34
+        #    nameYOffset = 118.5
+        
         if width > 153:
             style.fontSize = 18
             nameYOffset = 115.5
         else:
-            style.fontSize = 34
-            nameYOffset = 118.5
+            style.fontSize = 18
+            nameYOffset = 115.5
 
         style.textColor = colors.Color(
             0, 0.624, 0.886)
