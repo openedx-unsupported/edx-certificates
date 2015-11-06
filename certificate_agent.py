@@ -85,21 +85,25 @@ def main():
             xqueue_body = json.loads(certdata['xqueue_body'])
             xqueue_header = json.loads(certdata['xqueue_header'])
             action = xqueue_body['action']
-            username = xqueue_body['username']
-            course_id = xqueue_body['course_id']
-            course_name = xqueue_body['course_name']
-            name = xqueue_body['name']
+            username = xqueue_body['username'].encode('utf-8')
+            course_id = xqueue_body['course_id'].encode('utf-8')
+            course_name = xqueue_body['course_name'].encode('utf-8')
+            name = xqueue_body['name'].encode('utf-8')
             template_pdf = xqueue_body.get('template_pdf', None)
             grade = xqueue_body.get('grade', None)
+            if grade:
+                grade = grade.encode('utf-8')
             issued_date = xqueue_body.get('issued_date', None)
             designation = xqueue_body.get('designation', None)
+            if designation:
+                designation = designation.encode('utf-8')
             if last_course != course_id:
                 cert = CertificateGen(
                     course_id,
                     template_pdf,
                     aws_id=args.aws_id,
                     aws_key=args.aws_key,
-                    long_course=course_name.encode('utf-8'),
+                    long_course=course_name,
                     issued_date=issued_date,
                 )
                 last_course = course_id
@@ -114,15 +118,15 @@ def main():
             log.info(
                 "Generating certificate for {username} ({name}), "
                 "in {course_id}, with grade {grade}".format(
-                    username=username.encode('utf-8'),
-                    name=name.encode('utf-8'),
-                    course_id=course_id.encode('utf-8'),
+                    username=username,
+                    name=name,
+                    course_id=course_id,
                     grade=grade,
                 )
             )
             (download_uuid,
              verify_uuid,
-             download_url) = cert.create_and_upload(name.encode('utf-8'), grade=grade, designation=designation)
+             download_url) = cert.create_and_upload(name, grade=grade, designation=designation)
 
         except Exception as e:
             # global exception handler, if anything goes wrong
