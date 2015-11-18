@@ -34,11 +34,17 @@ DEBUG = False
 # This needs to be set on MacOS or anywhere you want logging to simply go
 # to an output file.
 LOGGING_DEV_ENV = True
+# Turn on logging in dev stack
 LOGGING = get_logger_config(ENV_ROOT,
                             logging_env="dev",
-                            local_loglevel="INFO",
+                            LOCAL_LOGLEVEL="INFO",
                             dev_env=LOGGING_DEV_ENV,
                             debug=False)
+
+# Directory in which to store Logs
+LOG_DIR = '/var/tmp'
+# Local Logging Level
+LOCAL_LOGLEVEL = 'INFO'
 
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
@@ -49,6 +55,12 @@ CERT_KEY_ID = 'FEF8D954'
 # or leave blank to skip gpg signing
 # CERT_KEY_ID = ''
 
+# Certificates Generation Directory
+TMP_GEN_DIR = '/tmp/certificates/'
+
+QUEUE_NAME = 'test-pull'
+QUEUE_URL = 'https://xqueue.example.com'
+
 # Specify the default name of the certificate PDF
 CERT_FILENAME = 'Certificate.pdf'
 
@@ -58,7 +70,7 @@ CERT_FILENAME = 'Certificate.pdf'
 CERT_AWS_ID = None
 CERT_AWS_KEY = None
 # Update this with your bucket name
-CERT_BUCKET = 'verify-test.edx.org'
+CERT_BUCKET = 'cert-bucket.example.com'
 CERT_WEB_ROOT = '/var/tmp'
 # when set to true this will copy the generated certificate
 # to the CERT_WEB_ROOT. This is not something you want to do
@@ -90,9 +102,9 @@ CERT_VERIFY_URL = ''
 if os.path.isfile(ENV_ROOT / "env.json"):
     with open(ENV_ROOT / "env.json") as env_file:
         ENV_TOKENS = json.load(env_file)
-    TMP_GEN_DIR = ENV_TOKENS.get('TMP_GEN_DIR', '/tmp/certificates/')
-    QUEUE_NAME = ENV_TOKENS.get('QUEUE_NAME', 'test-pull')
-    QUEUE_URL = ENV_TOKENS.get('QUEUE_URL', 'https://stage-xqueue.edx.org')
+    TMP_GEN_DIR = ENV_TOKENS.get('TMP_GEN_DIR', TMP_GEN_DIR)
+    QUEUE_NAME = ENV_TOKENS.get('QUEUE_NAME', QUEUE_NAME)
+    QUEUE_URL = ENV_TOKENS.get('QUEUE_URL', QUEUE_URL)
     CERT_GPG_DIR = ENV_TOKENS.get('CERT_GPG_DIR', CERT_GPG_DIR)
     CERT_KEY_ID = ENV_TOKENS.get('CERT_KEY_ID', CERT_KEY_ID)
     CERT_BUCKET = ENV_TOKENS.get('CERT_BUCKET', CERT_BUCKET)
@@ -107,13 +119,13 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     CERTS_ARE_CALLED = ENV_TOKENS.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
     CERTS_ARE_CALLED_PLURAL = ENV_TOKENS.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
     CERTS_SITE_DISCLAIMER_TEXT = ENV_TOKENS.get('CERT_SITE_DISCLAIMER_TEXT', CERTS_SITE_DISCLAIMER_TEXT)
-    LOG_DIR = ENV_TOKENS.get('LOG_DIR', '/var/tmp')
-    local_loglevel = ENV_TOKENS.get('LOCAL_LOGLEVEL', 'INFO')
-    LOGGING_DEV_ENV = ENV_TOKENS.get('LOGGING_DEV_ENV', True)
+    LOG_DIR = ENV_TOKENS.get('LOG_DIR', LOG_DIR)
+    LOCAL_LOGLEVEL = ENV_TOKENS.get('LOCAL_LOGLEVEL', LOCAL_LOGLEVEL)
+    LOGGING_DEV_ENV = ENV_TOKENS.get('LOGGING_DEV_ENV', LOGGING_DEV_ENV)
     LOGGING = get_logger_config(
         LOG_DIR,
         logging_env=ENV_TOKENS.get('LOGGING_ENV', 'dev'),
-        local_loglevel=local_loglevel,
+        LOCAL_LOGLEVEL=LOCAL_LOGLEVEL,
         debug=False,
         dev_env=LOGGING_DEV_ENV,
     )
