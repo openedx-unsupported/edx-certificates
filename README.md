@@ -178,10 +178,7 @@ To run the test suite:
   raw celery queues or similar, we should also actualize parallel
   certification.
 
-* Dynamic scaling and placement of signatures from scanned bitmaps, making cert
-  rendering completely dynamic and freeing us from the tyranny of template
-  preparation. (Freeing us from the tyranny of configuration preparation would
-  come in a future PR.)
+* Freeing us from the tyranny of configuration preparation
 
 * Kill XQueue - nobody really likes xqueue. Several ops people have expressed a
   desire to see it replaced by smarter intermediate layers that use celery task
