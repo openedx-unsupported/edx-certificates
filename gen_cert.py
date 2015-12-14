@@ -2009,65 +2009,66 @@ class CertificateGen(object):
 
         # Render Certificate Theme
         certificate_theme = self.cert_data.get('certificate_theme', [])
-        for ordered_element in certificate_theme:
-            for element, attributes in ordered_element.iteritems():
+        for step in certificate_theme:
+            for element, attributes in step.iteritems():
                 draw_template_element(self, element, attributes, page)
 
         # Render Instructor Signature Blocks
         instructors = self.cert_data.get('instructors', [])
-        for instructor in instructors:
-            for element, attributes in instructor.iteritems():
-                x_position = attributes['x']
-                y_position = attributes['y']
-                for template_item in attributes['template']:
-                    for item_type, item_properties in template_item.iteritems():
-                        if item_type == 'text':
-                            value = item_properties.get('string')
+        for _instructor in instructors:
+            for __, instructor in _instructor.iteritems():
+                x_position = instructor['x']
+                y_position = instructor['y']
+                for step in instructor['template']:
+                    for element, _attributes in step.iteritems():
+                        attributes = copy.deepcopy(_attributes)
+                        if element == 'text':
+                            value = attributes.get('string')
                             if not value:
-                                key = item_properties['key']
-                                if key not in attributes:
+                                key = attributes['key']
+                                if key not in instructor:
                                     continue
-                                value = attributes[key]
-                            item_properties['string'] = value
-                            item_properties['x'] = x_position + item_properties.get('x', 0)
-                            item_properties['y'] = y_position + item_properties.get('y', 0)
-                            y_position += item_properties['height']
-                        elif item_type == 'line':
-                            item_properties['x_start'] += x_position
-                            item_properties['y_start'] += y_position
-                            item_properties['x_end'] += x_position
-                            item_properties['y_end'] += y_position
-                        elif item_type == 'image':
-                            value = item_properties.get('file')
+                                value = instructor[key]
+                            attributes['string'] = value
+                            attributes['x'] = x_position + attributes.get('x', 0)
+                            attributes['y'] = y_position + attributes.get('y', 0)
+                            y_position += attributes['height']
+                        elif element == 'line':
+                            attributes['x_start'] += x_position
+                            attributes['y_start'] += y_position
+                            attributes['x_end'] += x_position
+                            attributes['y_end'] += y_position
+                        elif element == 'image':
+                            value = attributes.get('file')
                             y_offset = 0
                             if not value:
-                                key = item_properties['key']
-                                value = attributes[key]
+                                key = attributes['key']
+                                value = instructor[key]
                                 if key == 'signature_file':
-                                    y_offset = attributes.get('signature_y_offset', 0)
-                            item_properties['file'] = value
+                                    y_offset = instructor.get('signature_y_offset', 0)
+                            attributes['file'] = value
 
-                            filepath = os.path.join(TEMPLATE_DIR, item_properties['file'])
+                            filepath = os.path.join(TEMPLATE_DIR, attributes['file'])
                             image = utils.ImageReader(filepath)
                             image_width, image_height = image.getSize()
 
                             aspect_ratio = image_height / float(image_width)
-                            image_width = item_properties.get('width', image_width)
+                            image_width = attributes.get('width', image_width)
                             image_height = int(image_width * aspect_ratio)
 
-                            item_properties['x'] = item_properties.get('x', 0) + x_position
-                            item_properties['y'] = item_properties.get('y', 0) + y_position + y_offset
-                            item_properties['height'] = image_height
-                            item_properties['width'] = image_width
+                            attributes['x'] = attributes.get('x', 0) + x_position
+                            attributes['y'] = attributes.get('y', 0) + y_position + y_offset
+                            attributes['height'] = image_height
+                            attributes['width'] = image_width
                             y_position = y_position + y_offset + image_height
                         else:
                             continue
-                        draw_template_element(self, item_type, item_properties, page)
+                        draw_template_element(self, element, attributes, page)
 
         # Render Dynamic Course Information
         course_information = self.cert_data.get('course_information', [])
-        for ordered_element in course_information:
-            for element, attributes in ordered_element.iteritems():
+        for step in course_information:
+            for element, attributes in step.iteritems():
                 draw_template_element(self, element, attributes, page, context=context)
 
         # Render Page
