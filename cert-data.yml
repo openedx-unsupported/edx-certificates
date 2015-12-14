@@ -57,8 +57,8 @@
 #           string        <-- optional, if set this overrides any key set
 #           key           <-- key to use to get string from instructor attributes (required if string not set)
 #     signature_y_offset  <-- special y offset for image elements that use the 'signature_file' key
-# All values are in Points
 #
+# All sizes (height, width, x/y coordinates, etc.) are in Points
 
 ### 4_programmatic Default course
 Default/OpenEdX/Certificate: &certificate_defaults
