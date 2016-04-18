@@ -139,3 +139,13 @@ ELEMENT_OPTIONS = {
 
 def draw_template_element(certificateGen, element, attributes, canvas, context=None):
     ELEMENT_OPTIONS[element](certificateGen, attributes, canvas, context)
+
+
+def draw_flair(certificateGen, flair, order, canvas, context):
+    flair_rendered = False
+    for item in flair:
+        for element, attributes in item.iteritems():
+            if attributes.get('order', 'top') == order:
+                flair_rendered = True
+                draw_template_element(certificateGen, element, attributes, canvas, context=context)
+    return flair_rendered
