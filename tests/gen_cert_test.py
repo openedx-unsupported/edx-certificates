@@ -4,13 +4,18 @@ import os
 import shutil
 import tempfile
 import urllib2
+import StringIO
 
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true
+from nose.tools import assert_false
+from reportlab.lib.pagesizes import A4, letter, landscape
+from reportlab.pdfgen import canvas
 
 import settings
 from gen_cert import CertificateGen
 from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH
+from openedx_certificates.renderers.elements import draw_flair
 from test_data import NAMES
 
 
@@ -105,3 +110,25 @@ def test_cert_upload():
     r = urllib2.urlopen(download_url)
     with tempfile.NamedTemporaryFile(delete=True) as f:
         f.write(r.read())
+
+
+def test_render_flair_function_false():
+    """
+    Make sure flair rendering function behaves properly when it is NOT given flair to render
+    """
+    cert = CertificateGen(settings.CERT_DATA.keys()[0])
+    overlay_pdf_buffer = StringIO.StringIO()
+    page = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
+    flair = []
+    assert_false(draw_flair(cert, flair, 'top', page, context=None))
+
+
+def test_render_flair_function_true():
+    """
+    Make sure flair rendering function behaves properly when it IS given flair to render
+    """
+    cert = CertificateGen(settings.CERT_DATA.keys()[0])
+    overlay_pdf_buffer = StringIO.StringIO()
+    page = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
+    flair = [{'image': {'x': 575, 'y': 325, 'width': 125, 'height': 125, 'file': 'images/test_flair.png'}}]
+    assert_true(draw_flair(cert, flair, 'top', page, context=None))

@@ -353,6 +353,16 @@ edX/DemoX_v4/Custom_Instructor_Block_v4:
     Pass: 'This student has passed this course. To pass, the student had to complete 10 assignments and one final exam, scoring at least 60% throughout.'
     Distinction: 'This person is a complete overachiever! They passed the course with Distinction. To do so, they had to complete 10 assignments and one final exam, scoring at least 90% throughout.'
 
+edX/DemoX_v4/Certificate_Flair_v4:
+  <<: *certificate_defaults
+  flair:
+    - image: &default_flair
+        x: 575
+        y: 325
+        width: 125
+        height: 125
+        file: 'images/test_flair.png'
+
 Test/CME/Renderer:
   LONG_COURSE: (╯°□°）╯︵ ┻━┻
   VERIFY: false

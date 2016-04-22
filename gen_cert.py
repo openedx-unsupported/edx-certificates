@@ -38,6 +38,7 @@ import arabic_reshaper
 from opaque_keys.edx.keys import CourseKey
 
 from openedx_certificates.renderers.cme import CmeRenderer
+from openedx_certificates.renderers.elements import draw_flair
 from openedx_certificates.renderers.elements import draw_template_element
 from openedx_certificates.renderers.util import apply_style_to_font_list
 from openedx_certificates.renderers.util import autoscale_text
@@ -2013,6 +2014,10 @@ class CertificateGen(object):
             for element, attributes in step.iteritems():
                 draw_template_element(self, element, attributes, page)
 
+        # Render any flair below Course Information & Instructor Signatures
+        flair = self.cert_data.get('flair', [])
+        draw_flair(self, flair, 'bottom', page, context)
+
         # Render Instructor Signature Blocks
         instructors = self.cert_data.get('instructors', [])
         for _instructor in instructors:
@@ -2070,6 +2075,9 @@ class CertificateGen(object):
         for step in course_information:
             for element, attributes in step.iteritems():
                 draw_template_element(self, element, attributes, page, context=context)
+
+        # Render any flair above Course Information & Instructor Signatures
+        draw_flair(self, flair, 'top', page, context)
 
         # Render Page
         page.showPage()
