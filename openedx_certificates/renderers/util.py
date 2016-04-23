@@ -84,6 +84,7 @@ def font_for_string(fontlist, ustring):
     # TODO: There's probably a way to do this by consulting reportlab that
     #       doesn't require re-loading the font files at all
     ustring = unicode(ustring)
+    fontlist = list(fontlist)
     if fontlist and not ustring:
         return fontlist[0]
     for fonttuple in fontlist:

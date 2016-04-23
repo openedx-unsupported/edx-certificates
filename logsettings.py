@@ -11,7 +11,7 @@ def get_logger_config(log_dir,
                       edx_filename="edx.log",
                       dev_env=False,
                       debug=False,
-                      local_loglevel='INFO'):
+                      LOCAL_LOGLEVEL='INFO'):
 
     """
     Return the appropriate logging config dictionary. You should assign the
@@ -81,7 +81,7 @@ def get_logger_config(log_dir,
         logger_config['handlers'].update({
             'local': {
                 'class': 'logging.handlers.RotatingFileHandler',
-                'level': local_loglevel,
+                'level': LOCAL_LOGLEVEL,
                 'formatter': 'standard',
                 'filename': edx_file_loc,
                 'maxBytes': 1024 * 1024 * 2,
@@ -91,7 +91,7 @@ def get_logger_config(log_dir,
     else:
         logger_config['handlers'].update({
             'local': {
-                'level': local_loglevel,
+                'level': LOCAL_LOGLEVEL,
                 'class': 'logging.handlers.SysLogHandler',
                 'address': '/dev/log',
                 'formatter': 'syslog_format',

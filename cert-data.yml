@@ -1,4 +1,291 @@
 ---
+# The 4_programmatic certificate renderer uses a special markup language
+#
+# Currently Supported Elements:
+# - rectangle:
+#     x             <-- position of rectangle from left side of page (required)
+#     y             <-- position of rectangle from bottom of page (required)
+#     width         <-- width of rectangle (required)
+#     height        <-- height of rectangle (required)
+#     stroke_width  <-- thickness of rectangle border (optional, defaults to 1 if stroke_color set)
+#     stroke_color  <-- color of rectangle border, as a hex value (optional, defaults to #000000 if stroke_width set)
+#     fill_color    <-- color of rectangle fill, as a hex value (optional)
+# - line:
+#     x_start       <-- start point of line from left side of page (required)
+#     y_start       <-- start point of line from bottom of page (required)
+#     x_end         <-- end point of line from left side of page (required)
+#     y_end         <-- end point of line from bottom of page (required)
+#     stroke_width  <-- thickness of rectangle border (optional, default to 1 if stroke_color set)
+#     stroke_color  <-- color of rectangle border, as a hex value (optional, defaults to #000000 if stroke_width set)
+# - image:
+#     x             <-- position of image from left side of page (required)
+#     y             <-- position of image from bottom of page (required)
+#     width         <-- width of rectangle (required)
+#     height        <-- height of rectangle (required)
+#     file          <-- path of file, relative to template_data directory (required)
+# - text:
+#     x             <-- position of text box from left side of page (required)
+#     y             <-- position of text box from bottom of page (required)
+#     width         <-- width of text box (required)
+#     height        <-- height of text box (required)
+#     string        <-- text to print on page (required)
+#     text_color    <-- color of text (optional, defaults to #000000)
+#     font_size     <-- size of text (optional, defaults to 12)
+#     leading       <-- height of line spacing of text [ie. 2x font_size double space] (optional, defaults to 12)
+#     alignment     <-- alignment of text [current options: left, right & center] (optional, defaults to left)
+#
+# Instructor Signature Block have some special logic:
+#   elements are placed relatively to the block itself and the previous element
+#
+#   Currently Supported Elements with logic differences explained (anything not listed follows normal behavior):
+#     template:
+#       - line:
+#           x_start       <-- required, relative to instructor block x
+#           y_start       <-- required, relative to instructor block y
+#           x_end         <-- required, relative to instructor block x
+#           y_end         <-- required, relative to instructor block y
+#       - image:
+#           x             <-- optional, relative to instructor block x
+#           y             <-- optional, relative to instructor block y
+#           width         <-- optional, defaults to physical image width
+#           height        <-- not used, gets defined by width * aspect ratio of image
+#           file          <-- optional, if set this overrides any key set
+#           key           <-- key to use to get image file path from instructor attributes (required if file not set)
+#       - text:
+#           x             <-- optional, relative to instructor block x
+#           y             <-- optional, relative to instructor block y
+#           string        <-- optional, if set this overrides any key set
+#           key           <-- key to use to get string from instructor attributes (required if string not set)
+#     signature_y_offset  <-- special y offset for image elements that use the 'signature_file' key
+#
+# All sizes (height, width, x/y coordinates, etc.) are in Points
+
+### 4_programmatic Default course
+Default/OpenEdX/Certificate: &certificate_defaults
+  VERSION: 4_programmatic
+  TEMPLATEFILE: False
+  certificate_theme:
+    # Ordered list of steps to render the certificate theme, back to front
+    # Typically these are instance wide and don't change from course to course
+    # (This usually include: Borders, Logos, Watermarks, Decorative Graphics, etc)
+    - rectangle:
+        # Outside border
+        x: 81
+        y: 54
+        width: 680
+        height: 488
+        stroke_width: 2
+        stroke_color: '#822638'
+        fill_color: '#DED9E0'
+    - rectangle:
+        # Inside border
+        x: 85
+        y: 58
+        width: 672
+        height: 480
+        stroke_width: 2
+        stroke_color: '#B5A3B8'
+        fill_color: '#FFFFFF'
+    - image:
+        # Institutional logo
+        x: 120
+        y: 485
+        width: 150
+        height: 30
+        file: 'images/openedx.png'
+    - text:
+        # Logo subheader
+        string: "<b>CERTIFICATE OF ACHIEVEMENT</b>"
+        font_size: 11
+        leading: 11
+        text_color: '#822638'
+        alignment: left
+        x: 121
+        y: 472
+        width: 150
+        height: 13
+  instructors:
+    # The default instructor signature block template
+    - instructor: &default_instructor
+        x: 475
+        y: 140
+        signature_file: 'images/test_signature.png'
+        template:
+          # Ordered list of steps to render an instructor signature block, bottom to top
+          # (each element is located relative to the previous one)
+          - text: &default_instructor_school
+              key: 'school_string'
+              font_size: 10
+              leading: 10
+              text_color: '#2E2E2E'
+              alignment: right
+              width: 250
+              height: 12
+          - text: &default_instructor_supplemental_title
+              key: 'supplemental_title_string'
+              font_size: 10
+              leading: 10
+              text_color: '#2E2E2E'
+              alignment: right
+              width: 250
+              height: 11
+          - text: &default_instructor_title
+              key: 'title_string'
+              font_size: 10
+              leading: 10
+              text_color: '#2E2E2E'
+              alignment: right
+              width: 250
+              height: 11
+          - text: &default_instructor_name
+              key: 'name_string'
+              font_size: 12
+              leading: 12
+              text_color: '#2E2E2E'
+              alignment: right
+              width: 250
+              height: 12
+          - line: &default_instructor_signature_line
+              x_start: 100
+              y_start: 0
+              x_end: 250
+              y_end: 0
+              stroke_color: '#2E2E2E'
+              stroke_width: .5
+          - image: &default_instructor_signature_image
+              key: 'signature_file'
+              width: 250
+    # Convenient instructor signature block positions
+    # ----------------------------------------------------
+    # |                                                  |
+    # |                                                  |
+    # |                                                  |
+    # |                                                  |
+    # |                                                  |
+    # |                                   position_4     |
+    # |                                                  |
+    # |                                   position_3     |
+    # |                                                  |
+    # |                                   position_2     |
+    # |                                                  |
+    # |     position_6     position_5     position_1     |
+    # |                                                  |
+    # |                                                  |
+    # |                                                  |
+    # ----------------------------------------------------
+    - instructor: &default_instructor_position_1
+        <<: *default_instructor
+        x: 475
+        y: 140
+    - instructor: &default_instructor_position_2
+        <<: *default_instructor
+        x: 475
+        y: 220
+    - instructor: &default_instructor_position_3
+        <<: *default_instructor
+        x: 475
+        y: 300
+    - instructor: &default_instructor_position_4
+        <<: *default_instructor
+        x: 475
+        y: 380
+    - instructor: &default_instructor_position_5
+        <<: *default_instructor
+        x: 275
+        y: 140
+    - instructor: &default_instructor_position_6
+        <<: *default_instructor
+        x: 75
+        y: 140
+  course_information:
+    # ordered list of steps to render the course information, top to bottom
+    #
+    # You can pass variables from the context into the stringslike this:
+    #   string: "{VARIABLE_TO_PASS}"
+    #
+    # Variables that are currently available:
+    #   date_string                      <-- Date to print on certificate
+    #   student_name                     <-- Name of Student 
+    #   successfully_completed           <-- Short 'has completed' text
+    #   course_title                     <-- Title of Course
+    #   achievements_string              <-- Extra achievement string, i.e. 'Distinction'
+    #   achievements_description_string  <-- Description attached to extra achievement
+    #   disclaimer_text                  <-- Legal Disclaimer
+    #   verify_text                      <-- Verification link to GPG verification page on platform
+    #
+    - text:
+        string: "{date_string}"
+        font_size: 12
+        leading: 14
+        text_color: '#212438'
+        alignment: right
+        x: 120
+        y: 488
+        width: 600
+        height: 14
+    - text:
+        string: "<b>{student_name}</b>"
+        font_size: 42
+        leading: 51
+        text_color: '#212438'
+        alignment: left
+        x: 120
+        y: 409
+        width: 421
+        height: 51
+        auto_scale: True
+    - text:
+        string: "{successfully_completed}"
+        font_size: 14
+        leading: 18
+        text_color: '#212438'
+        alignment: left
+        x: 120
+        y: 390
+        width: 421
+        height: 18
+    - text:
+        string: "<b>{course_title}</b>"
+        font_size: 36
+        leading: 40
+        text_color: '#822638'
+        alignment: left
+        x: 120
+        y: 304
+        width: 421
+        height: 72
+        auto_scale: True
+    - text:
+        string: "{achievements_string}{achievements_description_string}"
+        font_size: 14
+        leading: 18
+        text_color: '#212438'
+        alignment: left
+        x: 120
+        y: 135
+        width: 421
+        height: 162
+    - text:
+        string: "{disclaimer_text}"
+        font_size: 7.5
+        leading: 10
+        text_color: '#212438'
+        alignment: left
+        x: 120
+        y: 89
+        width: 600
+        height: 30
+    - text:
+        string: "{verify_text}"
+        font_size: 7.5
+        leading: 10
+        text_color: '#212438'
+        alignment: left
+        x: 120
+        y: 70
+        width: 600
+        height: 10
+
 edX/DemoX/Demo_Course:
   ISSUED_DATE: Jan. 1st, 1970
   LONG_COURSE: Sample course with some utf-8 char like è
@@ -11,6 +298,70 @@ edX/DemoX_v3/Demo_Course_v3:
   interstitial:
     Pass: 'This person passed.'
     Distinction: 'This person is a complete overachiever!'
+
+edX/DemoX_v4/Demo_Course_v4:
+  <<: *certificate_defaults
+  instructors:
+    - instructor:
+        <<: *default_instructor_position_1
+        name_string: '<b>M. Guillaume Hébert</b>'
+        title_string: 'Head Concierge'
+        supplemental_title_string: 'Lifestyle Manager'
+        school_string: '<b>Great Bratislava Hotel</b>'
+        signature_file: 'images/test_signature.png'
+        signature_y_offset: -10
+  interstitial:
+    Pass: 'This student has passed this course. To pass, the student had to complete 10 assignments and one final exam, scoring at least 60% throughout.'
+    Distinction: 'This person is a complete overachiever! They passed the course with Distinction. To do so, they had to complete 10 assignments and one final exam, scoring at least 90% throughout.'
+
+edX/DemoX_v4/Custom_Instructor_Block_v4:
+  <<: *certificate_defaults
+  instructors:
+    - instructor:
+        <<: *default_instructor_position_5
+        x: 300
+        template:
+          - text:
+              <<: *default_instructor_name
+              font_size: 18
+              height: 18
+              leading: 18
+              alignment: center
+              text_color: '#822638'
+          - text:
+              <<: *default_instructor_supplemental_title
+              alignment: center
+          - text:
+              <<: *default_instructor_title
+              alignment: center
+          - text:
+              <<: *default_instructor_school
+              alignment: center
+          - line:
+              <<: *default_instructor_signature_line
+              x_start: 50
+              x_end: 200
+          - image:
+              <<: *default_instructor_signature_image
+        name_string: '<b>M. Guillaume Hébert</b>'
+        title_string: 'Head Concierge'
+        supplemental_title_string: 'Lifestyle Manager'
+        school_string: '<b>Great Bratislava Hotel</b>'
+        signature_file: 'images/test_signature_center.png'
+        signature_y_offset: -10
+  interstitial:
+    Pass: 'This student has passed this course. To pass, the student had to complete 10 assignments and one final exam, scoring at least 60% throughout.'
+    Distinction: 'This person is a complete overachiever! They passed the course with Distinction. To do so, they had to complete 10 assignments and one final exam, scoring at least 90% throughout.'
+
+edX/DemoX_v4/Certificate_Flair_v4:
+  <<: *certificate_defaults
+  flair:
+    - image: &default_flair
+        x: 575
+        y: 325
+        width: 125
+        height: 125
+        file: 'images/test_flair.png'
 
 Test/CME/Renderer:
   LONG_COURSE: (╯°□°）╯︵ ┻━┻

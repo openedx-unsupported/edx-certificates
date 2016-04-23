@@ -13,6 +13,7 @@ import uuid
 from reportlab.platypus import Paragraph
 from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.lib import colors
+from reportlab.lib import utils
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.fonts import addMapping
 from reportlab.lib.pagesizes import A4, letter, landscape
@@ -37,6 +38,8 @@ import arabic_reshaper
 from opaque_keys.edx.keys import CourseKey
 
 from openedx_certificates.renderers.cme import CmeRenderer
+from openedx_certificates.renderers.elements import draw_flair
+from openedx_certificates.renderers.elements import draw_template_element
 from openedx_certificates.renderers.util import apply_style_to_font_list
 from openedx_certificates.renderers.util import autoscale_text
 from openedx_certificates.renderers.util import font_for_string
@@ -119,6 +122,8 @@ class CertificateGen(object):
                            template_pdf parameter
         """
         if dir_prefix is None:
+            if not os.path.exists(TMP_GEN_DIR):
+                os.makedirs(TMP_GEN_DIR)
             dir_prefix = tempfile.mkdtemp(prefix=TMP_GEN_DIR)
         self._ensure_dir(dir_prefix)
         self.dir_prefix = dir_prefix
@@ -131,7 +136,7 @@ class CertificateGen(object):
 
         def interstitial_factory():
             """ Generate default values for interstitial_texts defaultdict """
-            return itertools.repeat(cert_data.get('interstitial', {}).get('Pass', '')).next
+            return itertools.repeat(cert_data.get('interstitial', {}).get('Pass', u'').encode('utf-8')).next
 
         # lookup long names from the course_id
         try:
@@ -167,17 +172,30 @@ class CertificateGen(object):
         # Else if a value is passed in to the constructor (eg, from xqueue), it is used,
         # Else, the filename is calculated from the version and course_id.
         template_pdf = cert_data.get('TEMPLATEFILE', template_pdf)
-        template_prefix = '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
-        template_pdf_filename = "{0}/certificate-template-{1}-{2}.pdf".format(template_prefix, self.org, self.course)
-        if template_pdf:
-            template_pdf_filename = "{0}/{1}".format(template_prefix, template_pdf)
-            if 'verified' in template_pdf:
-                self.template_type = 'verified'
-        try:
-            self.template_pdf = PdfFileReader(file(template_pdf_filename, "rb"))
-        except IOError as e:
-            log.critical("I/O error ({0}): {1} opening {2}".format(e.errno, e.strerror, template_pdf_filename))
-            raise
+
+        # template_pdf is allowed to be None and '' so we key exactly on False here
+        if template_pdf is not False:
+            template_prefix = "{template_dir}/v{template_version}-cert-templates".format(
+                template_dir=TEMPLATE_DIR,
+                template_version=self.template_version,
+            )
+            template_pdf_filename = "{template_prefix}/certificate-template-{org}-{course}.pdf".format(
+                template_prefix=template_prefix,
+                org=self.org,
+                course=self.course,
+            )
+            if template_pdf:
+                template_pdf_filename = "{template_prefix}/{template_pdf}".format(
+                    template_prefix=template_prefix,
+                    template_pdf=template_pdf,
+                )
+                if 'verified' in template_pdf:
+                    self.template_type = 'verified'
+            try:
+                self.template_pdf = PdfFileReader(file(template_pdf_filename, 'rb'))
+            except IOError as e:
+                log.critical("I/O error (%s): %s opening %s", e.errno, e.strerror, template_pdf_filename)
+                raise
 
         self.cert_label_singular = cert_data.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
         self.cert_label_plural = cert_data.get('CERTS_ARE_CALLED_PLURAL', CERTS_ARE_CALLED_PLURAL)
@@ -285,6 +303,7 @@ class CertificateGen(object):
             'MIT_PE': self._generate_mit_pe_certificate,
             'stanford': self._generate_stanford_SOA,
             '3_dynamic': self._generate_v3_dynamic_certificate,
+            '4_programmatic': self._generate_v4_certificate,
             'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
@@ -1199,8 +1218,8 @@ class CertificateGen(object):
         RETURNS (download_uuid, verify_uuid, download_url)
         """
 
-        verify_me_p = self.cert_data.get('VERIFY', True)
-        verify_uuid = uuid.uuid4().hex if verify_me_p else ''
+        verification_paragraph = self.cert_data.get('VERIFY', True)
+        verify_uuid = uuid.uuid4().hex if verification_paragraph else ''
         download_uuid = uuid.uuid4().hex
         download_url = "{base_url}/{cert}/{uuid}/{file}".format(
             base_url=settings.CERT_DOWNLOAD_URL,
@@ -1330,7 +1349,7 @@ class CertificateGen(object):
         paragraph.drawOn(c, LEFT_INDENT * mm, 104.5 * mm)
 
         # Honor code
-        if verify_me_p:
+        if verification_paragraph:
             styleSourceSansPro.fontSize = 9
             styleSourceSansPro.alignment = TA_CENTER
             paragraph_string = (
@@ -1370,7 +1389,7 @@ class CertificateGen(object):
         output.write(outputStream)
         outputStream.close()
 
-        if verify_me_p:
+        if verification_paragraph:
             self._generate_verification_page(
                 student_name,
                 filename,
@@ -1572,8 +1591,8 @@ class CertificateGen(object):
         RETURNS (download_uuid, verify_uuid, download_url)
         """
 
-        verify_me_p = self.cert_data.get('VERIFY', True)
-        verify_uuid = uuid.uuid4().hex if verify_me_p else ''
+        verification_paragraph = self.cert_data.get('VERIFY', True)
+        verify_uuid = uuid.uuid4().hex if verification_paragraph else ''
         download_uuid = uuid.uuid4().hex
         download_url = "{base_url}/{cert}/{uuid}/{file}".format(
             base_url=settings.CERT_DOWNLOAD_URL,
@@ -1752,7 +1771,7 @@ class CertificateGen(object):
 
         # SECTION: Extra achievements
         achievements_string = ""
-        achievements_description_string = unicode(self.interstitial_texts[grade])
+        achievements_description_string = self.interstitial_texts[grade].decode('utf-8')
         if grade and grade.lower() != 'pass':
             grade_html = u"<b>{grade}</b>".format(grade=grade.decode('utf-8'))
             achievements_string = grade_interstitial.decode('utf-8').format(grade=grade_html) + '<br /><br />'
@@ -1792,7 +1811,7 @@ class CertificateGen(object):
             paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
 
         # SECTION: Honor code
-        if verify_me_p:
+        if verification_paragraph:
             verify_link = (
                 u"<a href='{verify_url}/{verify_path}/{verify_uuid}'>"
                 u"<b>{verify_url}/{verify_path}/{verify_uuid}</b>"
@@ -1843,7 +1862,247 @@ class CertificateGen(object):
 
         # have to create the verification page seperately from the above
         # conditional because filename must have already been written.
-        if verify_me_p:
+        if verification_paragraph:
+            self._generate_verification_page(
+                student_name,
+                filename,
+                verify_dir,
+                verify_uuid,
+                download_url,
+            )
+
+        return (download_uuid, verify_uuid, download_url)
+
+    def _generate_v4_certificate(
+        self,
+        student_name,
+        download_dir,
+        verify_dir,
+        filename=TARGET_FILENAME,
+        grade=None,
+        designation=None,
+        generate_date=None,
+    ):
+        """Generate a PDF certificate, signature and html files for validation.
+
+        REQUIRED PARAMETERS:
+        student_name  - specifies student name as it must appear on the cert.
+        download_dir  -
+        verify_dir    -
+
+        OPTIONAL PARAMETERS:
+        filename      - the filename to write out, e.g., 'Statement.pdf'.
+                        Defaults to settings.TARGET_FILENAME.
+        grade         - the grade received by the student. Defaults to 'Pass'
+        generate_date - specifies an ISO formatted date (i.e., '2012-02-02')
+                        with which to stamp the cert. Defaults to CERT_DATA's
+                        ISSUED_DATE, or today's date for ROLLING.
+
+        CONFIGURATION PARAMETERS:
+            The following items are brought in from the cert-data.yml stanza for the
+        current course:
+        LONG_COURSE    - (optional) The course title to be printed on the cert;
+                         unset means to use the value passed in as part of the
+                         certificate request.
+        ISSUED_DATE    - (optional) If given, the date string which should be
+                         stamped onto each and every certificate. The value
+                         ROLLING is equivalent to leaving ISSUED_DATE unset, which
+                         stamps the certificates with the current date.
+        HAS_DISCLAIMER - (optional) If given, the programmatic disclaimer that
+                         is usually rendered at the bottom of the page, is not.
+        TEMPLATEFILE   - (optional) If given, the filename referred to by
+                         TEMPLATEFILE will be used as the template over which
+                         to render.
+
+        RETURNS (download_uuid, verify_uuid, download_url)
+        """
+
+        verification_paragraph = self.cert_data.get('VERIFY', True)
+        verify_uuid = uuid.uuid4().hex if verification_paragraph else ''
+        download_uuid = uuid.uuid4().hex
+        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
+            base_url=settings.CERT_DOWNLOAD_URL,
+            cert=S3_CERT_PATH,
+            uuid=download_uuid,
+            file=filename,
+        )
+
+        filename = os.path.join(download_dir, download_uuid, filename)
+
+        # This file is overlaid on the template certificate
+        overlay_pdf_buffer = StringIO.StringIO()
+        page = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
+        # page width: 841.88976378 pts
+        # page height: 595.275590551 pts
+
+        # --- Fonts --- #
+        # 0 0 - normal
+        # 0 1 - italic
+        # 1 0 - bold
+        # 1 1 - italic and bold
+        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
+        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
+        addMapping('SourceSansPro-Regular', 0, 0, 'SourceSansPro-Regular')
+        addMapping('SourceSansPro-Regular', 1, 0, 'SourceSansPro-Bold')
+        addMapping('SourceSansPro-Regular', 1, 1, 'SourceSansPro-BoldItalic')
+
+        # These are ordered by preference; cf. font_for_string() above
+        self.fontlist = [
+            ('SourceSansPro-Regular', 'SourceSansPro-Regular.ttf', None),
+            ('OpenSans-Light', 'OpenSans-Light.ttf', None),
+            ('Arial Unicode', 'Arial Unicode.ttf', None),
+        ]
+        fontlist = self.fontlist
+
+        # Process Translations
+        default_translation = settings.DEFAULT_TRANSLATIONS.get(settings.DEFAULT_LOCALE, {})
+        successfully_completed = default_translation.get('success_text', '')
+        grade_interstitial = default_translation.get('grade_interstitial', '')
+        disclaimer_text = default_translation.get('disclaimer_text', '')
+        verify_text = default_translation.get('verify_text', '')
+
+        if self.locale in self.course_translations:
+            successfully_completed = self.course_translations[self.locale].get('success_text', successfully_completed)
+            grade_interstitial = self.course_translations[self.locale].get('grade_interstitial', grade_interstitial)
+            disclaimer_text = self.course_translations[self.locale].get('disclaimer_text', disclaimer_text)
+            verify_text = self.course_translations[self.locale].get('verify_text', verify_text)
+
+        # calculate interstitial text
+        achievements_string = ""
+        achievements_description_string = self.interstitial_texts[grade].decode('utf-8')
+        if grade and grade.lower() != 'pass':
+            grade_html = u"<b>{grade}</b>".format(grade=grade.decode('utf-8'))
+            achievements_string = grade_interstitial.decode('utf-8').format(grade=grade_html) + '<br /><br />'
+        achievements_paragraph = u"{0}{1}".format(achievements_string, achievements_description_string)
+
+        # print disclaimer text if required
+        print_disclaimer = not self.cert_data.get('HAS_DISCLAIMER', False)
+        if not print_disclaimer:
+            disclaimer_text = ""
+
+        # print verify text if required
+        formatted_verify_text = ""
+        if verification_paragraph:
+            verify_link = (
+                u"<a href='{verify_url}/{verify_path}/{verify_uuid}'>"
+                u"<b>{verify_url}/{verify_path}/{verify_uuid}</b>"
+                u"</a>"
+            ).encode('utf-8').format(
+                verify_url=settings.CERT_VERIFY_URL,
+                verify_path=S3_VERIFY_PATH,
+                verify_uuid=verify_uuid,
+            )
+            formatted_verify_text = verify_text.format(
+                verify_link=verify_link,
+            )
+
+        # Course Context
+        context = {
+            'date_string': get_cert_date(generate_date, self.issued_date, self.locale),
+            'student_name': student_name.decode('utf-8'),
+            'successfully_completed': successfully_completed,
+            'course_title': self.long_course.decode('utf-8'),
+            'achievements_string': achievements_string,
+            'achievements_description_string': achievements_description_string,
+            'disclaimer_text': disclaimer_text,
+            'verify_text': formatted_verify_text,
+        }
+
+        # Render Certificate Theme
+        certificate_theme = self.cert_data.get('certificate_theme', [])
+        for step in certificate_theme:
+            for element, attributes in step.iteritems():
+                draw_template_element(self, element, attributes, page)
+
+        # Render any flair below Course Information & Instructor Signatures
+        flair = self.cert_data.get('flair', [])
+        draw_flair(self, flair, 'bottom', page, context)
+
+        # Render Instructor Signature Blocks
+        instructors = self.cert_data.get('instructors', [])
+        for _instructor in instructors:
+            for __, instructor in _instructor.iteritems():
+                x_position = instructor['x']
+                y_position = instructor['y']
+                for step in instructor['template']:
+                    for element, _attributes in step.iteritems():
+                        attributes = copy.deepcopy(_attributes)
+                        if element == 'text':
+                            value = attributes.get('string')
+                            if not value:
+                                key = attributes['key']
+                                if key not in instructor:
+                                    continue
+                                value = instructor[key]
+                            attributes['string'] = value
+                            attributes['x'] = x_position + attributes.get('x', 0)
+                            attributes['y'] = y_position + attributes.get('y', 0)
+                            y_position += attributes['height']
+                        elif element == 'line':
+                            attributes['x_start'] += x_position
+                            attributes['y_start'] += y_position
+                            attributes['x_end'] += x_position
+                            attributes['y_end'] += y_position
+                        elif element == 'image':
+                            value = attributes.get('file')
+                            y_offset = 0
+                            if not value:
+                                key = attributes['key']
+                                value = instructor[key]
+                                if key == 'signature_file':
+                                    y_offset = instructor.get('signature_y_offset', 0)
+                            attributes['file'] = value
+
+                            filepath = os.path.join(TEMPLATE_DIR, attributes['file'])
+                            image = utils.ImageReader(filepath)
+                            image_width, image_height = image.getSize()
+
+                            aspect_ratio = image_height / float(image_width)
+                            image_width = attributes.get('width', image_width)
+                            image_height = int(image_width * aspect_ratio)
+
+                            attributes['x'] = attributes.get('x', 0) + x_position
+                            attributes['y'] = attributes.get('y', 0) + y_position + y_offset
+                            attributes['height'] = image_height
+                            attributes['width'] = image_width
+                            y_position = y_position + y_offset + image_height
+                        else:
+                            continue
+                        draw_template_element(self, element, attributes, page)
+
+        # Render Dynamic Course Information
+        course_information = self.cert_data.get('course_information', [])
+        for step in course_information:
+            for element, attributes in step.iteritems():
+                draw_template_element(self, element, attributes, page, context=context)
+
+        # Render any flair above Course Information & Instructor Signatures
+        draw_flair(self, flair, 'top', page, context)
+
+        # Render Page
+        page.showPage()
+        page.save()
+
+        # Merge the overlay with the template, then write it to file
+        output = PdfFileWriter()
+        overlay = PdfFileReader(overlay_pdf_buffer)
+
+        # We render the final certificate by merging several rendered pages.
+        # It is fastest if the bottom layer is blank and loaded from memory
+        final_certificate = copy.copy(BLANK_PDFS['landscape-A4']).getPage(0)
+        final_certificate.mergePage(overlay.getPage(0))
+
+        output.addPage(final_certificate)
+
+        self._ensure_dir(filename)
+
+        outputStream = file(filename, 'wb')
+        output.write(outputStream)
+        outputStream.close()
+
+        # have to create the verification page seperately from the above
+        # conditional because filename must have already been written.
+        if verification_paragraph:
             self._generate_verification_page(
                 student_name,
                 filename,
