@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import datetime
 import gnupg
 import os
 import shutil
@@ -15,6 +16,7 @@ from reportlab.pdfgen import canvas
 import settings
 from gen_cert import CertificateGen
 from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH
+from gen_cert import get_cert_date
 from openedx_certificates.renderers.elements import draw_flair
 from test_data import NAMES
 
@@ -132,3 +134,14 @@ def test_render_flair_function_true():
     page = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
     flair = [{'image': {'x': 575, 'y': 325, 'width': 125, 'height': 125, 'file': 'images/test_flair.png'}}]
     assert_true(draw_flair(cert, flair, 'top', page, context=None))
+
+
+def test_cert_date_timezone():
+    """
+    Make sure certs render dates according to the passed timezone
+    """
+    today_date = datetime.datetime(2016, 8, 22, 0, 0, 0, 0)
+    utc_cert_date = get_cert_date(today_date, "CALLING", timezone="UTC")
+    assert_true(utc_cert_date == 'August 22, 2016')
+    pacific_cert_date = get_cert_date(today_date, "CALLING", timezone="US/Pacific")
+    assert_true(pacific_cert_date == 'August 21, 2016')
