@@ -22,7 +22,8 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from HTMLParser import HTMLParser
-from babel.dates import format_date
+from babel.dates import format_datetime
+from babel.dates import get_timezone
 
 import settings
 import collections
@@ -74,7 +75,12 @@ BLANK_PDFS = {
 }
 
 
-def get_cert_date(calling_date_parameter, configured_date_parameter, locale=settings.DEFAULT_LOCALE):
+def get_cert_date(
+        calling_date_parameter,
+        configured_date_parameter,
+        locale=settings.DEFAULT_LOCALE,
+        timezone=settings.TIMEZONE,
+):
     """Get pertinent date for display on cert
 
     - If cert passes a set date in 'calling_date_parameter', format that
@@ -83,11 +89,11 @@ def get_cert_date(calling_date_parameter, configured_date_parameter, locale=sett
     """
 
     if calling_date_parameter:
-        date_value = format_date(calling_date_parameter, format='long', locale=locale)
+        date_value = format_datetime(calling_date_parameter, 'MMMM d, y', tzinfo=timezone, locale=locale)
     elif configured_date_parameter == "ROLLING":
-        date_value = format_date(datetime.date.today(), format='long', locale=locale)
+        date_value = format_datetime(datetime.datetime.today(), 'MMMM d, y', tzinfo=timezone, locale=locale)
     else:
-        date_value = format_date(configured_date_parameter, format='long', locale=locale)
+        date_value = format_datetime(configured_date_parameter, 'MMMM d, y', tzinfo=timezone, locale=locale)
 
     date_string = u"{0}".format(date_value)
 
@@ -149,6 +155,7 @@ class CertificateGen(object):
                 for key, value in cert_data.get('interstitial', {}).items()
             }
             self.interstitial_texts.update(interstitial_dict)
+            self.timezone = cert_data.get('timezone', settings.TIMEZONE)
             self.locale = cert_data.get('locale', settings.DEFAULT_LOCALE).encode('utf-8')
             self.course_translations = cert_data.get('translations', {})
         except KeyError:
@@ -1282,7 +1289,7 @@ class CertificateGen(object):
         style.textColor = standardgray
         style.alignment = TA_LEFT
 
-        paragraph_string = get_cert_date(generate_date, self.issued_date)
+        paragraph_string = get_cert_date(generate_date, self.issued_date, self.locale, self.timezone)
 
         # Right justified so we compute the width
         width = stringWidth(paragraph_string, 'SourceSansPro-SemiboldItalic', style.fontSize) / mm
@@ -1472,7 +1479,7 @@ class CertificateGen(object):
         margin_in_points = WIDTH_LANDSCAPE_PAGE_IN_POINTS * .1
         color_gray = colors.Color(0.13, 0.14, 0.22)
 
-        date_string = get_cert_date(generate_date, self.issued_date)
+        date_string = get_cert_date(generate_date, self.issued_date, self.locale, self.timezone)
 
         # Manipulate student titles
         gets_md_cert = False
@@ -1677,7 +1684,7 @@ class CertificateGen(object):
         #   * honor code url at the bottom
 
         # SECTION: Issued Date
-        date_string = get_cert_date(generate_date, self.issued_date, self.locale)
+        date_string = get_cert_date(generate_date, self.issued_date, self.locale, self.timezone)
 
         (fonttag, fontfile, date_style) = font_for_string(
             apply_style_to_font_list(fontlist, style_date_text),
@@ -1998,7 +2005,7 @@ class CertificateGen(object):
 
         # Course Context
         context = {
-            'date_string': get_cert_date(generate_date, self.issued_date, self.locale),
+            'date_string': get_cert_date(generate_date, self.issued_date, self.locale, self.timezone),
             'student_name': student_name.decode('utf-8'),
             'successfully_completed': successfully_completed,
             'course_title': self.long_course.decode('utf-8'),
