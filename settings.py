@@ -161,8 +161,9 @@ TEMPLATE_DIR = os.path.join(CERT_PRIVATE_DIR, TEMPLATE_DATA_SUBDIR)
 with open(os.path.join(CERT_PRIVATE_DIR, CERT_DATA_FILE)) as f:
     CERT_DATA = yaml.load(f.read().decode("utf-8"))
 
-# Locale and Translations
+# Localization
 DEFAULT_LOCALE = 'en_US'
+TIMEZONE = 'UTC'
 DEFAULT_TRANSLATIONS = {
     'en_US': {
         'success_text': u'has successfully completed a free online offering of',
