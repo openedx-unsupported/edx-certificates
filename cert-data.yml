@@ -1,6 +1,24 @@
 ---
 # The 4_programmatic certificate renderer uses a special markup language
 #
+# Flags:
+# Font flags need four associated '.ttf' files in template_data/fonts in your templates directory.
+#   The ttf font family files need specific names. One file named
+#       font_name+'-'+$BASE+'.ttf',
+#   where $BASE can be 'Light' or 'Regular'.  And three files named
+#       font_name+'-'+$TYPOGRAPHY+'.ttf',
+#   where $TYPOGRAPHY must be 'Bold', 'BoldItalic', and 'Italic'.
+#   A total of four are needed; All three typography files are needed.
+#       Default Font Flags
+#           font_name='OpenSans'
+#           font_type='Light'
+#       Font family files are
+#           OpenSans-Light.ttf
+#           OpenSans-Bold.ttf
+#           OpenSans-BoldItalic.ttf
+#           OpenSans-Italic.ttf
+#   Other typographys are allowed but gen_cert.py renderer would need to be updated.
+#
 # Currently Supported Elements:
 # - rectangle:
 #     x             <-- position of rectangle from left side of page (required)
@@ -64,6 +82,9 @@
 Default/OpenEdX/Certificate: &certificate_defaults
   VERSION: 4_programmatic
   TEMPLATEFILE: False
+  font: 
+    name: OpenSans
+    type: Light
   certificate_theme:
     # Ordered list of steps to render the certificate theme, back to front
     # Typically these are instance wide and don't change from course to course
