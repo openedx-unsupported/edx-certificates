@@ -10,6 +10,7 @@ import StringIO
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true
 from nose.tools import assert_false
+from nose.tools import raises
 from reportlab.lib.pagesizes import A4, letter, landscape
 from reportlab.pdfgen import canvas
 
@@ -101,6 +102,16 @@ def test_cert_names():
     for name in NAMES:
         cert = CertificateGen(course_id)
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
+
+
+@raises(ValueError)
+def test_uncovered_unicode_cert_name():
+    """
+    Fail to generate a certificate for a user with unsupported unicode character in name
+    """
+    course_id = settings.CERT_DATA.keys()[0]
+    cert = CertificateGen(course_id)
+    (download_uuid, verify_uuid, download_url) = cert.create_and_upload(u"Memphis \u0007", upload=False)
 
 
 def test_cert_upload():  # pragma: no cover
