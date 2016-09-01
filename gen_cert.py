@@ -173,6 +173,10 @@ class CertificateGen(object):
         # pdfs differently for the different templates
         self.template_version = cert_data.get('VERSION', 1)
         self.template_type = 'honor'
+        # Check for font definition in course yaml, default to 'OpenSans' and 'Light'
+        self.template_font = cert_data.get('font', {})
+        self.template_font_name = self.template_font.get('name', 'OpenSans')
+        self.template_font_type = self.template_font.get('type', 'Light')
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
         # If TEMPLATEFILE is set in cert-data.yml, this value has top priority.
@@ -1947,16 +1951,16 @@ class CertificateGen(object):
         # 0 1 - italic
         # 1 0 - bold
         # 1 1 - italic and bold
-        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
-        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-        addMapping('SourceSansPro-Regular', 0, 0, 'SourceSansPro-Regular')
-        addMapping('SourceSansPro-Regular', 1, 0, 'SourceSansPro-Bold')
-        addMapping('SourceSansPro-Regular', 1, 1, 'SourceSansPro-BoldItalic')
+        font_string = self.template_font_name + '-' + self.template_font_type
+        font_file = font_string + '.ttf'
+        addMapping(font_string, 0, 0, font_string)
+        addMapping(font_string, 1, 0, self.template_font_name + '-Italic')
+        addMapping(font_string, 1, 0, self.template_font_name + '-Bold')
+        addMapping(font_string, 1, 1, self.template_font_name + '-BoldItalic')
 
         # These are ordered by preference; cf. font_for_string() above
         self.fontlist = [
-            ('SourceSansPro-Regular', 'SourceSansPro-Regular.ttf', None),
-            ('OpenSans-Light', 'OpenSans-Light.ttf', None),
+            (font_string, font_file, None),
             ('Arial Unicode', 'Arial Unicode.ttf', None),
         ]
         fontlist = self.fontlist
