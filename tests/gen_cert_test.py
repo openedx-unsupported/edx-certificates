@@ -103,7 +103,7 @@ def test_cert_names():
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
 
 
-def test_cert_upload():
+def test_cert_upload():  # pragma: no cover
     """Check here->S3->http round trip."""
     if not settings.CERT_AWS_ID or not settings.CERT_AWS_KEY:
         raise SkipTest
