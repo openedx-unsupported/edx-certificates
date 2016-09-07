@@ -268,24 +268,16 @@ class CertificateGen(object):
                         publish_dest = os.path.join(cert_web_root, dest_path)
 
                         if upload:
-                            try:
-                                key = Key(bucket, name=dest_path)
-                                key.set_contents_from_filename(local_path, policy='public-read')
-                            except:
-                                raise
-                            else:
-                                log.info("uploaded {local} to {s3path}".format(local=local_path, s3path=dest_path))
+                            key = Key(bucket, name=dest_path)
+                            key.set_contents_from_filename(local_path, policy='public-read')
+                            log.info("uploaded {local} to {s3path}".format(local=local_path, s3path=dest_path))
 
                         if copy_to_webroot:
-                            try:
-                                dirname = os.path.dirname(publish_dest)
-                                if not os.path.exists(dirname):
-                                    os.makedirs(dirname)
-                                shutil.copy(local_path, publish_dest)
-                            except:
-                                raise
-                            else:
-                                log.info("published {local} to {web}".format(local=local_path, web=publish_dest))
+                            dirname = os.path.dirname(publish_dest)
+                            if not os.path.exists(dirname):
+                                os.makedirs(dirname)
+                            shutil.copy(local_path, publish_dest)
+                            log.info("published {local} to {web}".format(local=local_path, web=publish_dest))
 
         if cleanup:
             for working_dir in (certificates_path, verify_path):
