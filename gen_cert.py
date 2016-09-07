@@ -1234,7 +1234,7 @@ class CertificateGen(object):
         font_string = self.template_font_name + '-' + self.template_font_type
         font_file = font_string + '.ttf'
         addMapping(font_string, 0, 0, font_string)
-        addMapping(font_string, 1, 0, self.template_font_name + '-Italic')
+        addMapping(font_string, 0, 1, self.template_font_name + '-Italic')
         addMapping(font_string, 1, 0, self.template_font_name + '-Bold')
         addMapping(font_string, 1, 1, self.template_font_name + '-BoldItalic')
 
@@ -1266,6 +1266,21 @@ class CertificateGen(object):
             achievements_string = grade_interstitial.decode('utf-8').format(grade=grade_html) + '<br /><br />'
         achievements_paragraph = u"{0}{1}".format(achievements_string, achievements_description_string)
 
+        # Overide achievements/interstitial strings with yaml designations info based on designation
+        designation_tag = ''
+        for key, value in self.cert_data.get('designations', {}).iteritems():
+            if designation in value['titles']:
+                # Add student name designation if not Other or None
+                if designation not in ['Other', 'None']:
+                    student_name = u"{name}, {designation}".format(
+                        name=student_name,
+                        designation=designation.decode('utf-8'),
+                    )
+                achievements_string = value['credits']
+                achievements_description_string = self.cert_data['CREDITS']
+                designation_tag = key
+                break
+
         # print disclaimer text if required
         print_disclaimer = not self.cert_data.get('HAS_DISCLAIMER', False)
         if not print_disclaimer:
@@ -1295,6 +1310,7 @@ class CertificateGen(object):
             'course_title': self.long_course.decode('utf-8'),
             'achievements_string': achievements_string,
             'achievements_description_string': achievements_description_string,
+            'designation_tag': designation_tag,
             'disclaimer_text': disclaimer_text,
             'verify_text': formatted_verify_text,
         }
