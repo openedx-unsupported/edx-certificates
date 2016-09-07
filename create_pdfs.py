@@ -24,21 +24,6 @@ description = """
   Sample certificate generator
 """
 
-stanford_cme_titles = (('AuD', 'AuD'),
-                       ('DDS', 'DDS'),
-                       ('DO', 'DO'),
-                       ('MD', 'MD'),
-                       ('MD,PhD', 'MD,PhD'),
-                       ('MBBS', 'MBBS'),
-                       ('NP', 'NP'),
-                       ('PA', 'PA'),
-                       ('PharmD', 'PharmD'),
-                       ('PhD', 'PhD'),
-                       ('RN', 'RN'),
-                       ('Other', 'Other'),
-                       ('None', 'None'),
-                       (None, None))
-
 
 def parse_args(args=sys.argv[1:]):
     parser = ArgumentParser(description=description,
@@ -50,7 +35,12 @@ def parse_args(args=sys.argv[1:]):
     parser.add_argument('-o', '--long-org', help='optional long org', default='')
     parser.add_argument('-l', '--long-course', help='optional long course', default='')
     parser.add_argument('-i', '--issued-date', help='optional issue date')
-    parser.add_argument('-T', '--assign-title', help='add random title after name', default=False, action="store_true")
+    parser.add_argument(
+        '-T',
+        '--assign-title',
+        help='optional title string for user, CME certs have a standard list with additional logic',
+        default=None,
+    )
     parser.add_argument('-f', '--input-file', help='optional input file for names, one name per line')
     parser.add_argument(
         '-r',
@@ -117,10 +107,7 @@ def main():
                 long_course=args.long_course,
                 issued_date=args.issued_date,
             )
-            title = None
-            if args.assign_title:
-                title = random.choice(stanford_cme_titles)[0]
-                print "assigning random title", name, title
+            title = args.assign_title or None
             grade = None
             if args.grade_text:
                 grade = args.grade_text
