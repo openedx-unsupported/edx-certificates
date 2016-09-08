@@ -24,6 +24,7 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from glob import glob
 from HTMLParser import HTMLParser
+from locale import setlocale, LC_TIME
 
 import settings
 import collections
@@ -80,36 +81,23 @@ BLANK_PDFS = {
 }
 
 
-def prettify_isodate(isoformat_date):
-    """Convert a string like '2012-02-02' to one like 'February 2nd, 2012'"""
-    m = RE_ISODATES.match(isoformat_date)
-    if not m:
-        raise TypeError("prettify_isodate called with incorrect date format: %s" % isoformat_date)
-    day_suffixes = {'1': 'st', '2': 'nd', '3': 'rd', '21': 'st', '22': 'nd', '23': 'rd', '31': 'st'}
-    months = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-              'August', 'September', 'October', 'November', 'December']
-    date = {'year': '', 'month': '', 'day': '', 'suffix': 'th'}
-    date['year'] = m.group('year')
-    date['month'] = months[int(m.group('month')) - 1]
-    date['day'] = m.group('day').lstrip('0')
-    date['suffix'] = day_suffixes.get(date['day'], 'th')
-    return "%(month)s %(day)s%(suffix)s, %(year)s" % date
-
-
-def get_cert_date(calling_date_parameter, configured_date_parameter):
+def get_cert_date(calling_date_parameter, configured_date_parameter, date_format='%B %d, %Y', locale="en_US"):
     """Get pertinent date for display on cert
 
     - If cert passes a set date in 'calling_date_parameter', format that
     - If using the "ROLLING" certs feature, use today's date
     - If all else fails use 'configured_date_parameter' for date
     """
+
+    setlocale(LC_TIME, locale)
+
     if calling_date_parameter:
-        date_value = prettify_isodate(calling_date_parameter)
+        date_value = calling_date_parameter.strftime(date_format)
     elif configured_date_parameter == "ROLLING":
-        generate_date = datetime.date.today().isoformat()
-        date_value = prettify_isodate(generate_date)
+        generate_date = datetime.date.today().strftime(date_format)
+        date_value = generate_date
     else:
-        date_value = configured_date_parameter
+        date_value = configured_date_parameter.strftime(date_format)
 
     date_string = u"{0}".format(date_value)
 
@@ -230,7 +218,12 @@ class CertificateGen(object):
             self.long_course = long_course or cert_data.get('LONG_COURSE', '').encode('utf-8')
             self.issued_date = issued_date or cert_data.get('ISSUED_DATE', '').encode('utf-8') or 'ROLLING'
             self.interstitial_texts = collections.defaultdict(interstitial_factory())
-            self.interstitial_texts.update(cert_data.get('interstitial', {}))
+            interstitial_dict = {k.encode('utf8'): v.encode('utf8') for k, v in cert_data.get('interstitial', {}).items()}
+            self.interstitial_texts.update(interstitial_dict)
+            self.locale = cert_data.get('LOCALE', settings.DEFAULT_LOCALE).encode('utf-8')
+            self.date_format = cert_data.get('DATE_FORMAT', settings.DEFAULT_DATE_FORMAT).encode('utf-8')
+            self.course_translations = cert_data.get('translations', '')
+            self.default_translations = settings.DEFAULT_TRANSLATIONS
         except KeyError:
             log.critical("Unable to lookup long names for course {0}".format(course_id))
             raise
@@ -1805,7 +1798,7 @@ class CertificateGen(object):
         #   * honor code url at the bottom
 
         # SECTION: Issued Date
-        date_string = u"{0}".format(get_cert_date(generate_date, self.issued_date))
+        date_string = u"{0}".format(get_cert_date(generate_date, self.issued_date, self.date_format, self.locale))
 
         (fonttag, fontfile, date_style) = font_for_string(fontlist_with_style(style_date_text), date_string)
         max_width = 125
@@ -1842,8 +1835,32 @@ class CertificateGen(object):
         yOffset = minYOffset + ((max_height - height) / 2)
         paragraph.drawOn(PAGE, GUTTER_WIDTH - (name_style.fontSize / 12), yOffset)
 
+
+        # Parse Translations:
+        translated_success_text = ""
+        translated_interstitial_intro = ""
+        translated_disclaimer = ""
+        translated_verify_text = ""
+
+        if self.default_translations and self.locale in self.default_translations:
+            translated_success_text = self.default_translations[self.locale]['success_text']
+            translated_interstitial_intro = self.default_translations[self.locale]['interstitial_intro']
+            translated_disclaimer = self.default_translations[self.locale]['disclaimer']
+            translated_verify_text = self.default_translations[self.locale]['verify_text']
+
+        if self.course_translations and self.locale in self.course_translations:
+            if 'success_text' in self.course_translations[self.locale]:
+                translated_success_text = self.course_translations[self.locale]['success_text']
+            if 'interstitial_intro' in self.course_translations[self.locale]:
+                translated_interstitial_intro = self.course_translations[self.locale]['interstitial_intro']
+            if 'disclaimer' in self.course_translations[self.locale]:
+                translated_disclaimer = self.course_translations[self.locale]['disclaimer']
+            if 'verify_text' in self.course_translations[self.locale]:
+                translated_verify_text = self.course_translations[self.locale]['verify_text']
+
         # SECTION: Successfully completed
-        successfully_completed = u"has successfully completed a free online offering of"
+        # successfully_completed = u"has successfully completed a free online offering of"
+        successfully_completed = translated_success_text
         (fonttag, fontfile, completed_style) = font_for_string(
             fontlist_with_style(style_standard_text),
             successfully_completed,
@@ -1879,9 +1896,10 @@ class CertificateGen(object):
 
         # SECTION: Extra achievements
         achievements_string = ""
-        achievements_description_string = self.interstitial_texts[grade]
+        achievements_description_string = self.interstitial_texts[grade].decode('utf-8')
         if grade and grade.lower() != 'pass':
-            achievements_string = "with <b>{0}</b>.<br /><br />".format(grade)
+            grade_html = u" <b>{0}</b>.<br /><br />".format(grade.decode('utf-8'))
+            achievements_string = translated_interstitial_intro + grade_html
         achievements_paragraph = u"{0}{1}".format(achievements_string, achievements_description_string)
 
         (fonttag, fontfile, achievements_style) = font_for_string(
@@ -1902,38 +1920,37 @@ class CertificateGen(object):
 
         # SECTION: disclaimer text
         print_disclaimer = not self.cert_data.get('HAS_DISCLAIMER', False)
-        disclaimer_text = getattr(settings, 'CERTS_SITE_DISCLAIMER_TEXT', '')
-        if print_disclaimer and disclaimer_text:
+
+        if print_disclaimer and translated_disclaimer:
             (fonttag, fontfile, disclaimer_style) = font_for_string(
                 fontlist_with_style(style_small_text),
-                disclaimer_text,
+                translated_disclaimer,
             )
 
             max_height = disclaimer_style.leading * 3  # allow for up to 9 lines of text
             max_width = MAX_FULL_WIDTH
             yOffset = 89  # distance from bottom of page (in points)
 
-            paragraph = Paragraph(disclaimer_text, disclaimer_style)
+            paragraph = Paragraph(translated_disclaimer, disclaimer_style)
             width, height = paragraph.wrapOn(PAGE, max_width, max_height)
 
             paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
 
         # SECTION: Honor code
         if verify_me_p:
-            paragraph_string = u"Authenticity of this {cert_label} can be verified at " \
-                u"<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
-                u"<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>"
-
-            paragraph_string = paragraph_string.format(
-                cert_label=self.cert_label_singular,
+            verify_link = u"<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
+                u"<b>{verify_url}/{verify_path}/{verify_uuid}</b></a>".encode('utf-8')
+            verify_link = verify_link.format(
                 verify_url=settings.CERT_VERIFY_URL,
                 verify_path=S3_VERIFY_PATH,
                 verify_uuid=verify_uuid,
             )
 
+            paragraph_string = translated_verify_text + verify_link
+
             (fonttag, fontfile, honor_style) = font_for_string(
                 fontlist_with_style(style_small_text),
-                achievements_paragraph,
+                paragraph_string,
             )
 
             max_height = 10
