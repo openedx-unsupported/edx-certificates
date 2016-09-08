@@ -156,6 +156,15 @@ def font_for_string(fontlist, ustring):
         repr(fontlist),
     ))
 
+def fontlist_with_style(fontlist, a_style):
+    """ assign 'a_style' to each font in 'fontlist' """
+    new_fontlist = []
+    for styletag, a_file, dummy_0 in fontlist:
+        new_style = copy.copy(a_style)
+        new_style.fontName = styletag
+        new_fontlist.append((styletag, a_file, new_style))
+    return new_fontlist
+
 
 def autoscale_text(page, string, max_fontsize, max_leading, max_height, max_width, style):
     """Calculate font size and text placement given some base values
@@ -1522,10 +1531,6 @@ class CertificateGen(object):
         the relevant medical school.
         """
 
-        # Landscape Letter page size is 279mm x 216 mm
-        # All unexplained constants below were selected because they look good
-        WIDTH, HEIGHT = landscape(letter)   # values in points, multiply by mm
-
         download_uuid = uuid.uuid4().hex
         download_url = "{base_url}/{cert}/{uuid}/{file}".format(
             base_url=settings.CERT_DOWNLOAD_URL,
@@ -1535,6 +1540,19 @@ class CertificateGen(object):
         )
         filename = os.path.join(download_dir, download_uuid, filename)
         self._ensure_dir(filename)
+
+        # This file is overlaid on the template certificate
+        overlay_pdf_buffer = StringIO.StringIO()
+        PAGE = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
+
+        # Landscape Letter page size is 279mm x 216 mm
+        # All unexplained constants below were selected because they look good
+        WIDTH, HEIGHT = landscape(letter)  # Width and Height of landscape canvas (in points)
+        MAX_GEN_WIDTH = WIDTH * .5  # Width to which to constrain text block
+        MAX_FULL_WIDTH = WIDTH * .80  # Width to which to constrian full page text blocks
+        GUTTER_WIDTH = WIDTH * .1  # Space from the left and right sides (in points)
+        DATE_INDENT_TOP = 115  # Space from top for Date (in points)
+        STANDARD_GRAY = colors.Color(0.13, 0.14, 0.22)  # Main dark gray text color
 
         # Manipulate student titles
         gets_md_cert = False
@@ -1561,25 +1579,37 @@ class CertificateGen(object):
         styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light', allowWidows=0)
         styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
 
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
-
-        def draw_centered_text(text, style, height):
-            """Draw text in style, centered at height mm above origin"""
-            paragraph = Paragraph(text, style)
-            # wrap sets the Flowable bounding box. Necessary voodoo.
-            paragraph.wrap(WIDTH, HEIGHT)
-            paragraph.drawOn(c, 0, height * mm)
-
-        # Text is then overlayed onto it. From top to bottom:
-        #   * Student's name
-        #   * Course name
-        #   * Issued date (top right corner)
-        #   * "is awarded/was designated.."
-        #   * MD/DO;AHP corner marker
-
-        # Student name
+        style_date_text = ParagraphStyle(
+            name="date-text",
+            fontSize=18,
+            leading=24,
+            textColor=STANDARD_GRAY,
+            alignment=TA_RIGHT,
+        )
+        style_big_name_text = ParagraphStyle(
+            name="big-name-text",
+            textColor=STANDARD_GRAY,
+            alignment=TA_LEFT,
+        )
+        style_big_course_text = ParagraphStyle(
+            name="big-course-text",
+            textColor=STANDARD_GRAY,
+            alignment=TA_LEFT,
+        )
+        style_credits_text = ParagraphStyle(
+            name="credits-text",
+            fontSize=18,
+            leading=24,
+            textColor=STANDARD_GRAY,
+            alignment=TA_LEFT,
+        )
+        style_tag_text = ParagraphStyle(
+            name="tag-text",
+            fontSize=10,
+            leading=12,
+            textColor=STANDARD_GRAY,
+            alignment=TA_RIGHT,
+        )
 
         # These are ordered by preference; cf. font_for_string() above
         fontlist = [
@@ -1588,66 +1618,105 @@ class CertificateGen(object):
             ('Arial Unicode', 'Ariel Unicode.ttf', styleArial),
         ]
 
-        (fonttag, fontfile, style) = font_for_string(fontlist, student_name)
-        style.alignment = TA_CENTER
-        width = 9999             # Fencepost width is way too wide
-        nameYOffset = 146        # by eye, looks good for 34 pt font
-        fontsize = 36            # good default giant text size: 1/2"
-        indent = 0               # initialize while loop
-        max_width = 0.8 * WIDTH  # Keep scaling until <= 80% of page
+        # Text is then overlayed onto it. From top to bottom:
+        #   * Completion Date
+        #   * Student's name
+        #   * Course name
+        #   * "is awarded/was designated.."
+        #   * MD/DO;AHP corner marker
 
-        while width > max_width:
-            style.fontSize = fontsize
-            width = stringWidth(student_name, fonttag, fontsize)
-            if nameYOffset > 140:
-                nameYOffset = nameYOffset - math.floor((36 - fontsize) / 12)
-            fontsize -= 1
+        # SECTION: Completion Date
+        date_string = u"{0}".format(get_cert_date(generate_date, self.issued_date))
 
-        draw_centered_text(u"<b>{0}</b>".format(student_name), style, nameYOffset)
+        (fonttag, fontfile, date_style) = font_for_string(fontlist_with_style(fontlist, style_date_text), date_string)
+        max_width = 200
+        max_height = date_style.fontSize
 
-        # Enduring material titled
-        style = styleDroidSerif
-        style.alignment = TA_CENTER
-        style.fontSize = 28
-        draw_centered_text(u"<b>{0}</b>".format(self.long_course.decode('utf-8')), style, 119)
+        paragraph = Paragraph(date_string, date_style)
+        width, height = paragraph.wrapOn(PAGE, max_width, max_height)
 
-        # Issued on date...
-        style.fontSize = 26
-        paragraph_string = get_cert_date(generate_date, self.issued_date)
-        draw_centered_text(u"<b>{0}</b>".format(paragraph_string), style, 95)
+        # positioning paragraph wrapping box from its bottom left corner
+        # calculating positioning for top right corner of page
+        paragraph.drawOn(PAGE, (WIDTH - GUTTER_WIDTH - max_width), (HEIGHT - DATE_INDENT_TOP))
 
-        # Credits statement
+        # SECTION: Student name
+        student_name_string = u"<b>{0}</b>".format(student_name.decode('utf-8'))
+        (fonttag, fontfile, name_style) = font_for_string(fontlist_with_style(fontlist, style_big_name_text), student_name_string)
+
+        maxFontSize = 42      # good default name text size (in points)
+        max_leading = maxFontSize * 1.3
+        max_height = maxFontSize * 1.3
+        max_width = MAX_FULL_WIDTH
+        minYOffset = 370     # distance from bottom of page (in points)
+
+        paragraph = autoscale_text(PAGE, student_name_string, maxFontSize, max_leading, max_height, max_width, name_style)
+        width, height = paragraph.wrapOn(PAGE, max_width, max_height)
+
+        yOffset = minYOffset + ((max_height - height) / 2)
+        paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
+
+        # SECTION: Course Title
+        course_name_string = self.long_course.decode('utf-8')
+        course_title = u"<b>{0}</b>".format(course_name_string)
+
+        (fonttag, fontfile, course_style) = font_for_string(fontlist_with_style(fontlist, style_big_course_text), course_title)
+
+        maxFontSize = 36      # good default name text size (in points)
+        max_leading = maxFontSize * 1.1
+        max_height = maxFontSize * 3.1
+        max_width = MAX_FULL_WIDTH
+        minYOffset = 210     # distance from bottom of page (in points)
+
+        paragraph = autoscale_text(PAGE, course_title, maxFontSize, max_leading, max_height, max_width, course_style)
+        width, height = paragraph.wrapOn(PAGE, max_width, max_height)
+
+        yOffset = minYOffset + ((max_height - height) / 2) + (course_style.fontSize / 5)
+
+        paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
+
+        # SECTION: Credits statement
         # This is pretty fundamentally not internationalizable; like the rest of the certificate template renderers
         # we do text interpolation that assumes English subject/object relationships. If this language needs to be
         # varied, the best place to do that is probably a forked rendering method. There is some additional
         # information in the documentation.
-        style.fontSize = 18
         credit_info = self.cert_data.get('CREDITS', '')
         if credit_info:
             if gets_md_cert:
-                paragraph_string = u"and is awarded {credit_info}".format(
+                credits_string = u"and is awarded {credit_info}".format(
                     credit_info=credit_info.decode('utf-8'),
                 )
             else:
-                paragraph_string = u"The activity was designated for {credit_info}".format(
+                credits_string = u"The activity was designated for {credit_info}".format(
                     credit_info=credit_info.decode('utf-8'),
                 )
-            draw_centered_text(paragraph_string, style, 80)
+            (fonttag, fontfile, credits_style) = font_for_string(fontlist_with_style(fontlist, style_credits_text), credits_string)
+            max_width = MAX_FULL_WIDTH
+            max_height = credits_style.fontSize
+            yOffset = 175
 
-        # MD/DO vs AHP tags
-        style.fontSize = 8
-        style.alignment = TA_LEFT
+            paragraph = Paragraph(credits_string, credits_style)
+            width, height = paragraph.wrapOn(PAGE, max_width, max_height)
+            
+            paragraph.drawOn(PAGE, GUTTER_WIDTH, yOffset)
+
+        # SECTION: MD/DO vs AHP tags
         if gets_md_cert:
-            paragraph_string = "MD/DO"
+            tag_string = "MD/DO"
         else:
-            paragraph_string = "AHP"
-        indent = WIDTH - 72         # One inch in from right edge
-        paragraph = Paragraph(paragraph_string, style)
-        paragraph.wrap(WIDTH, HEIGHT)
-        paragraph.drawOn(c, indent, 14.9 * mm)
+            tag_string = "AHP"
+        (fonttag, fontfile, tag_style) = font_for_string(fontlist_with_style(fontlist, style_tag_text), tag_string)
+        max_width = 50
+        max_height = tag_style.fontSize
+        yOffset = 53
 
-        c.showPage()
-        c.save()
+        paragraph = Paragraph(tag_string, tag_style)
+        width, height = paragraph.wrapOn(PAGE, max_width, max_height)
+
+        paragraph.drawOn(PAGE, (WIDTH - GUTTER_WIDTH - max_width), yOffset)
+
+        # Finish Cert Generation
+        PAGE.showPage()
+        PAGE.save()
 
         # Merge the overlay with the template, then write it to file
         overlay = PdfFileReader(overlay_pdf_buffer)
@@ -1729,7 +1798,6 @@ class CertificateGen(object):
         MAX_GEN_WIDTH = WIDTH * .5  # Width to which to constrain text block
         MAX_FULL_WIDTH = WIDTH * .72  # Width to which to constrian full page text blocks
         GUTTER_WIDTH = 120  # Space from the left and right sides (in points)
-        GUTTER_WIDTH = 120  # Space from the right side for Date (in points)
         DATE_INDENT_TOP = 112  # Space from top for Date (in points)
         STANDARD_GRAY = colors.Color(0.13, 0.14, 0.22)  # Main dark gray text color
         CARDINAL_RED = colors.Color(.55, .08, .08)  # Special red color for course title
@@ -1787,15 +1855,6 @@ class CertificateGen(object):
             ('Arial Unicode', 'Arial Unicode.ttf', None),
         ]
 
-        def fontlist_with_style(a_style):
-            """ assign 'a_style' to each font in 'fontlist' """
-            new_fontlist = []
-            for styletag, a_file, dummy_0 in fontlist:
-                new_style = copy.copy(a_style)
-                new_style.fontName = styletag
-                new_fontlist.append((styletag, a_file, new_style))
-            return new_fontlist
-
         # Text is overlayed top to bottom with one exception
         #   * Issued date (top right)
         #   * Student's name (scaled to fit and centered vertically)
@@ -1807,7 +1866,7 @@ class CertificateGen(object):
         # SECTION: Issued Date
         date_string = u"{0}".format(get_cert_date(generate_date, self.issued_date))
 
-        (fonttag, fontfile, date_style) = font_for_string(fontlist_with_style(style_date_text), date_string)
+        (fonttag, fontfile, date_style) = font_for_string(fontlist_with_style(fontlist, style_date_text), date_string)
         max_width = 125
         max_height = date_style.fontSize
 
@@ -1820,7 +1879,7 @@ class CertificateGen(object):
 
         # SECTION: Student name
         student_name_string = u"<b>{0}</b>".format(student_name.decode('utf-8'))
-        (fonttag, fontfile, name_style) = font_for_string(fontlist_with_style(style_big_name_text), student_name_string)
+        (fonttag, fontfile, name_style) = font_for_string(fontlist_with_style(fontlist, style_big_name_text), student_name_string)
 
         maxFontSize = 42      # good default name text size (in points)
         max_leading = maxFontSize * 1.2
@@ -1845,7 +1904,7 @@ class CertificateGen(object):
         # SECTION: Successfully completed
         successfully_completed = u"has successfully completed a free online offering of"
         (fonttag, fontfile, completed_style) = font_for_string(
-            fontlist_with_style(style_standard_text),
+            fontlist_with_style(fontlist, style_standard_text),
             successfully_completed,
         )
 
@@ -1862,7 +1921,7 @@ class CertificateGen(object):
         course_name_string = self.long_course.decode('utf-8')
         course_title = u"<b>{0}</b>".format(course_name_string)
 
-        (fonttag, fontfile, course_style) = font_for_string(fontlist_with_style(style_big_course_text), course_title)
+        (fonttag, fontfile, course_style) = font_for_string(fontlist_with_style(fontlist, style_big_course_text), course_title)
 
         maxFontSize = 36      # good default name text size (in points)
         max_leading = maxFontSize * 1.1
@@ -1885,7 +1944,7 @@ class CertificateGen(object):
         achievements_paragraph = u"{0}{1}".format(achievements_string, achievements_description_string)
 
         (fonttag, fontfile, achievements_style) = font_for_string(
-            fontlist_with_style(style_standard_text),
+            fontlist_with_style(fontlist, style_standard_text),
             achievements_paragraph,
         )
 
@@ -1905,7 +1964,7 @@ class CertificateGen(object):
         disclaimer_text = getattr(settings, 'CERTS_SITE_DISCLAIMER_TEXT', '')
         if print_disclaimer and disclaimer_text:
             (fonttag, fontfile, disclaimer_style) = font_for_string(
-                fontlist_with_style(style_small_text),
+                fontlist_with_style(fontlist, style_small_text),
                 disclaimer_text,
             )
 
@@ -1932,7 +1991,7 @@ class CertificateGen(object):
             )
 
             (fonttag, fontfile, honor_style) = font_for_string(
-                fontlist_with_style(style_small_text),
+                fontlist_with_style(fontlist, style_small_text),
                 achievements_paragraph,
             )
 
