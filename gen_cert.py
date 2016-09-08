@@ -37,7 +37,6 @@ from bidi.algorithm import get_display
 
 from opaque_keys.edx.keys import CourseKey
 
-from openedx_certificates.renderers.cme import CmeRenderer
 from openedx_certificates.renderers.elements import draw_flair
 from openedx_certificates.renderers.elements import draw_template_element
 from openedx_certificates.renderers.util import apply_style_to_font_list
@@ -303,7 +302,6 @@ class CertificateGen(object):
             'stanford': self._generate_stanford_SOA,
             '3_dynamic': self._generate_v3_dynamic_certificate,
             '4_programmatic': self._generate_v4_certificate,
-            'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
         return versionmap[self.template_version](
@@ -690,153 +688,6 @@ class CertificateGen(object):
             )
 
         return (download_uuid, verify_uuid, download_url)
-
-    def _generate_stanford_cme_certificate(
-        self,
-        student_name,
-        download_dir,
-        verify_dir,
-        filename=TARGET_FILENAME,
-        grade=None,
-        designation=None,
-        generate_date=None,
-    ):
-        """Generate a PDF certificate, signature and html files for validation.
-
-        REQUIRED PARAMETERS:
-        student_name  - specifies student name as it must appear on the cert.
-        download_dir  -
-        verify_dir    -
-
-        OPTIONAL PARAMETERS:
-        filename      - the filename to write out, i.e., 'Certificate.pdf'.
-                        Defaults to settings.TARGET_FILENAME
-        grade         - the grade received by the student. Defaults to 'Pass'
-        generate_date - specifies an ISO formatted date (i.e., '2012-02-02')
-                        with which to stamp the cert. Defaults to CERT_DATA's
-                        ISSUED_DATE, or today's date for ROLLING.
-
-        CONFIGURATION PARAMETERS:
-        The following items are brought in from the cert-data.yml stanza for the
-        current course:
-        MD_CERTS     - A list of all of the student titles which qualify to get the
-                       MD/DO certificate and receive CME credit
-        NO_TITLE     - A list of student titles which should be treated as
-                       equivalent to having no title at all.
-        CREDITS      - A string describing what accreditation this CME
-                       certificate is good for, e.g., "## Blabbity Blab Credits".
-        LONG_COURSE  - (optional) The course title to be printed on the cert;
-                       unset means to use the value passed in as part of the
-                       certificate request.
-        ISSUED_DATE  - (optional) If given, the date string which should be
-                       stamped onto each and every certificate. The value
-                       ROLLING is equivalent to leaving ISSUED_DATE unset, which
-                       stamps the certificates with the current date.
-        TEMPLATEFILE - (optional) If given, the filename referred to by
-                       TEMPLATEFILE will be used as the template over which
-                       to render.
-
-        RETURNS (download_uuid, verify_uuid, download_url)
-
-        Note that CME certificates never generate verification URLs; the
-        underlying template is expected to embed contact information for
-        the relevant medical school.
-        """
-
-        download_uuid = uuid.uuid4().hex
-        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
-            base_url=settings.CERT_DOWNLOAD_URL,
-            cert=S3_CERT_PATH,
-            uuid=download_uuid,
-            file=filename,
-        )
-        filename = os.path.join(download_dir, download_uuid, filename)
-        self._ensure_dir(filename)
-
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        page = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
-
-        # Landscape Letter page size is 279mm x 216 mm
-        # All unexplained constants below were selected because they look good
-        width_text_in_points = WIDTH_LANDSCAPE_PAGE_IN_POINTS * .80
-        margin_in_points = WIDTH_LANDSCAPE_PAGE_IN_POINTS * .1
-        color_gray = colors.Color(0.13, 0.14, 0.22)
-
-        date_string = get_cert_date(generate_date, self.issued_date, self.locale, self.timezone)
-
-        # Manipulate student titles
-        gets_md_cert = False
-        gets_md_cert_list = self.cert_data.get('MD_CERTS', [])
-        gets_no_title = self.cert_data.get('NO_TITLE', [])
-        student_name = u"{}".format(student_name.decode('utf-8'))  # Ensure consistent handling
-        if designation and designation not in gets_no_title:
-            student_name = u"{}, {}".format(student_name, designation.decode('utf-8'))
-        gets_md_cert = designation in gets_md_cert_list
-
-        #                            0 0 - normal
-        #                            0 1 - italic
-        #                            1 0 - bold
-        #                            1 1 - italic and bold
-        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
-        addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
-        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-        addMapping('DroidSerif', 0, 0, 'DroidSerif')
-        addMapping('DroidSerif', 0, 1, 'DroidSerif-Italic')
-        addMapping('DroidSerif', 1, 0, 'DroidSerif-Bold')
-        addMapping('DroidSerif', 1, 1, 'DroidSerif-BoldItalic')
-
-        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode', allowWidows=0)
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light', allowWidows=0)
-        styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
-
-        # These are ordered by preference; cf. font_for_string() above
-        fontlist = [
-            ('DroidSerif', 'DroidSerif.ttf', styleDroidSerif),
-            ('OpenSans-Light', 'OpenSans-Light.ttf', styleOpenSansLight),
-            ('Arial Unicode', 'Ariel Unicode.ttf', styleArial),
-        ]
-
-        # Text is then overlayed onto it. From top to bottom:
-        #   * Completion Date
-        #   * Student's name
-        #   * Course name
-        #   * "is awarded/was designated.."
-        #   * MD/DO;AHP corner marker
-
-        renderer = CmeRenderer(
-            self.cert_data,
-            page,
-            color_gray,
-            fontlist,
-            width_text_in_points,
-            margin_in_points,
-        )
-
-        renderer.draw_date_on_page(date_string)
-        renderer.draw_student_name_on_page(student_name)
-        renderer.draw_course_on_page(self.long_course.decode('utf-8'))
-        renderer.draw_credits_on_page(gets_md_cert)
-        renderer.draw_tag_on_page(gets_md_cert)
-
-        page.showPage()
-        page.save()
-
-        # Merge the overlay with the template, then write it to file
-        overlay = PdfFileReader(overlay_pdf_buffer)
-
-        # We render the final certificate by merging several rendered pages.
-        # It's fastest if the bottom layer is a blank page loaded from RAM
-        final_certificate = copy.copy(BLANK_PDFS['landscape-letter']).getPage(0)
-        final_certificate.mergePage(self.template_pdf.getPage(0))
-        final_certificate.mergePage(overlay.getPage(0))
-
-        output = PdfFileWriter()
-        output.addPage(final_certificate)
-        with file(filename, "wb") as ostream:
-            output.write(ostream)
-
-        return (download_uuid, 'No Verification', download_url)
 
     def _generate_v3_dynamic_certificate(
         self,

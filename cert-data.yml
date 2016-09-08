@@ -379,12 +379,6 @@ edX/DemoX_v4/Certificate_Flair_v4:
         height: 125
         file: 'images/test_flair.png'
 
-Test/CME/Renderer:
-  LONG_COURSE: (╯°□°）╯︵ ┻━┻
-  VERIFY: false
-  VERSION: stanford_cme
-  TEMPLATEFILE: blank.pdf
-
 course-v1:edX+DemoX_v3+Demo_Course_v3:
   LONG_ORG: Sample Org v3
   LONG_COURSE: Computer Science 101 with utf-8 char like à
