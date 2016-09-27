@@ -10,6 +10,7 @@ import StringIO
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true
 from nose.tools import assert_false
+from nose.tools import raises
 from reportlab.lib.pagesizes import A4, letter, landscape
 from reportlab.pdfgen import canvas
 
@@ -78,20 +79,21 @@ def test_designation():
     """
     Generate a test certificate with designation text
     """
+    designations = ['PharmD', 'MD']
     for course_id in settings.CERT_DATA.keys():
-        designation = 'PharmD'
-        tmpdir = tempfile.mkdtemp()
-        cert = CertificateGen(course_id)
-        (download_uuid, verify_uuid, download_url) = cert.create_and_upload(
-            'John Smith',
-            upload=False,
-            copy_to_webroot=True,
-            cert_web_root=tmpdir,
-            cleanup=True,
-            designation=designation,
-        )
-        if os.path.exists(tmpdir):
-            shutil.rmtree(tmpdir)
+        for designation in designations:
+            tmpdir = tempfile.mkdtemp()
+            cert = CertificateGen(course_id)
+            (download_uuid, verify_uuid, download_url) = cert.create_and_upload(
+                'John Smith',
+                upload=False,
+                copy_to_webroot=True,
+                cert_web_root=tmpdir,
+                cleanup=True,
+                designation=designation,
+            )
+            if os.path.exists(tmpdir):
+                shutil.rmtree(tmpdir)
 
 
 def test_cert_names():
@@ -103,7 +105,17 @@ def test_cert_names():
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
 
 
-def test_cert_upload():
+@raises(ValueError)
+def test_uncovered_unicode_cert_name():
+    """
+    Fail to generate a certificate for a user with unsupported unicode character in name
+    """
+    course_id = settings.CERT_DATA.keys()[0]
+    cert = CertificateGen(course_id)
+    (download_uuid, verify_uuid, download_url) = cert.create_and_upload(u"Memphis \u0007", upload=False)
+
+
+def test_cert_upload():  # pragma: no cover
     """Check here->S3->http round trip."""
     if not settings.CERT_AWS_ID or not settings.CERT_AWS_KEY:
         raise SkipTest

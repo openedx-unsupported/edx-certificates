@@ -88,7 +88,7 @@ def get_logger_config(log_dir,
                 'backupCount': 5,
             },
         })
-    else:
+    else:  # pragma: no cover
         logger_config['handlers'].update({
             'local': {
                 'level': LOCAL_LOGLEVEL,
