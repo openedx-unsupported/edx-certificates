@@ -1,6 +1,24 @@
 ---
 # The 4_programmatic certificate renderer uses a special markup language
 #
+# Flags:
+# Font flags need four associated '.ttf' files in template_data/fonts in your templates directory.
+#   The ttf font family files need specific names. One file named
+#       font_name+'-'+$BASE+'.ttf',
+#   where $BASE can be 'Light' or 'Regular'.  And three files named
+#       font_name+'-'+$TYPOGRAPHY+'.ttf',
+#   where $TYPOGRAPHY must be 'Bold', 'BoldItalic', and 'Italic'.
+#   A total of four are needed; All three typography files are needed.
+#       Default Font Flags
+#           font_name='OpenSans'
+#           font_type='Light'
+#       Font family files are
+#           OpenSans-Light.ttf
+#           OpenSans-Bold.ttf
+#           OpenSans-BoldItalic.ttf
+#           OpenSans-Italic.ttf
+#   Other typographys are allowed but gen_cert.py renderer would need to be updated.
+#
 # Currently Supported Elements:
 # - rectangle:
 #     x             <-- position of rectangle from left side of page (required)
@@ -64,6 +82,9 @@
 Default/OpenEdX/Certificate: &certificate_defaults
   VERSION: 4_programmatic
   TEMPLATEFILE: False
+  font: 
+    name: OpenSans
+    type: Light
   certificate_theme:
     # Ordered list of steps to render the certificate theme, back to front
     # Typically these are instance wide and don't change from course to course
@@ -286,11 +307,6 @@ Default/OpenEdX/Certificate: &certificate_defaults
         width: 600
         height: 10
 
-edX/DemoX/Demo_Course:
-  ISSUED_DATE: Jan. 1st, 1970
-  LONG_COURSE: Sample course with some utf-8 char like è
-  LONG_ORG: Sample Org
-
 edX/DemoX_v3/Demo_Course_v3:
   LONG_ORG: Sample Org v3
   LONG_COURSE: Computer Science 101 with utf-8 char like à
@@ -363,11 +379,14 @@ edX/DemoX_v4/Certificate_Flair_v4:
         height: 125
         file: 'images/test_flair.png'
 
-Test/CME/Renderer:
-  LONG_COURSE: (╯°□°）╯︵ ┻━┻
-  VERIFY: false
-  VERSION: stanford_cme
-  TEMPLATEFILE: blank.pdf
+Test/Designation/Titles:
+  <<: *certificate_defaults
+  designations:
+    'Title':
+      titles:
+      - MD 
+      credits: 'The activity was designated for '
+  CREDITS: "23.50 <i>AMA PRA Category 1 Credits<super><font size=13>TM</font></super></i>."
 
 course-v1:edX+DemoX_v3+Demo_Course_v3:
   LONG_ORG: Sample Org v3

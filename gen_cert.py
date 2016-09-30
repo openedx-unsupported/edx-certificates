@@ -34,11 +34,9 @@ import tempfile
 import boto.s3
 from boto.s3.key import Key
 from bidi.algorithm import get_display
-import arabic_reshaper
 
 from opaque_keys.edx.keys import CourseKey
 
-from openedx_certificates.renderers.cme import CmeRenderer
 from openedx_certificates.renderers.elements import draw_flair
 from openedx_certificates.renderers.elements import draw_template_element
 from openedx_certificates.renderers.util import apply_style_to_font_list
@@ -171,8 +169,12 @@ class CertificateGen(object):
         # get the template version based on the course settings in the
         # certificates repo, with sensible defaults so that we can generate
         # pdfs differently for the different templates
-        self.template_version = cert_data.get('VERSION', 1)
+        self.template_version = cert_data.get('VERSION', '4_programmatic')
         self.template_type = 'honor'
+        # Check for font definition in course yaml, default to 'OpenSans' and 'Light'
+        self.template_font = cert_data.get('font', {})
+        self.template_font_name = self.template_font.get('name', 'OpenSans')
+        self.template_font_type = self.template_font.get('type', 'Light')
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
         # If TEMPLATEFILE is set in cert-data.yml, this value has top priority.
@@ -265,24 +267,16 @@ class CertificateGen(object):
                         publish_dest = os.path.join(cert_web_root, dest_path)
 
                         if upload:
-                            try:
-                                key = Key(bucket, name=dest_path)
-                                key.set_contents_from_filename(local_path, policy='public-read')
-                            except:
-                                raise
-                            else:
-                                log.info("uploaded {local} to {s3path}".format(local=local_path, s3path=dest_path))
+                            key = Key(bucket, name=dest_path)
+                            key.set_contents_from_filename(local_path, policy='public-read')
+                            log.info("uploaded {local} to {s3path}".format(local=local_path, s3path=dest_path))
 
                         if copy_to_webroot:
-                            try:
-                                dirname = os.path.dirname(publish_dest)
-                                if not os.path.exists(dirname):
-                                    os.makedirs(dirname)
-                                shutil.copy(local_path, publish_dest)
-                            except:
-                                raise
-                            else:
-                                log.info("published {local} to {web}".format(local=local_path, web=publish_dest))
+                            dirname = os.path.dirname(publish_dest)
+                            if not os.path.exists(dirname):
+                                os.makedirs(dirname)
+                            shutil.copy(local_path, publish_dest)
+                            log.info("published {local} to {web}".format(local=local_path, web=publish_dest))
 
         if cleanup:
             for working_dir in (certificates_path, verify_path):
@@ -305,13 +299,9 @@ class CertificateGen(object):
         return (download_uuid, verify_uuid, download_url)
         """
         versionmap = {
-            1: self._generate_v1_certificate,
-            2: self._generate_v2_certificate,
-            'MIT_PE': self._generate_mit_pe_certificate,
             'stanford': self._generate_stanford_SOA,
             '3_dynamic': self._generate_v3_dynamic_certificate,
             '4_programmatic': self._generate_v4_certificate,
-            'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
         return versionmap[self.template_version](
@@ -322,711 +312,6 @@ class CertificateGen(object):
             grade,
             designation,
         )
-
-    def _generate_v1_certificate(
-        self,
-        student_name,
-        download_dir,
-        verify_dir,
-        filename=TARGET_FILENAME,
-        grade=None,
-        designation=None,
-    ):
-        # A4 page size is 297mm x 210mm
-
-        verify_uuid = uuid.uuid4().hex
-        download_uuid = uuid.uuid4().hex
-        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
-            base_url=settings.CERT_DOWNLOAD_URL,
-            cert=S3_CERT_PATH, uuid=download_uuid, file=filename)
-        filename = os.path.join(download_dir, download_uuid, filename)
-
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
-
-        # 0 0 - normal
-        # 0 1 - italic
-        # 1 0 - bold
-        # 1 1 - italic and bold
-        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
-        addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
-        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-
-        addMapping('OpenSans-Regular', 0, 0, 'OpenSans-Regular')
-        addMapping('OpenSans-Regular', 0, 1, 'OpenSans-Italic')
-        addMapping('OpenSans-Regular', 1, 0, 'OpenSans-Bold')
-        addMapping('OpenSans-Regular', 1, 1, 'OpenSans-BoldItalic')
-
-        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
-        styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10, fontName='OpenSans-Regular')
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light')
-
-        # Text is overlayed top to bottom
-        #   * Issued date (top right corner)
-        #   * "This is to certify that"
-        #   * Student's name
-        #   * "successfully completed"
-        #   * Course name
-        #   * "a course of study.."
-        #   * honor code url at the bottom
-        WIDTH = 297  # width in mm (A4)
-        HEIGHT = 210  # hight in mm (A4)
-
-        LEFT_INDENT = 49  # mm from the left side to write the text
-        RIGHT_INDENT = 49  # mm from the right side for the CERTIFICATE
-
-        # CERTIFICATE
-
-        styleOpenSansLight.fontSize = 19
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "CERTIFICATE"
-
-        # Right justified so we compute the width
-        width = stringWidth(
-            paragraph_string,
-            'OpenSans-Light',
-            19,
-        ) / mm
-        paragraph = Paragraph("{0}".format(
-            paragraph_string), styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
-
-        # Issued ..
-
-        styleOpenSansLight.fontSize = 12
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "Issued {0}".format(self.issued_date)
-
-        # Right justified so we compute the width
-        width = stringWidth(
-            paragraph_string,
-            'OpenSans-LightItalic',
-            12,
-        ) / mm
-        paragraph = Paragraph("<i>{0}</i>".format(
-            paragraph_string), styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
-
-        # This is to certify..
-
-        styleOpenSansLight.fontSize = 12
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "This is to certify that"
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
-
-        #  Student name
-
-        # default is to use the DejaVu font for the name,
-        # will fall back to Arial if there are
-        # unusual characters
-        style = styleOpenSans
-        style.leading = 10
-        width = stringWidth(student_name.decode('utf-8'), 'OpenSans-Bold', 34) / mm
-        paragraph_string = "<b>{0}</b>".format(student_name)
-
-        if self._use_unicode_font(student_name):
-            style = styleArial
-            width = stringWidth(student_name.decode('utf-8'), 'Arial Unicode', 34) / mm
-            # There is no bold styling for Arial :(
-            paragraph_string = "{0}".format(student_name)
-
-        # We will wrap at 200mm in, so if we reach the end (200-47)
-        # decrease the font size
-        if width > 153:
-            style.fontSize = 18
-            nameYOffset = 121.5
-        else:
-            style.fontSize = 34
-            nameYOffset = 124.5
-
-        style.textColor = colors.Color(
-            0, 0.624, 0.886)
-        style.alignment = TA_LEFT
-
-        paragraph = Paragraph(paragraph_string, style)
-        paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, nameYOffset * mm)
-
-        # Successfully completed
-
-        styleOpenSansLight.fontSize = 12
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "successfully completed"
-        if '7.00x' in self.course:
-            paragraph_string = "successfully completed the inaugural offering of"
-        else:
-            paragraph_string = "successfully completed"
-
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
-
-        # Course name
-
-        # styleOpenSans.fontName = 'OpenSans-BoldItalic'
-        if 'PH207x' in self.course:
-            styleOpenSans.fontSize = 18
-            styleOpenSans.leading = 21
-        elif '4.01x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        elif 'Stat2.1x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        elif 'CS191x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        elif '6.00x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 21
-        elif 'PH278x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        else:
-            styleOpenSans.fontSize = 24
-            styleOpenSans.leading = 10
-        styleOpenSans.textColor = colors.Color(
-            0, 0.624, 0.886)
-        styleOpenSans.alignment = TA_LEFT
-
-        paragraph_string = u"<b><i>{0}: {1}</i></b>".format(
-            self.course, self.long_course.decode('utf-8'))
-        paragraph = Paragraph(paragraph_string, styleOpenSans)
-        # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        if 'PH207x' in self.course:
-            paragraph.wrapOn(c, 180 * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
-        elif '6.00x' in self.course:
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
-        else:
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 99 * mm)
-
-        # A course of study..
-
-        styleOpenSansLight.fontSize = 12
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "a course of study offered by <b>{0}</b>" \
-                           ", an online learning<br /><br />initiative of " \
-                           "<b>{1}</b> through <b>edX</b>.".format(
-                               self.org, self.long_org.decode('utf-8'))
-
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 78 * mm)
-
-        # Honor code
-
-        styleOpenSansLight.fontSize = 7
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_CENTER
-
-        paragraph_string = "HONOR CODE CERTIFICATE<br/>" \
-            "*Authenticity of this certificate can be verified at " \
-            "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
-            "{verify_url}/{verify_path}/{verify_uuid}</a>"
-
-        paragraph_string = paragraph_string.format(
-            verify_url=settings.CERT_VERIFY_URL,
-            verify_path=S3_VERIFY_PATH,
-            verify_uuid=verify_uuid)
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, 0 * mm, 28 * mm)
-
-        c.showPage()
-        c.save()
-
-        # Merge the overlay with the template, then write it to file
-        output = PdfFileWriter()
-        overlay = PdfFileReader(overlay_pdf_buffer)
-
-        # We need a page to overlay on.
-        # So that we don't have to open the template
-        # several times, we open a blank pdf several times instead
-        # (much faster)
-        final_certificate = copy.copy(BLANK_PDFS['landscape-A4']).getPage(0)
-        final_certificate.mergePage(self.template_pdf.getPage(0))
-        final_certificate.mergePage(overlay.getPage(0))
-
-        output.addPage(final_certificate)
-
-        self._ensure_dir(filename)
-
-        outputStream = file(filename, "wb")
-        output.write(outputStream)
-        outputStream.close()
-
-        self._generate_verification_page(
-            student_name,
-            filename,
-            verify_dir,
-            verify_uuid,
-            download_url
-        )
-
-        return (download_uuid, verify_uuid, download_url)
-
-    def _generate_v2_certificate(
-        self,
-        student_name,
-        download_dir,
-        verify_dir,
-        filename=TARGET_FILENAME,
-        grade=None,
-        designation=None,
-    ):
-        """
-        We have a new set of certificates that we want to generate which means brand new generation of certs
-        """
-
-        # 8.5x11 page size 279.4mm x 215.9mm
-        WIDTH = 279  # width in mm (8.5x11)
-        HEIGHT = 216  # height in mm (8.5x11)
-
-        verify_uuid = uuid.uuid4().hex
-        download_uuid = uuid.uuid4().hex
-        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
-            base_url=settings.CERT_DOWNLOAD_URL,
-            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
-        )
-        filename = os.path.join(download_dir, download_uuid, filename)
-
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
-
-        styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10,
-                                       fontName='OpenSans-Regular')
-        styleArial = ParagraphStyle(name="arial", leading=10,
-                                    fontName='Arial Unicode')
-
-        # Text is overlayed top to bottom
-        #   * Issued date (top right corner)
-        #   * "This is to certify that"
-        #   * Student's name
-        #   * "successfully completed"
-        #   * Course name
-        #   * "a course of study.."
-        #   * honor code url at the bottom
-
-        # New things below
-
-        # STYLE: typeface assets
-        addMapping('AvenirNext-Regular', 0, 0, 'AvenirNext-Regular')
-        addMapping('AvenirNext-DemiBold', 1, 0, 'AvenirNext-DemiBold')
-
-        # STYLE: grid/layout
-        LEFT_INDENT = 23  # mm from the left side to write the text
-        MAX_WIDTH = 150  # maximum width on the content in the cert, used for wrapping
-
-        # STYLE: template-wide typography settings
-        style_type_metacopy_size = 13
-        style_type_metacopy_leading = 10
-
-        style_type_footer_size = 8
-
-        style_type_name_size = 36
-        style_type_name_leading = 53
-        style_type_name_med_size = 28
-        style_type_name_med_leading = 41
-        style_type_name_small_size = 22
-        style_type_name_small_leading = 27
-
-        style_type_course_size = 24
-        style_type_course_leading = 28
-        style_type_course_small_size = 16
-        style_type_course_small_leading = 20
-
-        # STYLE: template-wide color settings
-        style_color_metadata = colors.Color(0.541176, 0.509804, 0.560784)
-        style_color_name = colors.Color(0.000000, 0.000000, 0.000000)
-
-        # STYLE: positioning
-        pos_metacopy_title_y = 120
-        pos_metacopy_achivement_y = 88
-        pos_metacopy_org_y = 50
-
-        pos_name_y = 94
-        pos_name_med_y = 95
-        pos_name_small_y = 95
-        pos_name_no_wrap_offset_y = 2
-
-        pos_course_y = 68
-        pos_course_small_y = 66
-        pos_course_no_wrap_offset_y = 5
-
-        pos_footer_url_x = 83
-        pos_footer_url_y = 20
-        pos_footer_date_x = LEFT_INDENT
-        pos_footer_date_y = 20
-
-        # STYLE: verified settings
-        v_style_color_course = colors.Color(0.701961, 0.231373, 0.400000)
-
-        # HTML Parser ####
-        # Since the final string is HTML in a PDF we need to un-escape the html
-        # when calculating the string width.
-        html = HTMLParser()
-
-        # ELEM: Metacopy
-        styleAvenirNext = ParagraphStyle(name="avenirnext-regular", fontName='AvenirNext-Regular')
-
-        styleAvenirNext.alignment = TA_LEFT
-        styleAvenirNext.fontSize = style_type_metacopy_size
-        styleAvenirNext.leading = style_type_metacopy_leading
-        styleAvenirNext.textColor = style_color_metadata
-
-        # ELEM: Metacopy - Title: This is to certify that
-        if self.template_type == 'verified':
-            y_offset = pos_metacopy_title_y
-
-            paragraph_string = 'This is to certify that'
-
-            paragraph = Paragraph(paragraph_string, styleAvenirNext)
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # ELEM: Student Name
-        # default is to use Avenir for the name,
-        # will fall back to Arial if there are
-        # unusual characters
-        y_offset_name = pos_name_y
-        y_offset_name_med = pos_name_med_y
-        y_offset_name_small = pos_name_small_y
-
-        styleAvenirStudentName = ParagraphStyle(name="avenirnext-demi", fontName='AvenirNext-DemiBold')
-        styleAvenirStudentName.leading = style_type_name_small_size
-
-        style = styleAvenirStudentName
-
-        html_student_name = html.unescape(student_name)
-        larger_width = stringWidth(html_student_name.decode('utf-8'),
-                                   'AvenirNext-DemiBold', style_type_name_size) / mm
-        smaller_width = stringWidth(
-            html_student_name.decode('utf-8'),
-            'AvenirNext-DemiBold', style_type_name_small_size) / mm
-
-        # TODO: get all strings working reshaped and handling bi-directional strings
-        paragraph_string = arabic_reshaper.reshape(student_name.decode('utf-8'))
-        paragraph_string = get_display(paragraph_string)
-
-        # Avenir only supports Latin-1
-        # Switch to using OpenSans if we can
-        if self._use_non_latin(student_name):
-            style = styleOpenSans
-            larger_width = stringWidth(html_student_name.decode('utf-8'),
-                                       'OpenSans-Regular', style_type_name_size) / mm
-
-        # if we can't use OpenSans, use Arial
-        if self._use_unicode_font(student_name):
-            style = styleArial
-            larger_width = stringWidth(html_student_name.decode('utf-8'),
-                                       'Arial Unicode', style_type_name_size) / mm
-
-        # if the name is too long, shrink the font size
-        if larger_width < MAX_WIDTH:
-            style.fontSize = style_type_name_size
-            style.leading = style_type_name_leading
-            y_offset = y_offset_name
-        elif smaller_width < MAX_WIDTH:
-            y_offset = y_offset_name_med + pos_name_no_wrap_offset_y
-            style.fontSize = style_type_name_med_size
-            style.leading = style_type_name_med_leading
-        else:
-            y_offset = y_offset_name_small
-            style.fontSize = style_type_name_small_size
-            style.leading = style_type_name_small_leading
-        style.textColor = style_color_name
-        style.alignment = TA_LEFT
-
-        paragraph = Paragraph(paragraph_string, style)
-        paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # ELEM: Metacopy - Achievement: successfully completed and received a passing grade in
-        y_offset = pos_metacopy_achivement_y
-
-        paragraph_string = 'successfully completed and received a passing grade in'
-
-        paragraph = Paragraph("{0}".format(paragraph_string), styleAvenirNext)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # ELEM: Course Name
-        y_offset_larger = pos_course_y
-        y_offset_smaller = pos_course_small_y
-
-        styleAvenirCourseName = ParagraphStyle(name="avenirnext-demi", fontName='AvenirNext-DemiBold')
-        styleAvenirCourseName.textColor = style_color_name
-        if self.template_type == 'verified':
-            styleAvenirCourseName.textColor = v_style_color_course
-
-        paragraph_string = u"{0}: {1}".format(self.course, self.long_course)
-        html_paragraph_string = html.unescape(paragraph_string)
-        larger_width = stringWidth(html_paragraph_string.decode('utf-8'),
-                                   'AvenirNext-DemiBold', style_type_course_size) / mm
-        smaller_width = stringWidth(html_paragraph_string.decode('utf-8'),
-                                    'AvenirNext-DemiBold', style_type_course_small_size) / mm
-
-        if larger_width < MAX_WIDTH:
-            styleAvenirCourseName.fontSize = style_type_course_size
-            styleAvenirCourseName.leading = style_type_course_leading
-            y_offset = y_offset_larger
-        elif smaller_width < MAX_WIDTH:
-            styleAvenirCourseName.fontSize = style_type_course_small_size
-            styleAvenirCourseName.leading = style_type_course_small_leading
-            y_offset = y_offset_smaller + pos_course_no_wrap_offset_y
-        else:
-            styleAvenirCourseName.fontSize = style_type_course_small_size
-            styleAvenirCourseName.leading = style_type_course_small_leading
-            y_offset = y_offset_smaller
-
-        styleAvenirCourseName.alignment = TA_LEFT
-
-        paragraph = Paragraph(paragraph_string, styleAvenirCourseName)
-
-        paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # ELEM: Metacopy - Org: a course of study...
-        y_offset = pos_metacopy_org_y
-        paragraph_string = "{2} offered by {0}" \
-                           ", an online learning<br /><br />initiative of " \
-                           "{1} through edX.".format(
-                               self.org, self.long_org.decode('utf-8'), self.course_association_text)
-
-        paragraph = Paragraph(paragraph_string, styleAvenirNext)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # ELEM: Footer
-        styleAvenirFooter = ParagraphStyle(name="avenirnext-demi", fontName='AvenirNext-DemiBold')
-
-        styleAvenirFooter.alignment = TA_LEFT
-        styleAvenirFooter.fontSize = style_type_footer_size
-
-        # ELEM: Footer - Issued on Date
-        x_offset = pos_footer_date_x
-        y_offset = pos_footer_date_y
-        paragraph_string = "Issued {0}".format(self.issued_date)
-        # Right justified so we compute the width
-        paragraph = Paragraph("{0}".format(
-            paragraph_string), styleAvenirFooter)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # ELEM: Footer - Verify Authenticity URL
-        y_offset = pos_footer_url_y
-        x_offset = pos_footer_url_x
-        paragraph_string = "<a href='https://{bucket}/{verify_path}/{verify_uuid}'>" \
-                           "https://{bucket}/{verify_path}/{verify_uuid}</a>"
-        paragraph_string = paragraph_string.format(bucket=BUCKET,
-                                                   verify_path=S3_VERIFY_PATH,
-                                                   verify_uuid=verify_uuid)
-
-        paragraph = Paragraph(paragraph_string, styleAvenirFooter)
-
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, x_offset * mm, y_offset * mm)
-
-        c.showPage()
-        c.save()
-
-        # Merge the overlay with the template, then write it to file
-        output = PdfFileWriter()
-        overlay = PdfFileReader(overlay_pdf_buffer)
-
-        # We need a page to overlay on.
-        # So that we don't have to open the template
-        # several times, we open a blank pdf several times instead
-        # (much faster)
-
-        final_certificate = copy.copy(BLANK_PDFS['landscape-letter']).getPage(0)
-        final_certificate.mergePage(self.template_pdf.getPage(0))
-        final_certificate.mergePage(overlay.getPage(0))
-
-        output.addPage(final_certificate)
-
-        self._ensure_dir(filename)
-
-        outputStream = file(filename, "wb")
-        output.write(outputStream)
-        outputStream.close()
-
-        self._generate_verification_page(
-            student_name,
-            filename,
-            verify_dir,
-            verify_uuid,
-            download_url
-        )
-
-        return (download_uuid, verify_uuid, download_url)
-
-    def _generate_mit_pe_certificate(
-        self,
-        student_name,
-        download_dir,
-        verify_dir,
-        filename=TARGET_FILENAME,
-        grade=None,
-        designation=None,
-    ):
-        """
-        Generate the BigDataX certs
-        """
-        # 8.5x11 page size 279.4mm x 215.9mm
-        WIDTH = 279  # width in mm (8.5x11)
-        HEIGHT = 216  # height in mm (8.5x11)
-
-        download_uuid = uuid.uuid4().hex
-        verify_uuid = uuid.uuid4().hex
-        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
-            base_url=settings.CERT_DOWNLOAD_URL,
-            cert=S3_CERT_PATH, uuid=download_uuid, file=filename
-        )
-
-        filename = os.path.join(download_dir, download_uuid, filename)
-
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        c = canvas.Canvas(overlay_pdf_buffer)
-        c.setPageSize((WIDTH * mm, HEIGHT * mm))
-
-        # STYLE: grid/layout
-        LEFT_INDENT = 10  # mm from the left side to write the text
-        MAX_WIDTH = 260  # maximum width on the content in the cert, used for wrapping
-
-        # STYLE: template-wide typography settings
-        style_type_name_size = 36
-        style_type_name_leading = 53
-        style_type_name_med_size = 22
-        style_type_name_med_leading = 27
-        style_type_name_small_size = 18
-        style_type_name_small_leading = 21
-
-        # STYLE: template-wide color settings
-        style_color_name = colors.Color(0.000000, 0.000000, 0.000000)
-
-        # STYLE: positioning
-        pos_name_y = 137
-        pos_name_med_y = 142
-        pos_name_small_y = 140
-        pos_name_no_wrap_offset_y = 2
-
-        # HTML Parser
-        # Since the final string is HTML in a PDF we need to un-escape the html
-        # when calculating the string width.
-        html = HTMLParser()
-
-        # ELEM: Student Name
-        # default is to use Garamond for the name,
-        # will fall back to Arial if there are
-        # unusual characters
-        y_offset_name = pos_name_y
-        y_offset_name_med = pos_name_med_y
-        y_offset_name_small = pos_name_small_y
-
-        styleUnicode = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
-        styleGaramondStudentName = ParagraphStyle(name="garamond", fontName='Garamond-Bold')
-        styleGaramondStudentName.leading = style_type_name_small_size
-
-        style = styleGaramondStudentName
-
-        html_student_name = html.unescape(student_name)
-        larger_width = stringWidth(html_student_name.decode('utf-8'),
-                                   'Garamond-Bold', style_type_name_size) / mm
-        smaller_width = stringWidth(html_student_name.decode('utf-8'),
-                                    'Garamond-Bold', style_type_name_small_size) / mm
-
-        paragraph_string = arabic_reshaper.reshape(student_name.decode('utf-8'))
-        paragraph_string = get_display(paragraph_string)
-
-        # Garamond only supports Latin-1
-        # if we can't use it, use Arial
-        if self._use_unicode_font(student_name):
-            style = styleUnicode
-            larger_width = stringWidth(html_student_name.decode('utf-8'),
-                                       'Arial Unicode', style_type_name_size) / mm
-
-        # if the name is too long, shrink the font size
-        if larger_width < MAX_WIDTH:
-            style.fontSize = style_type_name_size
-            style.leading = style_type_name_leading
-            y_offset = y_offset_name
-        elif smaller_width < MAX_WIDTH:
-            y_offset = y_offset_name_med + pos_name_no_wrap_offset_y
-            style.fontSize = style_type_name_med_size
-            style.leading = style_type_name_med_leading
-        else:
-            y_offset = y_offset_name_small
-            style.fontSize = style_type_name_small_size
-            style.leading = style_type_name_small_leading
-        style.textColor = style_color_name
-        style.alignment = TA_CENTER
-
-        paragraph = Paragraph(paragraph_string, style)
-        paragraph.wrapOn(c, MAX_WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
-
-        # Generate the final PDF
-        c.showPage()
-        c.save()
-
-        # Merge the overlay with the template, then write it to file
-        output = PdfFileWriter()
-        overlay = PdfFileReader(overlay_pdf_buffer)
-
-        # We need a page to overlay on.
-        # So that we don't have to open the template
-        # several times, we open a blank pdf several times instead
-        # (much faster)
-
-        blank_pdf = PdfFileReader(
-            file("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")
-        )
-
-        final_certificate = blank_pdf.getPage(0)
-        final_certificate.mergePage(self.template_pdf.getPage(0))
-        final_certificate.mergePage(overlay.getPage(0))
-
-        output.addPage(final_certificate)
-
-        self._ensure_dir(filename)
-
-        outputStream = file(filename, "wb")
-        output.write(outputStream)
-        outputStream.close()
-        return (download_uuid, verify_uuid, download_url)
 
     def _generate_verification_page(self, name, filename, output_dir, verify_uuid, download_url):
         """
@@ -1045,11 +330,8 @@ class CertificateGen(object):
         if not CERT_KEY_ID:
             return
 
-        prefix = ''
-        if self.template_version == 2:
-            prefix = 'v2/'
-        valid_template = prefix + 'valid.html'
-        verify_template = prefix + 'verify.html'
+        valid_template = 'valid.html'
+        verify_template = 'verify.html'
 
         # generate signature
         signature_filename = os.path.basename(filename) + ".sig"
@@ -1406,153 +688,6 @@ class CertificateGen(object):
             )
 
         return (download_uuid, verify_uuid, download_url)
-
-    def _generate_stanford_cme_certificate(
-        self,
-        student_name,
-        download_dir,
-        verify_dir,
-        filename=TARGET_FILENAME,
-        grade=None,
-        designation=None,
-        generate_date=None,
-    ):
-        """Generate a PDF certificate, signature and html files for validation.
-
-        REQUIRED PARAMETERS:
-        student_name  - specifies student name as it must appear on the cert.
-        download_dir  -
-        verify_dir    -
-
-        OPTIONAL PARAMETERS:
-        filename      - the filename to write out, i.e., 'Certificate.pdf'.
-                        Defaults to settings.TARGET_FILENAME
-        grade         - the grade received by the student. Defaults to 'Pass'
-        generate_date - specifies an ISO formatted date (i.e., '2012-02-02')
-                        with which to stamp the cert. Defaults to CERT_DATA's
-                        ISSUED_DATE, or today's date for ROLLING.
-
-        CONFIGURATION PARAMETERS:
-        The following items are brought in from the cert-data.yml stanza for the
-        current course:
-        MD_CERTS     - A list of all of the student titles which qualify to get the
-                       MD/DO certificate and receive CME credit
-        NO_TITLE     - A list of student titles which should be treated as
-                       equivalent to having no title at all.
-        CREDITS      - A string describing what accreditation this CME
-                       certificate is good for, e.g., "## Blabbity Blab Credits".
-        LONG_COURSE  - (optional) The course title to be printed on the cert;
-                       unset means to use the value passed in as part of the
-                       certificate request.
-        ISSUED_DATE  - (optional) If given, the date string which should be
-                       stamped onto each and every certificate. The value
-                       ROLLING is equivalent to leaving ISSUED_DATE unset, which
-                       stamps the certificates with the current date.
-        TEMPLATEFILE - (optional) If given, the filename referred to by
-                       TEMPLATEFILE will be used as the template over which
-                       to render.
-
-        RETURNS (download_uuid, verify_uuid, download_url)
-
-        Note that CME certificates never generate verification URLs; the
-        underlying template is expected to embed contact information for
-        the relevant medical school.
-        """
-
-        download_uuid = uuid.uuid4().hex
-        download_url = "{base_url}/{cert}/{uuid}/{file}".format(
-            base_url=settings.CERT_DOWNLOAD_URL,
-            cert=S3_CERT_PATH,
-            uuid=download_uuid,
-            file=filename,
-        )
-        filename = os.path.join(download_dir, download_uuid, filename)
-        self._ensure_dir(filename)
-
-        # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
-        page = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
-
-        # Landscape Letter page size is 279mm x 216 mm
-        # All unexplained constants below were selected because they look good
-        width_text_in_points = WIDTH_LANDSCAPE_PAGE_IN_POINTS * .80
-        margin_in_points = WIDTH_LANDSCAPE_PAGE_IN_POINTS * .1
-        color_gray = colors.Color(0.13, 0.14, 0.22)
-
-        date_string = get_cert_date(generate_date, self.issued_date, self.locale, self.timezone)
-
-        # Manipulate student titles
-        gets_md_cert = False
-        gets_md_cert_list = self.cert_data.get('MD_CERTS', [])
-        gets_no_title = self.cert_data.get('NO_TITLE', [])
-        student_name = u"{}".format(student_name.decode('utf-8'))  # Ensure consistent handling
-        if designation and designation not in gets_no_title:
-            student_name = u"{}, {}".format(student_name, designation.decode('utf-8'))
-        gets_md_cert = designation in gets_md_cert_list
-
-        #                            0 0 - normal
-        #                            0 1 - italic
-        #                            1 0 - bold
-        #                            1 1 - italic and bold
-        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
-        addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
-        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-        addMapping('DroidSerif', 0, 0, 'DroidSerif')
-        addMapping('DroidSerif', 0, 1, 'DroidSerif-Italic')
-        addMapping('DroidSerif', 1, 0, 'DroidSerif-Bold')
-        addMapping('DroidSerif', 1, 1, 'DroidSerif-BoldItalic')
-
-        styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode', allowWidows=0)
-        styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light', allowWidows=0)
-        styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
-
-        # These are ordered by preference; cf. font_for_string() above
-        fontlist = [
-            ('DroidSerif', 'DroidSerif.ttf', styleDroidSerif),
-            ('OpenSans-Light', 'OpenSans-Light.ttf', styleOpenSansLight),
-            ('Arial Unicode', 'Ariel Unicode.ttf', styleArial),
-        ]
-
-        # Text is then overlayed onto it. From top to bottom:
-        #   * Completion Date
-        #   * Student's name
-        #   * Course name
-        #   * "is awarded/was designated.."
-        #   * MD/DO;AHP corner marker
-
-        renderer = CmeRenderer(
-            self.cert_data,
-            page,
-            color_gray,
-            fontlist,
-            width_text_in_points,
-            margin_in_points,
-        )
-
-        renderer.draw_date_on_page(date_string)
-        renderer.draw_student_name_on_page(student_name)
-        renderer.draw_course_on_page(self.long_course.decode('utf-8'))
-        renderer.draw_credits_on_page(gets_md_cert)
-        renderer.draw_tag_on_page(gets_md_cert)
-
-        page.showPage()
-        page.save()
-
-        # Merge the overlay with the template, then write it to file
-        overlay = PdfFileReader(overlay_pdf_buffer)
-
-        # We render the final certificate by merging several rendered pages.
-        # It's fastest if the bottom layer is a blank page loaded from RAM
-        final_certificate = copy.copy(BLANK_PDFS['landscape-letter']).getPage(0)
-        final_certificate.mergePage(self.template_pdf.getPage(0))
-        final_certificate.mergePage(overlay.getPage(0))
-
-        output = PdfFileWriter()
-        output.addPage(final_certificate)
-        with file(filename, "wb") as ostream:
-            output.write(ostream)
-
-        return (download_uuid, 'No Verification', download_url)
 
     def _generate_v3_dynamic_certificate(
         self,
@@ -1947,16 +1082,16 @@ class CertificateGen(object):
         # 0 1 - italic
         # 1 0 - bold
         # 1 1 - italic and bold
-        addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
-        addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
-        addMapping('SourceSansPro-Regular', 0, 0, 'SourceSansPro-Regular')
-        addMapping('SourceSansPro-Regular', 1, 0, 'SourceSansPro-Bold')
-        addMapping('SourceSansPro-Regular', 1, 1, 'SourceSansPro-BoldItalic')
+        font_string = self.template_font_name + '-' + self.template_font_type
+        font_file = font_string + '.ttf'
+        addMapping(font_string, 0, 0, font_string)
+        addMapping(font_string, 0, 1, self.template_font_name + '-Italic')
+        addMapping(font_string, 1, 0, self.template_font_name + '-Bold')
+        addMapping(font_string, 1, 1, self.template_font_name + '-BoldItalic')
 
         # These are ordered by preference; cf. font_for_string() above
         self.fontlist = [
-            ('SourceSansPro-Regular', 'SourceSansPro-Regular.ttf', None),
-            ('OpenSans-Light', 'OpenSans-Light.ttf', None),
+            (font_string, font_file, None),
             ('Arial Unicode', 'Arial Unicode.ttf', None),
         ]
         fontlist = self.fontlist
@@ -1981,6 +1116,21 @@ class CertificateGen(object):
             grade_html = u"<b>{grade}</b>".format(grade=grade.decode('utf-8'))
             achievements_string = grade_interstitial.decode('utf-8').format(grade=grade_html) + '<br /><br />'
         achievements_paragraph = u"{0}{1}".format(achievements_string, achievements_description_string)
+
+        # Overide achievements/interstitial strings with yaml designations info based on designation
+        designation_tag = ''
+        for key, value in self.cert_data.get('designations', {}).iteritems():
+            if designation in value['titles']:
+                # Add student name designation if not Other or None
+                if designation not in ['Other', 'None']:
+                    student_name = u"{name}, {designation}".format(
+                        name=student_name,
+                        designation=designation.decode('utf-8'),
+                    )
+                achievements_string = value['credits']
+                achievements_description_string = self.cert_data['CREDITS']
+                designation_tag = key
+                break
 
         # print disclaimer text if required
         print_disclaimer = not self.cert_data.get('HAS_DISCLAIMER', False)
@@ -2011,6 +1161,7 @@ class CertificateGen(object):
             'course_title': self.long_course.decode('utf-8'),
             'achievements_string': achievements_string,
             'achievements_description_string': achievements_description_string,
+            'designation_tag': designation_tag,
             'disclaimer_text': disclaimer_text,
             'verify_text': formatted_verify_text,
         }
