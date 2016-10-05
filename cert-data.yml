@@ -307,14 +307,6 @@ Default/OpenEdX/Certificate: &certificate_defaults
         width: 600
         height: 10
 
-edX/DemoX_v3/Demo_Course_v3:
-  LONG_ORG: Sample Org v3
-  LONG_COURSE: Computer Science 101 with utf-8 char like à
-  VERSION: 3_dynamic
-  interstitial:
-    Pass: 'This person passed.'
-    Distinction: 'This person is a complete overachiever!'
-
 edX/DemoX_v4/Demo_Course_v4:
   <<: *certificate_defaults
   instructors:
@@ -330,7 +322,7 @@ edX/DemoX_v4/Demo_Course_v4:
     Pass: 'This student has passed this course. To pass, the student had to complete 10 assignments and one final exam, scoring at least 60% throughout.'
     Distinction: 'This person is a complete overachiever! They passed the course with Distinction. To do so, they had to complete 10 assignments and one final exam, scoring at least 90% throughout.'
 
-edX/DemoX_v4/Custom_Instructor_Block_v4:
+course-v1:edX+DemoX_v4+Custom_Instructor_Block_v4:
   <<: *certificate_defaults
   instructors:
     - instructor:
@@ -388,18 +380,8 @@ Test/Designation/Titles:
       credits: 'The activity was designated for '
   CREDITS: "23.50 <i>AMA PRA Category 1 Credits<super><font size=13>TM</font></super></i>."
 
-course-v1:edX+DemoX_v3+Demo_Course_v3:
-  LONG_ORG: Sample Org v3
-  LONG_COURSE: Computer Science 101 with utf-8 char like à
-  VERSION: 3_dynamic
-  interstitial:
-    Pass: 'This person passed.'
-    Distinction: 'This person is a complete overachiever!'
-
 translation/test/course:
-  LONG_ORG: Sample Org v3
-  VERSION: 3_dynamic
-  TEMPLATEFILE: certificate-template-edX-DemoX_v3.pdf
+  <<: *certificate_defaults
   interstitial:
     Pass: 'Para recibir una declaración de cumplimiento, los participantes deberán obtener 70 o más, de los 100 puntos posibles, en los exámenes en línea.'
     Distinctión: 'Para recibir una declaración de cumplimiento con distinctión, los participantes deberán obtener 90 o más, de los 100 puntos posibles, en los exámenes en línea.'
