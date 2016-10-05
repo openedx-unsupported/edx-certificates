@@ -427,42 +427,6 @@ class CertificateGen(object):
         if not os.path.exists(d):
             os.makedirs(d)
 
-    def _contains_characters_above(self, string, value):
-        """
-        Crude method for determining whether or not a string contains
-        characters we can't render nicely in particular fonts
-
-        FIXME: methods using this should consider using font_for_string()
-        instead.
-        """
-        for character in string.decode('utf-8'):
-            # I believe chinese characters are 0x4e00 to 0x9fff
-            # Japanese kanji seem to be >= 0x3000
-            if ord(character) >= value:
-                return True
-        return False
-
-    def _use_non_latin(self, string):
-        """
-        Use this to detect when we are dealing with characters that
-        do not fit into Latin-1
-        """
-        return self._contains_characters_above(string, 0x0100)
-
-    def _use_unicode_font(self, string):
-        """
-        FIXME: methods using this should consider using font_for_string()
-        instead.
-        """
-        # This function should return true for any
-        # string that that opensans/baskerville can't render.
-        # I don't know how to query the font, so I assume that
-        # any high codepoint is unsupported.
-        # This can be improved dramatically
-        # I believe chinese characters are 0x4e00 to 0x9fff
-        # Japanese kanji seem to be >= 0x3000
-        return self._contains_characters_above(string, 0x0500)
-
     def _generate_v4_certificate(
         self,
         student_name,
