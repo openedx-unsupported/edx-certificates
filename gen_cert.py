@@ -796,12 +796,12 @@ class CertificateGen(object):
             if designation in value['titles']:
                 # Add student name designation if not Other or None
                 if designation not in ['Other', 'None']:
-                    student_name = u"{name}, {designation}".format(
+                    student_name = "{name}, {designation}".format(
                         name=student_name,
-                        designation=designation.decode('utf-8'),
+                        designation=designation,
                     )
                 achievements_string = value['credits']
-                achievements_description_string = self.cert_data['CREDITS']
+                achievements_description_string = unicode(self.cert_data['CREDITS'])
                 designation_tag = key
                 break
 
