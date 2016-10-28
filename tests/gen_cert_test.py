@@ -84,16 +84,18 @@ def test_designation():
         for designation in designations:
             tmpdir = tempfile.mkdtemp()
             cert = CertificateGen(course_id)
-            (download_uuid, verify_uuid, download_url) = cert.create_and_upload(
-                'John Smith',
-                upload=False,
-                copy_to_webroot=True,
-                cert_web_root=tmpdir,
-                cleanup=True,
-                designation=designation,
-            )
-            if os.path.exists(tmpdir):
-                shutil.rmtree(tmpdir)
+            for name in NAMES:
+                cert = CertificateGen(course_id)
+                (download_uuid, verify_uuid, download_url) = cert.create_and_upload(
+                    name,
+                    upload=False,
+                    copy_to_webroot=True,
+                    cert_web_root=tmpdir,
+                    cleanup=True,
+                    designation=designation,
+                )
+                if os.path.exists(tmpdir):
+                    shutil.rmtree(tmpdir)
 
 
 def test_cert_names():

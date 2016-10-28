@@ -116,6 +116,8 @@ def main():
                                                        cleanup=False, designation=title, grade=grade)
             certificate_data.append((name, course, args.long_org, args.long_course, download_url))
             gen_dir = os.path.join(cert.dir_prefix, S3_CERT_PATH, download_uuid)
+            # Remove non-ascii chars from filename before saving locally (This is not the production filename)
+            name = ''.join([i if ord(i) < 128 else ' ' for i in name])
             copy_dest = '{copy_dir}/{course}-{name}.pdf'.format(
                 copy_dir=copy_dir,
                 name=name.replace(" ", "-").replace("/", "-"),
