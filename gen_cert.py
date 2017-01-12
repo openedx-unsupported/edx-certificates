@@ -40,6 +40,9 @@ from opaque_keys.edx.keys import CourseKey
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
+import requests
+import json
+from salalem.models import Config
 
 RE_ISODATES = re.compile("(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})")
 TEMPLATE_DIR = settings.TEMPLATE_DIR
@@ -374,6 +377,7 @@ class CertificateGen(object):
             'MIT_PE': self._generate_mit_pe_certificate,
             'stanford': self._generate_stanford_SOA,
             '3_dynamic': self._generate_v3_dynamic_certificate,
+            'salalem': self._salalem_certificate,
             'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
@@ -1975,5 +1979,43 @@ class CertificateGen(object):
                 verify_uuid,
                 download_url,
             )
+
+        return (download_uuid, verify_uuid, download_url)
+
+
+    def _salalem_certificate(
+            self,
+            student_name,
+            download_dir,
+            verify_dir,
+            filename=TARGET_FILENAME,
+            grade=None,
+            designation=None,
+            generate_date=None,
+    ):
+        verify_me_p = self.cert_data.get('VERIFY', True)
+        verify_uuid = uuid.uuid4().hex if verify_me_p else ''
+        download_uuid = uuid.uuid4().hex
+
+        salalem_managment_url = Config.get_value('SALALEM_MANGEMENT_URL') + '/api'
+
+        response = requests.get(salalem_managment_url,
+                                headers={'Authorization': 'Token ' + Config.get_value('SALALEM_TOKEN')})
+        headers = response.headers
+        headers['Authorization'] = "Token " + Config.get_value('SALALEM_TOKEN')
+
+        data = {
+            "client": {
+                "id": Config.get_value('SALALEM_CLIENT_ID')
+            },
+            "learner_name": student_name,
+            "course_name": self.long_course.decode('utf-8'),
+            "client_certificate_verify_uuid": verify_uuid,
+            "grade": grade
+        }
+
+        get_certificate_response = requests.post(salalem_managment_url + '/certificates/', data=json.dumps(data), headers=headers)
+
+        download_url = json.loads(get_certificate_response.content)['download_url']
 
         return (download_uuid, verify_uuid, download_url)
