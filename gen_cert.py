@@ -42,7 +42,7 @@ reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
 import requests
 import json
-from salalem.models import Config
+import MySQLdb
 
 RE_ISODATES = re.compile("(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})")
 TEMPLATE_DIR = settings.TEMPLATE_DIR
@@ -1997,16 +1997,25 @@ class CertificateGen(object):
         verify_uuid = uuid.uuid4().hex if verify_me_p else ''
         download_uuid = uuid.uuid4().hex
 
-        salalem_managment_url = Config.get_value('SALALEM_MANGEMENT_URL') + '/api'
+        db = MySQLdb.connect(host="localhost", user="root", passwd="", db="edxapp")
+        cur = db.cursor()
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_CLIENT_ID'")
+        salalem_client_id = cur.fetchall()[0][0]
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_MANGEMENT_URL'")
+        salalem_token = cur.fetchall()[0][0]
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_TOKEN'")
+        salalem_management_url = cur.fetchall()[0][0]
+        db.close()
 
-        response = requests.get(salalem_managment_url,
-                                headers={'Authorization': 'Token ' + Config.get_value('SALALEM_TOKEN')})
+
+        response = requests.get(salalem_management_url,
+                                headers={'Authorization': 'Token ' + salalem_token})
         headers = response.headers
-        headers['Authorization'] = "Token " + Config.get_value('SALALEM_TOKEN')
+        headers['Authorization'] = "Token " + salalem_token
 
         data = {
             "client": {
-                "id": Config.get_value('SALALEM_CLIENT_ID')
+                "id": salalem_client_id
             },
             "learner_name": student_name,
             "course_name": self.long_course.decode('utf-8'),
@@ -2014,7 +2023,7 @@ class CertificateGen(object):
             "grade": grade
         }
 
-        get_certificate_response = requests.post(salalem_managment_url + '/certificates/', data=json.dumps(data), headers=headers)
+        get_certificate_response = requests.post(salalem_management_url + '/certificates/', data=json.dumps(data), headers=headers)
 
         download_url = json.loads(get_certificate_response.content)['download_url']
 
