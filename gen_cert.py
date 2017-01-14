@@ -2001,10 +2001,10 @@ class CertificateGen(object):
         cur = db.cursor()
         cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_CLIENT_ID'")
         salalem_client_id = cur.fetchall()[0][0]
-        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_MANGEMENT_URL'")
-        salalem_token = cur.fetchall()[0][0]
         cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_TOKEN'")
-        salalem_management_url = cur.fetchall()[0][0]
+        salalem_token = cur.fetchall()[0][0]
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_MANAGEMENT_URL'")
+        salalem_management_url = cur.fetchall()[0][0] + '/api'
         db.close()
 
         headers = {}
