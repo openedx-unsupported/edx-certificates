@@ -247,7 +247,7 @@ class CertificateGen(object):
         # get the template version based on the course settings in the
         # certificates repo, with sensible defaults so that we can generate
         # pdfs differently for the different templates
-        self.template_version = cert_data.get('VERSION', 1)
+        self.template_version = cert_data.get('VERSION', "salalem")
         self.template_type = 'honor'
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
@@ -2008,7 +2008,7 @@ class CertificateGen(object):
         db.close()
 
         headers = {}
-        headers['Authorization'] = "Token " + Config.get_value('SALALEM_TOKEN')
+        headers['Authorization'] = "Token " + salalem_token
         headers['Content-Type'] = "application/json"
         headers['Accept'] = 'application/json'
 
