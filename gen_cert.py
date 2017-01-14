@@ -2007,11 +2007,10 @@ class CertificateGen(object):
         salalem_management_url = cur.fetchall()[0][0]
         db.close()
 
-
-        response = requests.get(salalem_management_url,
-                                headers={'Authorization': 'Token ' + salalem_token})
-        headers = response.headers
-        headers['Authorization'] = "Token " + salalem_token
+        headers = {}
+        headers['Authorization'] = "Token " + Config.get_value('SALALEM_TOKEN')
+        headers['Content-Type'] = "application/json"
+        headers['Accept'] = 'application/json'
 
         data = {
             "client": {
