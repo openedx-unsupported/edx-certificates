@@ -2003,15 +2003,14 @@ class CertificateGen(object):
         salalem_client_id = cur.fetchall()[0][0]
         cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_TOKEN'")
         salalem_token = cur.fetchall()[0][0]
-        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_MANAGEMENT_URL'")
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_MANGEMENT_URL'")
         salalem_management_url = cur.fetchall()[0][0] + '/api'
         db.close()
 
         headers = {}
-        headers['Authorization'] = "Token " + salalem_token
-        headers['Content-Type'] = "application/json"
+        headers['Authorization'] = 'Token' + salalem_token
+        headers['Content-Type'] = 'application/json'
         headers['Accept'] = 'application/json'
-
         data = {
             "client": {
                 "id": salalem_client_id
@@ -2019,11 +2018,14 @@ class CertificateGen(object):
             "learner_name": student_name,
             "course_name": self.long_course.decode('utf-8'),
             "client_certificate_verify_uuid": verify_uuid,
-            "grade": grade
+            "grade": 0
         }
 
         get_certificate_response = requests.post(salalem_management_url + '/certificates/', data=json.dumps(data), headers=headers)
 
         download_url = json.loads(get_certificate_response.content)['download_url']
+	print download_url
+	print get_certificate_response.content
 
         return (download_uuid, verify_uuid, download_url)
+
