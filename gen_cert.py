@@ -2024,8 +2024,6 @@ class CertificateGen(object):
         get_certificate_response = requests.post(salalem_management_url + '/certificates/', data=json.dumps(data), headers=headers)
 
         download_url = json.loads(get_certificate_response.content)['download_url']
-	print download_url
-	print get_certificate_response.content
 
         return (download_uuid, verify_uuid, download_url)
 
