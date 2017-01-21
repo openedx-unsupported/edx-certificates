@@ -1,3 +1,4 @@
+argparse==1.2.1
 boto==2.27.0
 gnupg==1.4.0
 MySQL-python==1.2.5
@@ -17,3 +18,5 @@ reportlab==3.1.44
 requests==2.3.0
 six==1.10.0
 stevedore==1.20.0
+pyPdf2==1.23
+git+https://github.com/edx/opaque-keys.git@1254ed4d615a428591850656f39f26509b86d30a#egg=opaque-keys
