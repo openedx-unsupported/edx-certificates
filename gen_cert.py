@@ -40,6 +40,9 @@ from opaque_keys.edx.keys import CourseKey
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
+import requests
+import json
+import MySQLdb
 
 RE_ISODATES = re.compile("(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})")
 TEMPLATE_DIR = settings.TEMPLATE_DIR
@@ -244,7 +247,7 @@ class CertificateGen(object):
         # get the template version based on the course settings in the
         # certificates repo, with sensible defaults so that we can generate
         # pdfs differently for the different templates
-        self.template_version = cert_data.get('VERSION', 1)
+        self.template_version = cert_data.get('VERSION', "salalem")
         self.template_type = 'honor'
         # search for certain keywords in the file name, we'll probably want to
         # be better at parsing this later
@@ -374,6 +377,7 @@ class CertificateGen(object):
             'MIT_PE': self._generate_mit_pe_certificate,
             'stanford': self._generate_stanford_SOA,
             '3_dynamic': self._generate_v3_dynamic_certificate,
+            'salalem': self._salalem_certificate,
             'stanford_cme': self._generate_stanford_cme_certificate,
         }
         # TODO: we should be taking args, kwargs, and passing those on to our callees
@@ -1977,3 +1981,48 @@ class CertificateGen(object):
             )
 
         return (download_uuid, verify_uuid, download_url)
+
+
+    def _salalem_certificate(
+            self,
+            student_name,
+            download_dir,
+            verify_dir,
+            filename=TARGET_FILENAME,
+            grade=None,
+            designation=None,
+            generate_date=None,
+    ):
+        verify_me_p = self.cert_data.get('VERIFY', True)
+        verify_uuid = uuid.uuid4().hex if verify_me_p else ''
+        download_uuid = uuid.uuid4().hex
+
+        db = MySQLdb.connect(host="localhost", user="root", passwd="", db="edxapp")
+        cur = db.cursor()
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_CLIENT_ID'")
+        salalem_client_id = cur.fetchall()[0][0]
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_TOKEN'")
+        salalem_token = cur.fetchall()[0][0]
+        cur.execute("SELECT value FROM edxapp.`salalem.config` WHERE `key` = 'SALALEM_MANGEMENT_URL'")
+        salalem_management_url = cur.fetchall()[0][0] + '/api'
+        db.close()
+
+        headers = {}
+        headers['Authorization'] = 'Token ' + salalem_token
+        headers['Content-Type'] = 'application/json'
+        headers['Accept'] = 'application/json'
+        data = {
+            "client": {
+                "id": salalem_client_id
+            },
+            "learner_name": student_name,
+            "course_name": self.long_course.decode('utf-8'),
+            "client_certificate_verify_uuid": verify_uuid,
+            "grade": 0
+        }
+
+        get_certificate_response = requests.post(salalem_management_url + '/certificates/', data=json.dumps(data), headers=headers)
+        download_url = json.loads(get_certificate_response.content)['download_url']
+
+        return (download_uuid, verify_uuid, download_url)
+
