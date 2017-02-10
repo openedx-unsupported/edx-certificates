@@ -155,7 +155,7 @@ def test_cert_date_timezone():
     Make sure certs render dates according to the passed timezone
     """
     today_date = datetime.datetime(2016, 8, 22, 0, 0, 0, 0)
-    utc_cert_date = get_cert_date(today_date, "CALLING", timezone="UTC")
+    utc_cert_date = get_cert_date(today_date, timezone='UTC')
     assert_true(utc_cert_date == 'August 22, 2016')
-    pacific_cert_date = get_cert_date(today_date, "CALLING", timezone="US/Pacific")
+    pacific_cert_date = get_cert_date(today_date, timezone='US/Pacific')
     assert_true(pacific_cert_date == 'August 21, 2016')
