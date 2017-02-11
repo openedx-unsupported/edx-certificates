@@ -276,32 +276,6 @@ class CertificateGen(object):
 
         return (download_uuid, verify_uuid, download_url)
 
-    def _generate_certificate(
-        self,
-        student_name,
-        download_dir,
-        verify_dir,
-        filename=TARGET_FILENAME,
-        grade=None,
-        designation=None,
-    ):
-        """Generate a certificate PDF, signature and validation html files.
-
-        return (download_uuid, verify_uuid, download_url)
-        """
-        versionmap = {
-            '4_programmatic': self._generate_v4_certificate,
-        }
-        # TODO: we should be taking args, kwargs, and passing those on to our callees
-        return versionmap[self.template_version](
-            student_name,
-            download_dir,
-            verify_dir,
-            filename,
-            grade,
-            designation,
-        )
-
     def _generate_verification_page(self, name, filename, output_dir, verify_uuid, download_url):
         """
         This generates the gpg signature and the
@@ -418,7 +392,7 @@ class CertificateGen(object):
         if not os.path.exists(d):
             os.makedirs(d)
 
-    def _generate_v4_certificate(
+    def _generate_certificate(
         self,
         student_name,
         download_dir,
