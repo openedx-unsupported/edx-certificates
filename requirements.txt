@@ -1,5 +1,6 @@
 argparse==1.2.1
 boto==2.27.0
+ddt
 gnupg==1.4.0
 nose==1.2.1
 path.py==2.4.1
