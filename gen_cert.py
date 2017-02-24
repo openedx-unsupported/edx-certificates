@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import copy
-import datetime
+from datetime import datetime
 import gnupg
 import math
 import os
@@ -22,7 +22,7 @@ from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from HTMLParser import HTMLParser
-from babel.dates import format_datetime
+from babel.dates import format_date
 from babel.dates import get_timezone
 
 import settings
@@ -73,20 +73,29 @@ BLANK_PDFS = {
 }
 
 
-def get_cert_date(
-        force_date=None,
-        locale=settings.DEFAULT_LOCALE,
-        timezone=settings.TIMEZONE,
-):
+def get_today():
+    return datetime.today()
+
+
+def get_cert_date(force_date, locale, timezone):
     """
     Get pertinent date for display on cert
     """
+    locale = locale or settings.DEFAULT_LOCALE
+    timezone = timezone or settings.TIMEZONE
+
     if force_date:
-        date_value = format_datetime(force_date, 'MMMM d, y', tzinfo=timezone, locale=locale)
+        date = datetime.strptime(force_date, '%Y-%m-%d')
     else:
-        date_value = format_datetime(datetime.datetime.today(), 'MMMM d, y', tzinfo=timezone, locale=locale)
-    date_string = u"{0}".format(date_value)
-    return date_string
+        from_zone = get_timezone(settings.TIMEZONE)
+        to_zone = get_timezone(timezone)
+        date = get_today()
+        date = date.replace(tzinfo=from_zone)
+        date = date.astimezone(to_zone)
+    date = date.date()
+    date = format_date(date, 'long', locale=locale)
+    date = unicode(date)
+    return date
 
 
 class CertificateGen(object):

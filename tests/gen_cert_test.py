@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-import datetime
+from datetime import datetime
 import gnupg
+import mock
 import os
 import shutil
 import tempfile
+import unittest
 import urllib2
 import StringIO
 
+from ddt import ddt, data, unpack
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true
 from nose.tools import assert_false
+from nose.tools import assert_equal
 from nose.tools import raises
 from reportlab.lib.pagesizes import A4, letter, landscape
 from reportlab.pdfgen import canvas
@@ -150,12 +154,30 @@ def test_render_flair_function_true():
     assert_true(draw_flair(cert, flair, 'top', page, context=None))
 
 
-def test_cert_date_timezone():
+@ddt
+class CertificateTestsDates(unittest.TestCase):
     """
-    Make sure certs render dates according to the passed timezone
+    Tests for the certificates date generation function.
     """
-    today_date = datetime.datetime(2016, 8, 22, 0, 0, 0, 0)
-    utc_cert_date = get_cert_date(today_date, timezone='UTC')
-    assert_true(utc_cert_date == 'August 22, 2016')
-    pacific_cert_date = get_cert_date(today_date, timezone='US/Pacific')
-    assert_true(pacific_cert_date == 'August 21, 2016')
+
+    def mock_get_today():
+        return datetime.strptime('2016-08-22 04:00:00', '%Y-%m-%d %H:%M:%S')
+
+    @data(
+        (None, None, None, 'August 22, 2016'),
+        (None, None, 'UTC', 'August 22, 2016'),
+        (None, None, 'US/Pacific', 'August 21, 2016'),
+        ('2016-08-22', None, 'UTC', 'August 22, 2016'),
+        ('2016-08-22', None, 'US/Pacific', 'August 22, 2016'),
+        ('2016-08-22', 'en_US', None, 'August 22, 2016'),
+        ('2016-08-22', 'es_419', None, '22 de agosto de 2016'),
+        ('2016-08-22', 'vi_VN', None, u'Ngày 22 tháng 8 năm 2016'),
+    )
+    @unpack
+    @mock.patch('gen_cert.get_today', mock_get_today)
+    def test_cert_date(self, force_date, locale, timezone, expected):
+        """
+        Assert certs render dates correctly
+        """
+        cert_date = get_cert_date(force_date, locale, timezone)
+        assert_equal(expected, cert_date)
