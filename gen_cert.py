@@ -101,8 +101,18 @@ def get_cert_date(force_date, locale, timezone):
 class CertificateGen(object):
     """Manages the pdf, signatures, and S3 bucket for course certificates."""
 
-    def __init__(self, course_id, template_pdf=None, aws_id=None, aws_key=None,
-                 dir_prefix=None, long_org=None, long_course=None, issued_date=None):
+    def __init__(
+        self,
+        course_id,
+        template_pdf=None,
+        aws_id=None,
+        aws_key=None,
+        dir_prefix=None,
+        long_org=None,
+        long_course=None,
+        issued_date=None,
+        designation=None,
+    ):
         """Load a pdf template and initialize
 
         Multiple certificates can be generated and uploaded for a single course.
@@ -116,6 +126,8 @@ class CertificateGen(object):
                        certificate generation.
         aws_id       - necessary for S3 uploads
         aws_key      - necessary for S3 uploads
+        designation  - user designation used for distiction on
+                       certificate and to locate subtemplates in CERT_DATA
 
         course_id is used to look up extra data from settings.CERT_DATA,
         including (but not necessarily limited to):
@@ -136,6 +148,13 @@ class CertificateGen(object):
         self.aws_key = str(aws_key)
 
         cert_data = settings.CERT_DATA.get(course_id, {})
+        self.course_id = course_id
+        self.designation = designation
+        subtemplates = cert_data.get('subtemplates', {})
+        if designation and designation in subtemplates:
+            subtemplate_id = subtemplates[designation]
+            subtemplate = settings.CERT_DATA.get(subtemplate_id, {})
+            cert_data.update(subtemplate)
         self.cert_data = cert_data
 
         def interstitial_factory():
@@ -218,7 +237,6 @@ class CertificateGen(object):
         copy_to_webroot=settings.COPY_TO_WEB_ROOT,
         cert_web_root=settings.CERT_WEB_ROOT,
         grade=None,
-        designation=None,
     ):
         """
         name - Full name that will be on the certificate
@@ -249,7 +267,7 @@ class CertificateGen(object):
                                                                                 download_dir=certificates_path,
                                                                                 verify_dir=verify_path,
                                                                                 grade=grade,
-                                                                                designation=designation,)
+                                                                                )
 
         # upload generated certificate and verification files to S3,
         # or copy them to the web root. Or both.
@@ -408,7 +426,6 @@ class CertificateGen(object):
         verify_dir,
         filename=TARGET_FILENAME,
         grade=None,
-        designation=None,
     ):
         """Generate a PDF certificate, signature and html files for validation.
 
@@ -500,6 +517,7 @@ class CertificateGen(object):
         achievements_paragraph = u"{0}{1}".format(achievements_string, achievements_description_string)
 
         # Overide achievements/interstitial strings with yaml designations info based on designation
+        designation = self.designation
         designation_tag = ''
         for key, value in self.cert_data.get('designations', {}).iteritems():
             if designation in value['titles']:
@@ -652,3 +670,25 @@ class CertificateGen(object):
             )
 
         return (download_uuid, verify_uuid, download_url)
+
+    def is_reusable(self, course_id, designation):
+        """
+        Checks if cert would be initially the same as a new cert template
+        created with the given course id and designation.
+
+        Currently, only the course id and designation differentiate new
+        certificates pdfs. HOWEVER there are some elements that change after
+        the cert is instantiated, like grade, so it is assumed this function
+        is called prior to those changes and just before new cert creation
+        in order to be relevant.
+
+        Message is logged so we can verify if this optimization is useful.
+        """
+        if course_id == self.course_id and designation == self.designation:
+            log_msg = "Reused CertificateGen for {course_id} and {designation}".format(
+                    course_id=course_id,
+                    designation=designation,
+                )
+            log.info(log_msg)
+            return True
+        return False
