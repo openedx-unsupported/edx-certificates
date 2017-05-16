@@ -77,6 +77,13 @@
 #     signature_y_offset  <-- special y offset for image elements that use the 'signature_file' key
 #
 # All sizes (height, width, x/y coordinates, etc.) are in Points
+#
+# Subtemplates allow courses to have multiple certs based on user designation
+#   Add a 'subtemplates' dictionary to the desired course.  The key value 
+#   pairs in the dictionary should be 'designation': 'your subtemplate course id'
+#   Then setup 'your subtemplate course id' as a normal cert inheriting from 
+#   the same default, adding in elements to override.  The parent course is 
+#   updated with the subtemplates changes.
 
 ### 4_programmatic Default course
 Default/OpenEdX/Certificate: &certificate_defaults
@@ -392,3 +399,39 @@ translation/test/course:
       grade_interstitial: "con {grade}."
       disclaimer_text: '<b>ATENCIÓN:</b> ALGUNOS DE LOS CURSOS EN LÍNEA PODRÍAN USAR CONTENIDO DE LOS CURSOS REGULARES DE STANFORD UNIVERSITY PERO ESTO NO INDICA QUE SON EQUIVALENTES. ESTA DECLARACIÓN NO AFIRMA DE NINGUNA MANERA QUE EL PARTICIPANTE HA SIDO MATRICULADO COMO ESTUDIANTE REGULAR DE STANFORD UNIVERSITY. TAMPOCO CONFIERE NINGUNA CALIFICACIÓN, CRÉDITO DEL CURSO, O GRADO ACADÉMICO DE STANFORD UNIVERSITY, NI CONFIRMA LA IDENTIDAD DEL PARTICIPANTE.'
       verify_text: 'La autenticidad se puede confirmar en {verify_link}'
+
+Test/Subtemplates/ByDesignations:
+  <<: *certificate_defaults
+  subtemplates:
+    FACULTY: Test/Subtemplates/ByDesignations_FACULTY
+    STAFF: Test/Subtemplates/ByDesignations_STAFF
+
+Test/Subtemplates/ByDesignations_FACULTY:
+  <<: *certificate_defaults
+  interstitial:
+    Pass: 'Faculty Pass Text'
+    Distinction: 'Faculty Distinction Text'
+  instructors:
+    - instructor:
+        <<: *default_instructor_position_1
+        name_string: '<b>M. Guillaume Hébert</b>'
+        title_string: 'Head Concierge'
+        supplemental_title_string: 'Lifestyle Manager'
+        school_string: '<b>Great Bratislava Hotel</b>'
+        signature_file: 'images/test_signature.png'
+        signature_y_offset: -10
+
+Test/Subtemplates/ByDesignations_STAFF:
+  <<: *certificate_defaults
+  interstitial:
+    Pass: 'Staff Pass Text'
+    Distinction: 'Staff Distinction Text'
+  instructors:
+    - instructor:
+        <<: *default_instructor_position_1
+        name_string: '<b>M. Guillaume Hébert II</b>'
+        title_string: 'Asst. Concierge'
+        supplemental_title_string: 'Lifestyle Manager in training'
+        school_string: '<b>Great Bratislava Hotel</b>'
+        signature_file: 'images/test_signature.png'
+        signature_y_offset: -10
