@@ -148,6 +148,9 @@ class CertificateGen(object):
         self.aws_key = str(aws_key)
 
         cert_data = settings.CERT_DATA.get(course_id, {})
+        # instantiate a new local dictionary instance
+        # so that any changes are not shared globally
+        cert_data = dict(cert_data)
         self.course_id = course_id
         self.designation = designation
         subtemplates = cert_data.get('subtemplates', {})
