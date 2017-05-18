@@ -115,11 +115,12 @@ def main():
         try:
             log.info(
                 "Generating certificate for {username} ({name}), "
-                "in {course_id}, with grade {grade}".format(
+                "in {course_id}, with grade {grade} and designation {designation}".format(
                     username=username,
                     name=name,
                     course_id=course_id,
                     grade=grade,
+                    designation=designation,
                 )
             )
             (download_uuid,
