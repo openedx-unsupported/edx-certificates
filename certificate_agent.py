@@ -57,9 +57,7 @@ def main():
                                 settings.QUEUE_AUTH_USER,
                                 settings.QUEUE_AUTH_PASS,
                                 settings.QUEUE_USER, settings.QUEUE_PASS)
-    last_course = None  # The last course_id we generated for
-    cert = None  # A CertificateGen instance for a particular course
-
+    cert = None
     while True:
 
         if manager.get_length() == 0:
@@ -97,7 +95,7 @@ def main():
             designation = xqueue_body.get('designation', None)
             if designation:
                 designation = designation.encode('utf-8')
-            if last_course != course_id:
+            if not (cert and cert.is_reusable(course_id, designation)):
                 cert = CertificateGen(
                     course_id,
                     template_pdf,
@@ -105,8 +103,8 @@ def main():
                     aws_key=args.aws_key,
                     long_course=course_name,
                     issued_date=issued_date,
+                    designation=designation,
                 )
-                last_course = course_id
         except (TypeError, ValueError, KeyError, IOError) as e:
             log.critical('Unable to parse queue submission ({0}) : {1}'.format(e, certdata))
             if settings.DEBUG:
@@ -117,16 +115,17 @@ def main():
         try:
             log.info(
                 "Generating certificate for {username} ({name}), "
-                "in {course_id}, with grade {grade}".format(
+                "in {course_id}, with grade {grade} and designation {designation}".format(
                     username=username,
                     name=name,
                     course_id=course_id,
                     grade=grade,
+                    designation=designation,
                 )
             )
             (download_uuid,
              verify_uuid,
-             download_url) = cert.create_and_upload(name, grade=grade, designation=designation)
+             download_url) = cert.create_and_upload(name, grade=grade)
 
         except Exception as e:
             # global exception handler, if anything goes wrong
