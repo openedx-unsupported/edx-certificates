@@ -24,7 +24,7 @@ indicating there was a problem.
       --aws-id AWS_ID    AWS ID for write access to the S3 bucket
       --aws-key AWS_KEY  AWS KEY for write access to the S3 bucket
 
-# Prerequisities
+## Prerequisities
 
 1. Install the gpg package 
 
