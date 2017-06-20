@@ -2,7 +2,55 @@
 
 This is the code we use the generate certificates at edX.
 
+# Prerequisities
 
+1. Install the gpg package 
+
+   PDF certificates can be GPG signed to provide a mechanism for verifying their authenticity.
+   Ensure that you have a working installation of gpg available.  Packages are readily available
+   for most environments.
+
+2. Configure GPG for signing generated ceritificates
+
+   Setting up a GPG key pair is easy enough that we recommend doing it for both testing and
+   production deployments.
+
+   For production environments it is especially important to protect your keys.  Typcially,
+   it is recommended to create subkeys of your master key pair and store the master off
+   host.  A full account of PKI best practices is outside the scope of this README.
+
+   To help with key generation, a configuration file, test-key.txt, has been provided that is appropriate
+   for test keys.
+
+   Your test key can be generated with the following command:
+
+     ```shell
+     gpg --batch --gen-key test-key.txt
+     gpg: Generating a signing key for edx-certificates
+     .+++++
+     .+++++
+     .+++++.++++++++++....+++++++++++++++.+++++++++++++++..+++++..+++++.+++++...+++++..+++++.....++++++++++.+++++.++++++++++..+++++.++++++++++..++++++++++..++++++++++.+++++++++++++++....++++++++++..+++++.+++++	>+++++.+++++.+++++++++++++++++++++++++..++++++++++.+++++>+++++.>.+++++..........+++++^^^
+     gpg: key FEF8D954 marked as ultimately trusted
+     gpg: done
+     ```
+     Note the ID of the key, you will need that later.
+
+3. Configure the software to use your key
+
+   The ID of the key you will be using can be set either directly in settings.py, suboptimial, but easy,
+   or in configuration files.  Look for the following section in ```settings.py``` and
+   add your key ID from above.
+
+   ```python
+   CERT_KEY_ID = 'FEF8D954'
+# or leave blank to skip gpg signing
+# CERT_KEY_ID = ''
+
+4. Verify your configuration
+
+    ```shell
+    nosetests
+    ```
 
 # Generate edX certificates
 
@@ -124,25 +172,6 @@ environment all log messages are sent through rsyslog
 ## Tests
 
 To run the test suite:
-
-1. Configure GPG for signing generated ceritificates
-
-   PDF certificates can be GPG signed to provide a mechanism for verifying their authenticity.
-   Setting up a GPG key pair is easy enough that we recommend doing it for both testing and
-   production deployments.
-
-   A configuration file for generating a testing key is provided for your convience.
-   Pleae have a look at test-key.txt for context.
-
-     ```shell
-     gpg --batch --gen-key test-key.txt
-     gpg: Generating a signing key for edx-certificates
-     .+++++
-     .+++++
-     .+++++.++++++++++....+++++++++++++++.+++++++++++++++..+++++..+++++.+++++...+++++..+++++.....++++++++++.+++++.++++++++++..+++++.++++++++++..++++++++++..++++++++++.+++++++++++++++....++++++++++..+++++.+++++	>+++++.+++++.+++++++++++++++++++++++++..++++++++++.+++++>+++++.>.+++++..........+++++^^^
-     gpg: key B9F1FD85 marked as ultimately trusted
-     gpg: done
-     ```
 
 1. Configure your credential information in `settings.py`.  You will need to specify:
 
