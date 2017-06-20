@@ -2,6 +2,28 @@
 
 This is the code we use the generate certificates at edX.
 
+# Generate edX certificates
+
+## Behavioral Overview
+
+The `certificate_agent.py` script will continuously monitor a queue for 
+certificate generation, it does the following:
+
+* Connect to the xqueue server
+* Poll for a single certificate request
+* If it finds one, it:
+  * Processes the request
+  * Post a results json back to the xqueue server
+
+A global exception handler will catch any error during the certificate
+generation process and post a result back to the LMS via the xqueue server
+indicating there was a problem.
+    
+    optional arguments:
+      -h, --help         show this help message and exit
+      --aws-id AWS_ID    AWS ID for write access to the S3 bucket
+      --aws-key AWS_KEY  AWS KEY for write access to the S3 bucket
+
 # Prerequisities
 
 1. Install the gpg package 
@@ -46,18 +68,6 @@ This is the code we use the generate certificates at edX.
    # or leave blank to skip gpg signing
    # CERT_KEY_ID = ''
    ```
-
-4. Verify your configuration
-
-    ```shell
-    nosetests
-    ```
-
-# Generate edX certificates
-
-This script will continuously monitor an xqueue queue
-for the purpose of generating a course certificate for a user.
-
 
 Generating sample certificates
 -------------------------
@@ -117,31 +127,6 @@ Generating sample certificates
         ```shell
         python create_pdfs.py --help
         ```
-
-## Behavioral Overview
-
-The `certificate_agent.py` script will continuously monitor a queue for 
-certificate generation, it does the following:
-
-* Connect to the xqueue server
-* Poll for a single certificate request
-* If it finds one, it:
-  * Processes the request
-  * Post a results json back to the xqueue server
-
-A global exception handler will catch any error during the certificate
-generation process and post a result back to the LMS via the xqueue server
-indicating there was a problem.
-    
-    optional arguments:
-      -h, --help         show this help message and exit
-      --aws-id AWS_ID    AWS ID for write access to the S3 bucket
-      --aws-key AWS_KEY  AWS KEY for write access to the S3 bucket
-
-
-## Generation overview
-
-TODO
 
 ## Internationalization and Localization
 
