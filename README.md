@@ -43,8 +43,9 @@ This is the code we use the generate certificates at edX.
 
    ```python
    CERT_KEY_ID = 'FEF8D954'
-# or leave blank to skip gpg signing
-# CERT_KEY_ID = ''
+   # or leave blank to skip gpg signing
+   # CERT_KEY_ID = ''
+   ```
 
 4. Verify your configuration
 
