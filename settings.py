@@ -49,6 +49,9 @@ CERT_KEY_ID = 'FEF8D954'
 # or leave blank to skip gpg signing
 # CERT_KEY_ID = ''
 
+# Private key passphrases are expected to be passed as an environment variable
+CERT_KEY_PASSPHRASE = os.getenv('CERT_PRIVATE_DIR', None)
+
 # Specify the default name of the certificate PDF
 CERT_FILENAME = 'Certificate.pdf'
 
