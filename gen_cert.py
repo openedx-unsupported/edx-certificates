@@ -31,8 +31,7 @@ import itertools
 import logging.config
 import reportlab.rl_config
 import tempfile
-import boto.s3
-from boto.s3.key import Key
+import boto3
 from bidi.algorithm import get_display
 import arabic_reshaper
 
@@ -317,9 +316,7 @@ class CertificateGen(object):
         # or copy them to the web root. Or both.
         my_certs_path = os.path.join(certificates_path, download_uuid)
         my_verify_path = os.path.join(verify_path, verify_uuid)
-        if upload:
-            s3_conn = boto.connect_s3(settings.CERT_AWS_ID, settings.CERT_AWS_KEY)
-            bucket = s3_conn.get_bucket(BUCKET)
+
         if upload or copy_to_webroot:
             for subtree in (my_certs_path, my_verify_path):
                 for dirpath, dirnames, filenames in os.walk(subtree):
@@ -330,8 +327,8 @@ class CertificateGen(object):
 
                         if upload:
                             try:
-                                key = Key(bucket, name=dest_path)
-                                key.set_contents_from_filename(local_path, policy='public-read')
+                                s3 = boto3.resource('s3')
+                                s3.Bucket(BUCKET).put_object(Key=dest_path, Body=open(local_path, 'rb'), ACL='public-read')                                
                             except:
                                 raise
                             else:

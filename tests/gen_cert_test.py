@@ -3,8 +3,10 @@ import gnupg
 import os
 import shutil
 import tempfile
-import urllib2
+import requests
 from mock import patch
+from moto import mock_s3
+import boto3
 
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_true, assert_false
@@ -95,13 +97,17 @@ def test_cert_names():
         cert = CertificateGen(course_id)
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
 
-
+@mock_s3
 def test_cert_upload():
-    """Check here->S3->http round trip."""
-    if not settings.CERT_AWS_ID or not settings.CERT_AWS_KEY:
-        raise SkipTest
+    """Check mocked roundtrip host->S3->http."""
+
+    # moto initialize
+    conn = boto3.resource('s3', region_name='us-east-1')
+    bucket = conn.create_bucket(Bucket=settings.CERT_BUCKET)
+    
     cert = CertificateGen(settings.CERT_DATA.keys()[0])
     (download_uuid, verify_uuid, download_url) = cert.create_and_upload('John Smith')
-    r = urllib2.urlopen(download_url)
+
+    r = requests.get(download_url)
     with tempfile.NamedTemporaryFile(delete=True) as f:
-        f.write(r.read())
+        f.write(r.content)
