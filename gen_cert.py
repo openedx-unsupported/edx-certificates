@@ -328,7 +328,9 @@ class CertificateGen(object):
                         if upload:
                             try:
                                 s3 = boto3.resource('s3')
-                                s3.Bucket(BUCKET).put_object(Key=dest_path, Body=open(local_path, 'rb'), ACL='public-read')                                
+                                s3.Bucket(BUCKET).put_object(Key=dest_path,
+                                                             Body=open(local_path, 'rb'),
+                                                             ACL='public-read')
                             except:
                                 raise
                             else:
@@ -1118,7 +1120,9 @@ class CertificateGen(object):
         gpg = gnupg.GPG(homedir=settings.CERT_GPG_DIR)
         gpg.encoding = 'utf-8'
         with open(filename) as f:
-            signed_data = gpg.sign(data=f, default_key=CERT_KEY_ID, clearsign=False, detach=True, passphrase=settings.CERT_KEY_PASSPHRASE).data
+            signed_data = gpg.sign(data=f,default_key=CERT_KEY_ID,
+                                   clearsign=False, detach=True,
+                                   passphrase=settings.CERT_KEY_PASSPHRASE).data
         with open(signature_filename, 'w') as f:
             f.write(signed_data.encode('utf-8'))
 
