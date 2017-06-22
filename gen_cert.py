@@ -1118,7 +1118,7 @@ class CertificateGen(object):
         gpg = gnupg.GPG(homedir=settings.CERT_GPG_DIR)
         gpg.encoding = 'utf-8'
         with open(filename) as f:
-            signed_data = gpg.sign(data=f, default_key=CERT_KEY_ID, clearsign=False, detach=True, passphrase=Settings.CERT_KEY_PASSPHRASE).data
+            signed_data = gpg.sign(data=f, default_key=CERT_KEY_ID, clearsign=False, detach=True, passphrase=settings.CERT_KEY_PASSPHRASE).data
         with open(signature_filename, 'w') as f:
             f.write(signed_data.encode('utf-8'))
 
