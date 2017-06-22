@@ -97,6 +97,7 @@ def test_cert_names():
         cert = CertificateGen(course_id)
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
 
+
 @mock_s3
 def test_cert_upload():
     """Check mocked roundtrip host->S3->http."""
@@ -104,7 +105,7 @@ def test_cert_upload():
     # moto initialize
     conn = boto3.resource('s3', region_name='us-east-1')
     bucket = conn.create_bucket(Bucket=settings.CERT_BUCKET)
-    
+
     cert = CertificateGen(settings.CERT_DATA.keys()[0])
     (download_uuid, verify_uuid, download_url) = cert.create_and_upload('John Smith')
 
