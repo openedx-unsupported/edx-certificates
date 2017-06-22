@@ -69,6 +69,15 @@ indicating there was a problem.
    # CERT_KEY_ID = ''
    ```
 
+4. Do not forget to pass your gpg key passphrase as an environment variable
+
+   If you have set an passphrase for the key that you are using, which is recommended, pass it
+   as an environment variable.  For example:
+
+   ```shell
+   CERT_KEY_PASSPHRASE=ChangeMe! nosetests
+   ```
+
 Generating sample certificates
 -------------------------
 
