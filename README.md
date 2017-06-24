@@ -1,7 +1,5 @@
 # openedx-certificates
 
-# Generate edX certificates
-
 ## Behavioral Overview
 
 The `certificate_agent.py` script will continuously monitor a queue for 
@@ -86,7 +84,7 @@ Generating sample certificates
 
 2. Clone the certificate repo 
     ```shell
-    git clone https://github.com/Stanford-Online/openedx-certificates.git
+    git clone git@github.com:edx/edx-certificates.git
     ```
 
 3. Clone the internal certificate repo for templates and private data (optional) 
@@ -96,7 +94,7 @@ Generating sample certificates
 
 4. Install the python requirements into the virtualenv 
     ```shell
-    pip install -r openedx-certificates/requirements.txt
+    pip install -r edx-certificates/requirements.txt
     ```
 
 5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
@@ -119,7 +117,7 @@ Generating sample certificates
 
 7. In the edx-certificates directory generate a sample certificate:
     ```shell
-    cd openedx-certificates
+    cd edx-certificates
     python create_pdfs.py \
         --course-id 'course-v1:edX+DemoX+Demo_Course' \
         --name 'Guido' \
