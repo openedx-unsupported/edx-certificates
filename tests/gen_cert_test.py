@@ -98,7 +98,7 @@ def test_creates_default_dir(gen_dir):
             assert_true(gen.dir_prefix.startswith(gen_dir))
             shutil.rmtree(gen.dir_prefix)
 
-            
+
 def test_designation():
     """
     Generate a test certificate with designation text

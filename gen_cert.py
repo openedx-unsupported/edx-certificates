@@ -690,8 +690,8 @@ class CertificateGen(object):
         """
         if course_id == self.course_id and designation == self.designation:
             log_msg = "Reused CertificateGen for {course_id} and {designation}".format(
-                    course_id=course_id,
-                    designation=designation,
+                course_id=course_id,
+                designation=designation,
                 )
             log.info(log_msg)
             return True
