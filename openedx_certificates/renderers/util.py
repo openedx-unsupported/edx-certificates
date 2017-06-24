@@ -3,7 +3,7 @@
 import copy
 from glob import glob
 import os
-import logging
+import logging.config
 import settings
 
 from reportlab.lib.pagesizes import landscape
