@@ -11,8 +11,7 @@ def get_logger_config(log_dir,
                       edx_filename="edx.log",
                       dev_env=False,
                       debug=False,
-                      local_loglevel='INFO',
-                      service_variant=None):
+                      LOCAL_LOGLEVEL='INFO'):
 
     """
     Return the appropriate logging config dictionary. You should assign the
@@ -26,21 +25,23 @@ def get_logger_config(log_dir,
 
     "edx_filename" are ignored unless dev_env
     is set to true since otherwise logging is handled by rsyslogd.
-
     """
 
-    # Revert to INFO if an invalid string is passed in
-    if local_loglevel not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
-        local_loglevel = 'INFO'
-
     hostname = platform.node().split(".")[0]
-    syslog_format = ("[service_variant={service_variant}]"
-                     "[%(name)s][env:{logging_env}] %(levelname)s "
-                     "[{hostname}  %(process)d] [%(filename)s:%(lineno)d] "
-                     "- %(message)s").format(service_variant=service_variant,
-                                             logging_env=logging_env, hostname=hostname)
+    syslog_format = (
+        "[service_variant=certs]"
+        "[%(name)s]"
+        "[env:{logging_env}] "
+        "%(levelname)s "
+        "[{hostname}  %(process)d] "
+        "[%(filename)s:%(lineno)d] "
+        "- %(message)s"
+    ).format(
+        logging_env=logging_env,
+        hostname=hostname,
+    )
 
-    handlers = ['console', 'local'] if debug else ['console', 'local']
+    handlers = ['console', 'local']
 
     logger_config = {
         'version': 1,
@@ -80,17 +81,17 @@ def get_logger_config(log_dir,
         logger_config['handlers'].update({
             'local': {
                 'class': 'logging.handlers.RotatingFileHandler',
-                'level': local_loglevel,
+                'level': LOCAL_LOGLEVEL,
                 'formatter': 'standard',
                 'filename': edx_file_loc,
                 'maxBytes': 1024 * 1024 * 2,
                 'backupCount': 5,
             },
         })
-    else:
+    else:  # pragma: no cover
         logger_config['handlers'].update({
             'local': {
-                'level': local_loglevel,
+                'level': LOCAL_LOGLEVEL,
                 'class': 'logging.handlers.SysLogHandler',
                 'address': '/dev/log',
                 'formatter': 'syslog_format',

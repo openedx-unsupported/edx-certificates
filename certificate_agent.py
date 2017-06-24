@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from argparse import ArgumentParser, RawTextHelpFormatter
 import logging.config
 import json
@@ -56,9 +57,7 @@ def main():
                                 settings.QUEUE_AUTH_USER,
                                 settings.QUEUE_AUTH_PASS,
                                 settings.QUEUE_USER, settings.QUEUE_PASS)
-    last_course = None  # The last course_id we generated for
-    cert = None  # A CertificateGen instance for a particular course
-
+    cert = None
     while True:
 
         if manager.get_length() == 0:
@@ -84,30 +83,28 @@ def main():
             xqueue_body = json.loads(certdata['xqueue_body'])
             xqueue_header = json.loads(certdata['xqueue_header'])
             action = xqueue_body['action']
-            username = xqueue_body['username']
-            course_id = xqueue_body['course_id']
-            course_name = xqueue_body['course_name']
-            name = xqueue_body['name']
+            username = xqueue_body['username'].encode('utf-8')
+            course_id = xqueue_body['course_id'].encode('utf-8')
+            course_name = xqueue_body['course_name'].encode('utf-8')
+            name = xqueue_body['name'].encode('utf-8')
             template_pdf = xqueue_body.get('template_pdf', None)
             grade = xqueue_body.get('grade', None)
+            if grade:
+                grade = grade.encode('utf-8')
             issued_date = xqueue_body.get('issued_date', None)
             designation = xqueue_body.get('designation', None)
-            if last_course != course_id:
+            if designation:
+                designation = designation.encode('utf-8')
+            if not (cert and cert.is_reusable(course_id, designation)):
                 cert = CertificateGen(
                     course_id,
                     template_pdf,
                     aws_id=args.aws_id,
                     aws_key=args.aws_key,
-                    long_course=course_name.encode('utf-8'),
+                    long_course=course_name,
                     issued_date=issued_date,
+                    designation=designation,
                 )
-                last_course = course_id
-            if action in ['remove', 'regen']:
-                cert.delete_certificate(xqueue_body['delete_download_uuid'],
-                                        xqueue_body['delete_verify_uuid'])
-                if action in ['remove']:
-                    continue
-
         except (TypeError, ValueError, KeyError, IOError) as e:
             log.critical('Unable to parse queue submission ({0}) : {1}'.format(e, certdata))
             if settings.DEBUG:
@@ -118,16 +115,17 @@ def main():
         try:
             log.info(
                 "Generating certificate for {username} ({name}), "
-                "in {course_id}, with grade {grade}".format(
-                    username=username.encode('utf-8'),
-                    name=name.encode('utf-8'),
-                    course_id=course_id.encode('utf-8'),
+                "in {course_id}, with grade {grade} and designation {designation}".format(
+                    username=username,
+                    name=name,
+                    course_id=course_id,
                     grade=grade,
+                    designation=designation,
                 )
             )
             (download_uuid,
              verify_uuid,
-             download_url) = cert.create_and_upload(name.encode('utf-8'), grade=grade, designation=designation)
+             download_url) = cert.create_and_upload(name, grade=grade)
 
         except Exception as e:
             # global exception handler, if anything goes wrong

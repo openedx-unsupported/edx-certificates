@@ -1,13 +1,7 @@
-# edx-certificates
+# openedx-certificates
 
-This is the code we use the generate certificates at edX.
-
-
-
-# Generate edX certificates
-
-This script will continuously monitor an xqueue queue
-for the purpose of generating a course certificate for a user.
+This script will continuously monitor an XQueue to generate course
+certificates for users.
 
 
 Generating sample certificates
@@ -20,7 +14,7 @@ Generating sample certificates
 
 2. Clone the certificate repo 
     ```shell
-    git clone https://github.com/edx/edx-certificates.git
+    git clone https://github.com/Stanford-Online/openedx-certificates.git
     ```
 
 3. Clone the internal certificate repo for templates and private data (optional) 
@@ -30,7 +24,7 @@ Generating sample certificates
 
 4. Install the python requirements into the virtualenv 
     ```shell
-    pip install -r edx-certificates/requirements.txt
+    pip install -r openedx-certificates/requirements.txt
     ```
 
 5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
@@ -53,7 +47,7 @@ Generating sample certificates
 
 7. In the edx-certificates directory generate a sample certificate:
     ```shell
-    cd edx-certificates
+    cd openedx-certificates
     python create_pdfs.py \
         --course-id 'course-v1:edX+DemoX+Demo_Course' \
         --name 'Guido' \
@@ -96,21 +90,14 @@ TODO
 
 ## Internationalization and Localization
 
-There is none. Every renderer should have complete Unicode support throughout,
-but every certificate template render method is built around English-grammar
-sentence interpolation. Consequently, if the target language of the certificate
-has very different sentence structure, you may find the easiest way to add
-support for your language is to fork an existing renderer. We suggest 
-```_generate_v3_dynamic_certificate```.
-
-If you think that your new renderer would be useful to the international Open
-edX community, please issue a pull request! We'd love to have 3_dynamic
-renderers for new languages.
+There is none. The v4 renderer should have complete Unicode support throughout,
+and as the template is generated programmatically it should be able to do
+everything you want it to. If it doesn't, PR a change to make it do it!
 
 Some members of the Open edX community maintain multiple private modifications
 to the open source edX projects, and use a branching scheme similar to the one
 described by [Giulio Gratta in this edX Eng blog
-post](http://engineering.edx.org/2014/12/how-stanford-runs-its-own-fork/).  If
+post](https://open.edx.org/blog/how-stanford-runs-its-own-fork).  If
 you have many changes to the code base, a system like this might help you stay
 organized. If, on the other hand you are only forking one template renderer,
 this may be too complex. Please do whatever works best for your site.
@@ -184,13 +171,9 @@ To run the test suite:
   raw celery queues or similar, we should also actualize parallel
   certification.
 
-* Dynamic scaling and placement of signatures from scanned bitmaps, making cert
-  rendering completely dynamic and freeing us from the tyranny of template
-  preparation. (Freeing us from the tyranny of configuration preparation would
-  come in a future PR.)
+* Freeing us from the tyranny of configuration preparation
 
 * Kill XQueue - nobody really likes xqueue. Several ops people have expressed a
   desire to see it replaced by smarter intermediate layers that use celery task
   queues or similar. This repo should be sufficiently modular that only
   queue.py should need to be changed to work this way.
-

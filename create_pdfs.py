@@ -24,21 +24,6 @@ description = """
   Sample certificate generator
 """
 
-stanford_cme_titles = (('AuD', 'AuD'),
-                       ('DDS', 'DDS'),
-                       ('DO', 'DO'),
-                       ('MD', 'MD'),
-                       ('MD,PhD', 'MD,PhD'),
-                       ('MBBS', 'MBBS'),
-                       ('NP', 'NP'),
-                       ('PA', 'PA'),
-                       ('PharmD', 'PharmD'),
-                       ('PhD', 'PhD'),
-                       ('RN', 'RN'),
-                       ('Other', 'Other'),
-                       ('None', 'None'),
-                       (None, None))
-
 
 def parse_args(args=sys.argv[1:]):
     parser = ArgumentParser(description=description,
@@ -50,7 +35,15 @@ def parse_args(args=sys.argv[1:]):
     parser.add_argument('-o', '--long-org', help='optional long org', default='')
     parser.add_argument('-l', '--long-course', help='optional long course', default='')
     parser.add_argument('-i', '--issued-date', help='optional issue date')
-    parser.add_argument('-T', '--assign-title', help='add random title after name', default=False, action="store_true")
+    parser.add_argument(
+        '-d',
+        '--designation',
+        help=(
+            'optional designation string for user, '
+            'this is also used to load subtemplates'
+        ),
+        default=None,
+    )
     parser.add_argument('-f', '--input-file', help='optional input file for names, one name per line')
     parser.add_argument(
         '-r',
@@ -91,13 +84,25 @@ def main():
     certificate_data = []
 
     if args.course_id:
-        course_list = [args.course_id]
+        course_id = args.course_id
+        long_course = args.long_course or course_id
+        course_list = [(course_id, args.designation, long_course)]
     else:
-        course_list = settings.CERT_DATA.keys()
-
+        # Compile course list based on openedx-certificates/cert-data.yml
+        # gen_cert.py should and will fail if certificates-templates/cert-data.yml is used
+        course_list = []
+        for course_id, course_template in settings.CERT_DATA.iteritems():
+            course_list.append((course_id, None, course_id))
+            designations = course_template.get('designations', {})
+            for key, value in designations.iteritems():
+                for title in value['titles']:
+                    course_list.append((course_id, title, course_id))
+            subtemplates = course_template.get('subtemplates', {})
+            for title in subtemplates.keys():
+                course_list.append((course_id, title, course_id))
     upload_files = not args.no_upload
 
-    for course in course_list:
+    for course, designation, long_course in course_list:
         if args.name:
             name_list = [args.name]
         elif args.input_file:
@@ -116,22 +121,27 @@ def main():
                 long_org=args.long_org,
                 long_course=args.long_course,
                 issued_date=args.issued_date,
+                designation=designation,
             )
-            title = None
-            if args.assign_title:
-                title = random.choice(stanford_cme_titles)[0]
-                print "assigning random title", name, title
             grade = None
             if args.grade_text:
                 grade = args.grade_text
             (download_uuid, verify_uuid,
                 download_url) = cert.create_and_upload(name, upload=upload_files, copy_to_webroot=False,
-                                                       cleanup=False, designation=title, grade=grade)
+                                                       cleanup=False, grade=grade)
             certificate_data.append((name, course, args.long_org, args.long_course, download_url))
             gen_dir = os.path.join(cert.dir_prefix, S3_CERT_PATH, download_uuid)
-            copy_dest = '{copy_dir}/{course}-{name}.pdf'.format(
+            # Remove non-ascii chars from filename before saving locally (This is not the production filename)
+            name = ''.join([i if ord(i) < 128 else ' ' for i in name])
+            suffix = ''
+            if designation:
+                suffix = "_{designation}".format(
+                    designation=designation,
+                )
+            copy_dest = '{copy_dir}/{course}-{name}{suffix}.pdf'.format(
                 copy_dir=copy_dir,
                 name=name.replace(" ", "-").replace("/", "-"),
+                suffix=suffix,
                 course=course.replace("/", "-"))
 
             try:
