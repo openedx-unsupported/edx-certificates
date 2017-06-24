@@ -31,8 +31,7 @@ import itertools
 import logging
 import reportlab.rl_config
 import tempfile
-import boto.s3
-from boto.s3.key import Key
+import boto3
 from bidi.algorithm import get_display
 
 from opaque_keys.edx.keys import CourseKey
@@ -277,9 +276,7 @@ class CertificateGen(object):
         # or copy them to the web root. Or both.
         my_certs_path = os.path.join(certificates_path, download_uuid)
         my_verify_path = os.path.join(verify_path, verify_uuid)
-        if upload:
-            s3_conn = boto.connect_s3(settings.CERT_AWS_ID, settings.CERT_AWS_KEY)
-            bucket = s3_conn.get_bucket(BUCKET)
+
         if upload or copy_to_webroot:
             for subtree in (my_certs_path, my_verify_path):
                 for dirpath, dirnames, filenames in os.walk(subtree):
@@ -289,8 +286,14 @@ class CertificateGen(object):
                         publish_dest = os.path.join(cert_web_root, dest_path)
 
                         if upload:
-                            key = Key(bucket, name=dest_path)
-                            key.set_contents_from_filename(local_path, policy='public-read')
+                            try:
+                                s3 = boto3.resource('s3')
+                                s3.Bucket(BUCKET).put_object(Key=dest_path,
+                                                             Body=open(local_path, 'rb'),
+                                                             ACL='public-read')
+                            except:
+                                raise
+                        else:
                             log.info("uploaded {local} to {s3path}".format(local=local_path, s3path=dest_path))
 
                         if copy_to_webroot:
@@ -334,7 +337,9 @@ class CertificateGen(object):
         gpg = gnupg.GPG(homedir=settings.CERT_GPG_DIR)
         gpg.encoding = 'utf-8'
         with open(filename) as f:
-            signed_data = gpg.sign(data=f, default_key=CERT_KEY_ID, clearsign=False, detach=True).data
+            signed_data = gpg.sign(data=f, default_key=CERT_KEY_ID,
+                                   clearsign=False, detach=True,
+                                   passphrase=settings.CERT_KEY_PASSPHRASE).data
         with open(signature_filename, 'w') as f:
             f.write(signed_data.encode('utf-8'))
 

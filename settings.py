@@ -52,8 +52,12 @@ CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
 # dummy key:
 # https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
 CERT_KEY_ID = 'FEF8D954'
+
 # or leave blank to skip gpg signing
 # CERT_KEY_ID = ''
+
+# Private key passphrases are expected to be passed as an environment variable
+CERT_KEY_PASSPHRASE = os.getenv('CERT_KEY_PASSPHRASE', None)
 
 # Certificates Generation Directory
 TMP_GEN_DIR = '/tmp/certificates/'

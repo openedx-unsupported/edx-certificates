@@ -5,10 +5,17 @@ import mock
 import os
 import shutil
 import tempfile
+<<<<<<< HEAD
 import unittest
 import urllib2
 from mock import patch
 import StringIO
+=======
+import requests
+from mock import patch
+from moto import mock_s3
+import boto3
+>>>>>>> e0d/requiremnents-and-improvements
 
 from ddt import ddt, data, unpack
 from nose.plugins.skip import SkipTest
@@ -129,6 +136,7 @@ def test_cert_names():
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
 
 
+<<<<<<< HEAD
 @raises(ValueError)
 def test_uncovered_unicode_cert_name():
     """
@@ -143,10 +151,22 @@ def test_cert_upload():  # pragma: no cover
     """Check here->S3->http round trip."""
     if not settings.CERT_AWS_ID or not settings.CERT_AWS_KEY:
         raise SkipTest
+=======
+@mock_s3
+def test_cert_upload():
+    """Check mocked roundtrip host->S3->http."""
+
+    # moto initialize
+    conn = boto3.resource('s3', region_name='us-east-1')
+    bucket = conn.create_bucket(Bucket=settings.CERT_BUCKET)
+
+>>>>>>> e0d/requiremnents-and-improvements
     cert = CertificateGen(settings.CERT_DATA.keys()[0])
     (download_uuid, verify_uuid, download_url) = cert.create_and_upload('John Smith')
-    r = urllib2.urlopen(download_url)
+
+    r = requests.get(download_url)
     with tempfile.NamedTemporaryFile(delete=True) as f:
+<<<<<<< HEAD
         f.write(r.read())
 
 
@@ -199,3 +219,6 @@ class CertificateTestsDates(unittest.TestCase):
         """
         cert_date = get_cert_date(force_date, locale, timezone)
         assert_equal(expected, cert_date)
+=======
+        f.write(r.content)
+>>>>>>> e0d/requiremnents-and-improvements

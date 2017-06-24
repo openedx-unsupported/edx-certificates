@@ -1,0 +1,23 @@
+# This file is used to generating a test key pair for 
+# exercising the signing functionality of edx-certificates
+# 
+# Assuming that you have gpg installed you can generate
+# a key with the following command.  This will put the key
+# into the keyring of the running user.  This isn't required,
+# but is outside the scope of these instructions.
+#
+# $ gpg --batch --gen-key test-key.txt
+#
+
+     %echo Generating a signing key for edx-certificates
+     Key-Type: RSA
+     Key-Length: 4096
+     Subkey-Type: ELG-E
+     Subkey-Length: 4096
+     Name-Real: edx-certificates 
+     Name-Comment: edx-certificates signing key 
+     Name-Email: edx-certificates@example.com
+     Expire-Date: 0
+     Passphrase: ChangeMe! 
+     %commit
+     %echo done

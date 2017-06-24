@@ -1,8 +1,80 @@
 # openedx-certificates
 
-This script will continuously monitor an XQueue to generate course
-certificates for users.
+# Generate edX certificates
 
+## Behavioral Overview
+
+The `certificate_agent.py` script will continuously monitor a queue for 
+certificate generation, it does the following:
+
+* Connect to the xqueue server
+* Poll for a single certificate request
+* If it finds one, it:
+  * Processes the request
+  * Post a results json back to the xqueue server
+
+A global exception handler will catch any error during the certificate
+generation process and post a result back to the LMS via the xqueue server
+indicating there was a problem.
+    
+    optional arguments:
+      -h, --help         show this help message and exit
+      --aws-id AWS_ID    AWS ID for write access to the S3 bucket
+      --aws-key AWS_KEY  AWS KEY for write access to the S3 bucket
+
+## Prerequisities
+
+1. Install the gpg package 
+
+   PDF certificates can be GPG signed to provide a mechanism for verifying their authenticity.
+   Ensure that you have a working installation of gpg available.  Packages are readily available
+   for most environments.
+
+2. Configure GPG for signing generated ceritificates
+
+   Setting up a GPG key pair is easy enough that we recommend doing it for both testing and
+   production deployments.
+
+   For production environments it is especially important to protect your keys.  Typcially,
+   it is recommended to create subkeys of your master key pair and store the master off
+   host.  A full account of PKI best practices is outside the scope of this README.
+
+   To help with key generation, a configuration file, test-key.txt, has been provided that is appropriate
+   for test keys.
+
+   Your test key can be generated with the following command:
+
+     ```shell
+     gpg --batch --gen-key test-key.txt
+     gpg: Generating a signing key for edx-certificates
+     .+++++
+     .+++++
+     .+++++.++++++++++....+++++++++++++++.+++++++++++++++..+++++..+++++.+++++...+++++..+++++.....++++++++++.+++++.++++++++++..+++++.++++++++++..++++++++++..++++++++++.+++++++++++++++....++++++++++..+++++.+++++	>+++++.+++++.+++++++++++++++++++++++++..++++++++++.+++++>+++++.>.+++++..........+++++^^^
+     gpg: key FEF8D954 marked as ultimately trusted
+     gpg: done
+     ```
+     Note the ID of the key, you will need that later.
+
+3. Configure the software to use your key
+
+   The ID of the key you will be using can be set either directly in settings.py, suboptimial, but easy,
+   or in configuration files.  Look for the following section in ```settings.py``` and
+   add your key ID from above.
+
+   ```python
+   CERT_KEY_ID = 'FEF8D954'
+   # or leave blank to skip gpg signing
+   # CERT_KEY_ID = ''
+   ```
+
+4. Do not forget to pass your gpg key passphrase as an environment variable
+
+   If you have set an passphrase for the key that you are using, which is recommended, pass it
+   as an environment variable.  For example:
+
+   ```shell
+   CERT_KEY_PASSPHRASE=ChangeMe! nosetests
+   ```
 
 Generating sample certificates
 -------------------------
@@ -62,31 +134,6 @@ Generating sample certificates
         ```shell
         python create_pdfs.py --help
         ```
-
-## Behavioral Overview
-
-The `certificate_agent.py` script will continuously monitor a queue for 
-certificate generation, it does the following:
-
-* Connect to the xqueue server
-* Poll for a single certificate request
-* If it finds one, it:
-  * Processes the request
-  * Post a results json back to the xqueue server
-
-A global exception handler will catch any error during the certificate
-generation process and post a result back to the LMS via the xqueue server
-indicating there was a problem.
-    
-    optional arguments:
-      -h, --help         show this help message and exit
-      --aws-id AWS_ID    AWS ID for write access to the S3 bucket
-      --aws-key AWS_KEY  AWS KEY for write access to the S3 bucket
-
-
-## Generation overview
-
-TODO
 
 ## Internationalization and Localization
 
