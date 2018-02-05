@@ -20,7 +20,6 @@ ENV_ROOT = REPO_PATH.dirname()
 CERT_PRIVATE_DIR = REPO_PATH
 
 # If CERT_PRIVATE_DIR is set in the environment use it
-
 if 'CERT_PRIVATE_DIR' in os.environ:
     CERT_PRIVATE_DIR = path(os.environ['CERT_PRIVATE_DIR'])
 
@@ -31,6 +30,7 @@ CERT_DATA_FILE = 'cert-data.yml'
 
 # DEFAULTS
 DEBUG = False
+
 # This needs to be set on MacOS or anywhere you want logging to simply go
 # to an output file.
 LOGGING_DEV_ENV = True

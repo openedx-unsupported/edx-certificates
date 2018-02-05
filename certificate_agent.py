@@ -64,16 +64,6 @@ def main():
         else:
             log.debug('queue length: {0}'.format(manager.get_length()))
 
-        xqueue_body = {}
-        xqueue_header = ''
-        action = ''
-        username = ''
-        grade = None
-        course_id = ''
-        course_name = ''
-        template_pdf = None
-        name = ''
-
         certdata = manager.get_submission()
         log.debug('xqueue response: {0}'.format(certdata))
         try:
