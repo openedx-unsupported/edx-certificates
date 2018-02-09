@@ -12,10 +12,6 @@ logging.config.dictConfig(settings.LOGGING)
 log = logging.getLogger('certificates: ' + __name__)
 
 
-# how long to wait in seconds after an xqueue poll
-SLEEP_TIME = 5
-
-
 def parse_args(args=sys.argv[1:]):
     parser = ArgumentParser(description="""
 
@@ -63,20 +59,10 @@ def main():
 
         if manager.get_length() == 0:
             log.debug("{0} has no jobs".format(str(manager)))
-            time.sleep(SLEEP_TIME)
+            time.sleep(settings.QUEUE_POLL_FREQUENCY)
             continue
         else:
             log.debug('queue length: {0}'.format(manager.get_length()))
-
-        xqueue_body = {}
-        xqueue_header = ''
-        action = ''
-        username = ''
-        grade = None
-        course_id = ''
-        course_name = ''
-        template_pdf = None
-        name = ''
 
         certdata = manager.get_submission()
         log.debug('xqueue response: {0}'.format(certdata))
