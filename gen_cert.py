@@ -15,7 +15,7 @@ from PyPDF2 import PdfFileWriter, PdfFileReader
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.fonts import addMapping
-from reportlab.lib.pagesizes import A4, letter, landscape
+from reportlab.lib.pagesizes import A4, letter, landscape, portrait
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.pdfbase import pdfmetrics
@@ -406,7 +406,7 @@ class CertificateGen(object):
 
         # This file is overlaid on the template certificate
         overlay_pdf_buffer = StringIO.StringIO()
-        c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
+        c = canvas.Canvas(overlay_pdf_buffer, pagesize=portrait(A4))
 
         # 0 0 - normal
         # 0 1 - italic
@@ -636,7 +636,7 @@ class CertificateGen(object):
         # So that we don't have to open the template
         # several times, we open a blank pdf several times instead
         # (much faster)
-        final_certificate = copy.copy(BLANK_PDFS['landscape-A4']).getPage(0)
+        final_certificate = copy.copy(BLANK_PDFS['portrait-A4']).getPage(0)
         final_certificate.mergePage(self.template_pdf.getPage(0))
         final_certificate.mergePage(overlay.getPage(0))
 
