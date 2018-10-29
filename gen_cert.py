@@ -436,7 +436,7 @@ class CertificateGen(object):
         WIDTH = 297  # width in mm (A4)
         HEIGHT = 210  # hight in mm (A4)
 
-        LEFT_INDENT = 130  # mm from the left side to write the text
+        LEFT_INDENT = 125  # mm from the left side to write the text
         RIGHT_INDENT = 49  # mm from the right side for the CERTIFICATE
 
         # This certificate is proudly presented to..
@@ -447,10 +447,10 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "This certificate is proudly presented to"
+        paragraph_string = "<b>This certificate is proudly presented to</b>"
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 90 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
 
         #  Student name
 
@@ -470,12 +470,12 @@ class CertificateGen(object):
 
         style.fontSize = 24
         style.textColor = colors.Color(
-            0, 0.624, 0.886)
+            0.302, 0.306, 0.318)
         style.alignment = TA_LEFT
 
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, 150 * mm, 80 * mm)
+        paragraph.drawOn(c, 150 * mm, 75 * mm)
 
         # For successfully completing
 
@@ -490,7 +490,7 @@ class CertificateGen(object):
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 60 * mm)
+        paragraph.drawOn(c, 145 * mm, 65 * mm)
 
         # Course name
 
@@ -517,7 +517,7 @@ class CertificateGen(object):
             styleOpenSans.fontSize = 24
             styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
-            0, 0.624, 0.886)
+            0.302, 0.306, 0.318)
         styleOpenSans.alignment = TA_LEFT
 
         paragraph_string = u"<b><i>{0}: {1}</i></b>".format(
@@ -532,7 +532,7 @@ class CertificateGen(object):
             paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
         else:
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 50 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 60 * mm)
 
         # With a passing grade of 100%
 
@@ -545,7 +545,7 @@ class CertificateGen(object):
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 40 * mm)
+        paragraph.drawOn(c, 145 * mm, 55 * mm)
 
 
         c.showPage()
