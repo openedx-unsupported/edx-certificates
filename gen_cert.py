@@ -459,7 +459,7 @@ class CertificateGen(object):
         # default is to use the DejaVu font for the name,
         # will fall back to Arial if there are
         # unusual characters
-        style2.fontSize = 22
+        style2.fontSize = 20
         style2.leading = 10
         style2.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -501,7 +501,7 @@ class CertificateGen(object):
 
         paragraph = Paragraph(paragraph_string, style3)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 45 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 49 * mm)
 
         c.showPage()
         c.save()
