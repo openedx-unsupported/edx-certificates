@@ -443,7 +443,7 @@ class CertificateGen(object):
 
         # This certificate is proudly presented to..
 
-        style1.fontSize = 18
+        style1.fontSize = 16
         style1.leading = 10
         style1.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -459,7 +459,7 @@ class CertificateGen(object):
         # default is to use the DejaVu font for the name,
         # will fall back to Arial if there are
         # unusual characters
-        style2.fontSize = 24
+        style2.fontSize = 22
         style2.leading = 10
         style2.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -478,7 +478,7 @@ class CertificateGen(object):
 
         # For successfully completing
 
-        style3.fontSize = 16
+        style3.fontSize = 14
         style3.leading = 10
         style3.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -493,7 +493,7 @@ class CertificateGen(object):
         paragraph_string = u"{0}".format(self.long_course.decode('utf-8'))
         paragraph = Paragraph(paragraph_string, style3)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 55 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 57 * mm)
 
         # With a passing grade of 100%
 
