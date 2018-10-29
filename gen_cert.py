@@ -503,6 +503,14 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 49 * mm)
 
+        # issued date
+
+        paragraph_string = self.issued_date
+
+        paragraph = Paragraph(paragraph_string, style3)
+        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 39 * mm)
+
         c.showPage()
         c.save()
 
