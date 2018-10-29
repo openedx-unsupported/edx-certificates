@@ -436,30 +436,10 @@ class CertificateGen(object):
         WIDTH = 297  # width in mm (A4)
         HEIGHT = 210  # hight in mm (A4)
 
-        LEFT_INDENT = 49  # mm from the left side to write the text
+        LEFT_INDENT = 130  # mm from the left side to write the text
         RIGHT_INDENT = 49  # mm from the right side for the CERTIFICATE
 
-        # CERTIFICATE
-
-        styleOpenSansLight.fontSize = 19
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "CERTIFICATE"
-
-        # Right justified so we compute the width
-        width = stringWidth(
-            paragraph_string,
-            'OpenSans-Light',
-            19,
-        ) / mm
-        paragraph = Paragraph("{0}".format(
-            paragraph_string), styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
-
-        # Issued ..
+        # This certificate is proudly presented to..
 
         styleOpenSansLight.fontSize = 12
         styleOpenSansLight.leading = 10
@@ -467,31 +447,10 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "Issued {0}".format(self.issued_date)
-
-        # Right justified so we compute the width
-        width = stringWidth(
-            paragraph_string,
-            'OpenSans-LightItalic',
-            12,
-        ) / mm
-        paragraph = Paragraph("<i>{0}</i>".format(
-            paragraph_string), styleOpenSansLight)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
-
-        # This is to certify..
-
-        styleOpenSansLight.fontSize = 12
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
-
-        paragraph_string = "This is to certify that"
+        paragraph_string = "This certificate is proudly presented to"
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 132.5 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
 
         #  Student name
 
