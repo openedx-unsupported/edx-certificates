@@ -450,7 +450,7 @@ class CertificateGen(object):
         paragraph_string = "<b>This certificate is proudly presented to</b>"
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 88 * mm)
 
         #  Student name
 
@@ -471,11 +471,11 @@ class CertificateGen(object):
         style.fontSize = 24
         style.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        style.alignment = TA_LEFT
+        style.alignment = TA_CENTER
 
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, 150 * mm, 75 * mm)
+        paragraph.drawOn(c, 150 * mm, 78 * mm)
 
         # For successfully completing
 
@@ -483,7 +483,7 @@ class CertificateGen(object):
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_LEFT
+        styleOpenSansLight.alignment = TA_CENTER
 
         paragraph_string = "For successfully completing"
 
@@ -514,14 +514,13 @@ class CertificateGen(object):
             styleOpenSans.fontSize = 20
             styleOpenSans.leading = 10
         else:
-            styleOpenSans.fontSize = 24
+            styleOpenSans.fontSize = 18
             styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
             0.302, 0.306, 0.318)
         styleOpenSans.alignment = TA_LEFT
 
-        paragraph_string = u"<b><i>{0}: {1}</i></b>".format(
-            self.course, self.long_course.decode('utf-8'))
+        paragraph_string = u"{0}".format(self.long_course.decode('utf-8'))
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         if 'PH207x' in self.course:
