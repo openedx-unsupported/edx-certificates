@@ -441,7 +441,7 @@ class CertificateGen(object):
 
         # This certificate is proudly presented to..
 
-        styleOpenSans.fontSize = 18
+        styleOpenSans.fontSize = 21
         styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -457,9 +457,7 @@ class CertificateGen(object):
         # default is to use the DejaVu font for the name,
         # will fall back to Arial if there are
         # unusual characters
-        style = styleOpenSans
-        style.leading = 10
-        width = stringWidth(student_name.decode('utf-8'), 'OpenSans-Bold', 24) / mm
+        styleOpenSans.fontSize = 25
         paragraph_string = "<b>{0}</b>".format(student_name)
 
         if self._use_unicode_font(student_name):
@@ -468,84 +466,32 @@ class CertificateGen(object):
             # There is no bold styling for Arial :(
             paragraph_string = "{0}".format(student_name)
 
-        style.fontSize = 24
-        style.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        style.alignment = TA_CENTER
-
-        paragraph = Paragraph(paragraph_string, style)
+        paragraph = Paragraph(paragraph_string, styleOpenSans)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 78 * mm)
 
         # For successfully completing
 
         styleOpenSans.fontSize = 18
-        styleOpenSans.leading = 10
-        styleOpenSans.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSans.alignment = TA_CENTER
-
         paragraph_string = "For successfully completing"
-
         paragraph = Paragraph(paragraph_string, styleOpenSans)
-
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 60 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 65 * mm)
 
         # Course name
 
-        # styleOpenSans.fontName = 'OpenSans-BoldItalic'
-        if 'PH207x' in self.course:
-            styleOpenSans.fontSize = 18
-            styleOpenSans.leading = 21
-        elif '4.01x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        elif 'Stat2.1x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        elif 'CS191x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        elif '6.00x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 21
-        elif 'PH278x' in self.course:
-            styleOpenSans.fontSize = 20
-            styleOpenSans.leading = 10
-        else:
-            styleOpenSans.fontSize = 18
-            styleOpenSans.leading = 10
-        styleOpenSans.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSans.alignment = TA_CENTER
-
         paragraph_string = u"{0}".format(self.long_course.decode('utf-8'))
         paragraph = Paragraph(paragraph_string, styleOpenSans)
-        # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        if 'PH207x' in self.course:
-            paragraph.wrapOn(c, 180 * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 91 * mm)
-        elif '6.00x' in self.course:
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
-        else:
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 50 * mm)
+        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 55 * mm)
 
         # With a passing grade of 100%
-
-        styleOpenSans.fontSize = 18
-        styleOpenSans.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSans.alignment = TA_CENTER
 
         paragraph_string = "With a passing grade of 100%"
 
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 40 * mm)
-
+        paragraph.drawOn(c, LEFT_INDENT * mm, 45 * mm)
 
         c.showPage()
         c.save()
