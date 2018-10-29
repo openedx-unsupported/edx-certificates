@@ -441,7 +441,7 @@ class CertificateGen(object):
 
         # This certificate is proudly presented to..
 
-        styleOpenSansLight.fontSize = 12
+        styleOpenSansLight.fontSize = 18
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -450,7 +450,7 @@ class CertificateGen(object):
         paragraph_string = "This certificate is proudly presented to"
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 85 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 90 * mm)
 
         #  Student name
 
@@ -459,50 +459,38 @@ class CertificateGen(object):
         # unusual characters
         style = styleOpenSans
         style.leading = 10
-        width = stringWidth(student_name.decode('utf-8'), 'OpenSans-Bold', 34) / mm
+        width = stringWidth(student_name.decode('utf-8'), 'OpenSans-Bold', 24) / mm
         paragraph_string = "<b>{0}</b>".format(student_name)
 
         if self._use_unicode_font(student_name):
             style = styleArial
-            width = stringWidth(student_name.decode('utf-8'), 'Arial Unicode', 34) / mm
+            width = stringWidth(student_name.decode('utf-8'), 'Arial Unicode', 24) / mm
             # There is no bold styling for Arial :(
             paragraph_string = "{0}".format(student_name)
 
-        # We will wrap at 200mm in, so if we reach the end (200-47)
-        # decrease the font size
-        if width > 153:
-            style.fontSize = 18
-            nameYOffset = 121.5
-        else:
-            style.fontSize = 34
-            nameYOffset = 124.5
-
+        style.fontSize = 24
         style.textColor = colors.Color(
             0, 0.624, 0.886)
         style.alignment = TA_LEFT
 
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, nameYOffset * mm)
+        paragraph.drawOn(c, 150 * mm, 80 * mm)
 
-        # Successfully completed
+        # For successfully completing
 
-        styleOpenSansLight.fontSize = 12
+        styleOpenSansLight.fontSize = 18
         styleOpenSansLight.leading = 10
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "successfully completed"
-        if '7.00x' in self.course:
-            paragraph_string = "successfully completed the inaugural offering of"
-        else:
-            paragraph_string = "successfully completed"
+        paragraph_string = "For successfully completing"
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 108 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 60 * mm)
 
         # Course name
 
@@ -544,45 +532,21 @@ class CertificateGen(object):
             paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
         else:
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 99 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 50 * mm)
 
-        # A course of study..
+        # With a passing grade of 100%
 
-        styleOpenSansLight.fontSize = 12
+        styleOpenSansLight.fontSize = 18
         styleOpenSansLight.textColor = colors.Color(
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "a course of study offered by <b>{0}</b>" \
-                           ", an online learning<br /><br />initiative of " \
-                           "<b>{1}</b> through <b>edX</b>.".format(
-                               self.org, self.long_org.decode('utf-8'))
+        paragraph_string = "With a passing grade of 100%"
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 78 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 40 * mm)
 
-        # Honor code
-
-        styleOpenSansLight.fontSize = 7
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
-            0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_CENTER
-
-        paragraph_string = "HONOR CODE CERTIFICATE<br/>" \
-            "*Authenticity of this certificate can be verified at " \
-            "<a href='{verify_url}/{verify_path}/{verify_uuid}'>" \
-            "{verify_url}/{verify_path}/{verify_uuid}</a>"
-
-        paragraph_string = paragraph_string.format(
-            verify_url=settings.CERT_VERIFY_URL,
-            verify_path=S3_VERIFY_PATH,
-            verify_uuid=verify_uuid)
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
-
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, 0 * mm, 28 * mm)
 
         c.showPage()
         c.save()
