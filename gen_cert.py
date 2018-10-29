@@ -441,7 +441,7 @@ class CertificateGen(object):
 
         # This certificate is proudly presented to..
 
-        styleOpenSans.fontSize = 21
+        styleOpenSans.fontSize = 18
         styleOpenSans.leading = 10
         styleOpenSans.textColor = colors.Color(
             0.302, 0.306, 0.318)
@@ -457,7 +457,7 @@ class CertificateGen(object):
         # default is to use the DejaVu font for the name,
         # will fall back to Arial if there are
         # unusual characters
-        styleOpenSans.fontSize = 25
+        styleOpenSans.fontSize = 24
         paragraph_string = "<b>{0}</b>".format(student_name)
 
         if self._use_unicode_font(student_name):
