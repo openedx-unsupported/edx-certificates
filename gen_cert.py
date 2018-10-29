@@ -475,7 +475,7 @@ class CertificateGen(object):
 
         paragraph = Paragraph(paragraph_string, style)
         paragraph.wrapOn(c, 200 * mm, 214 * mm)
-        paragraph.drawOn(c, 150 * mm, 78 * mm)
+        paragraph.drawOn(c, 0 * mm, 78 * mm)
 
         # For successfully completing
 
@@ -490,7 +490,7 @@ class CertificateGen(object):
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
 
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, 145 * mm, 65 * mm)
+        paragraph.drawOn(c, 0 * mm, 65 * mm)
 
         # Course name
 
