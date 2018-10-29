@@ -441,14 +441,14 @@ class CertificateGen(object):
 
         # This certificate is proudly presented to..
 
-        styleOpenSansLight.fontSize = 18
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
+        styleOpenSans.fontSize = 18
+        styleOpenSans.leading = 10
+        styleOpenSans.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_CENTER
+        styleOpenSans.alignment = TA_CENTER
 
         paragraph_string = "<b>This certificate is proudly presented to</b>"
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
+        paragraph = Paragraph(paragraph_string, styleOpenSans)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 88 * mm)
 
@@ -479,18 +479,18 @@ class CertificateGen(object):
 
         # For successfully completing
 
-        styleOpenSansLight.fontSize = 18
-        styleOpenSansLight.leading = 10
-        styleOpenSansLight.textColor = colors.Color(
+        styleOpenSans.fontSize = 18
+        styleOpenSans.leading = 10
+        styleOpenSans.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_CENTER
+        styleOpenSans.alignment = TA_CENTER
 
         paragraph_string = "For successfully completing"
 
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
+        paragraph = Paragraph(paragraph_string, styleOpenSans)
 
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 65 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 60 * mm)
 
         # Course name
 
@@ -531,20 +531,20 @@ class CertificateGen(object):
             paragraph.drawOn(c, LEFT_INDENT * mm, 95 * mm)
         else:
             paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 60 * mm)
+            paragraph.drawOn(c, LEFT_INDENT * mm, 50 * mm)
 
         # With a passing grade of 100%
 
-        styleOpenSansLight.fontSize = 18
-        styleOpenSansLight.textColor = colors.Color(
+        styleOpenSans.fontSize = 18
+        styleOpenSans.textColor = colors.Color(
             0.302, 0.306, 0.318)
-        styleOpenSansLight.alignment = TA_CENTER
+        styleOpenSans.alignment = TA_CENTER
 
         paragraph_string = "With a passing grade of 100%"
 
-        paragraph = Paragraph(paragraph_string, styleOpenSansLight)
+        paragraph = Paragraph(paragraph_string, styleOpenSans)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-        paragraph.drawOn(c, LEFT_INDENT * mm, 55 * mm)
+        paragraph.drawOn(c, LEFT_INDENT * mm, 40 * mm)
 
 
         c.showPage()
