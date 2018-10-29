@@ -472,7 +472,7 @@ class CertificateGen(object):
 
         # For successfully completing
 
-        styleOpenSans.fontSize = 18
+        styleOpenSans.fontSize = 16
         paragraph_string = "For successfully completing"
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
