@@ -433,7 +433,7 @@ class CertificateGen(object):
         #   * Course name
         #   * "a course of study.."
         #   * honor code url at the bottom
-        WIDTH = 226  # width in mm (A4)
+        WIDTH = 360  # width in mm (A4)
         HEIGHT = 210  # hight in mm (A4)
 
         LEFT_INDENT = 35  # mm from the left side to write the text
