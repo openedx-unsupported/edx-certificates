@@ -313,7 +313,7 @@ class CertificateGen(object):
                                                                                 download_dir=certificates_path,
                                                                                 verify_dir=verify_path,
                                                                                 grade=grade,
-                                                                                filename=filename
+                                                                                filename=filename,
                                                                                 designation=designation,)
 
         # upload generated certificate and verification files to S3,
