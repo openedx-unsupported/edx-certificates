@@ -185,7 +185,7 @@ class CertificateGen(object):
     """Manages the pdf, signatures, and S3 bucket for course certificates."""
 
     def __init__(self, course_id, template_pdf=None, aws_id=None, aws_key=None,
-                 dir_prefix=None, long_org=None, long_course=None, issued_date=None):
+                 dir_prefix=None, long_org=None, long_course=None, issued_date=None, score=None):
         """Load a pdf template and initialize
 
         Multiple certificates can be generated and uploaded for a single course.
@@ -227,6 +227,7 @@ class CertificateGen(object):
         # lookup long names from the course_id
         try:
             self.long_org = long_org or cert_data.get('LONG_ORG', '').encode('utf-8') or settings.DEFAULT_ORG
+            self.score = score
             self.long_course = long_course or cert_data.get('LONG_COURSE', '').encode('utf-8')
             self.issued_date = issued_date or cert_data.get('ISSUED_DATE', '').encode('utf-8') or 'ROLLING'
             self.interstitial_texts = collections.defaultdict(interstitial_factory())
@@ -495,20 +496,23 @@ class CertificateGen(object):
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 57 * mm)
 
-        # With a passing grade of 100%
+        # With a passing grade of ...
 
-        paragraph_string = "With a passing grade of 100%"
-
+        paragraph_string = "With a passing grade of {0}".format(self.score)
         paragraph = Paragraph(paragraph_string, style3)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 49 * mm)
 
         # issued date
 
-        paragraph_string = self.issued_date
-
-        paragraph = Paragraph(paragraph_string, style3)
-        paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
+        style4.fontSize = 14
+        style4.leading = 10
+        style4.textColor = colors.Color(
+            0.302, 0.306, 0.318)
+        style4.alignment = TA_CENTER
+        paragraph_string = "<b>{0}</b>".format(self.issued_date)
+        paragraph = Paragraph(paragraph_string, style4)
+        paragraph.wrapOn(c, 422 * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, 39 * mm)
 
         c.showPage()
