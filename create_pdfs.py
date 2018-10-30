@@ -66,7 +66,6 @@ def parse_args(args=sys.argv[1:]):
     )
     parser.add_argument('-G', '--grade-text', help='optional grading label to apply')
     parser.add_argument('-U', '--no-upload', help='skip s3 upload step', default=False, action="store_true")
-    parser.add_argument('-s', '--score', help='optional student score')
 
     return parser.parse_args()
 
@@ -117,7 +116,6 @@ def main():
                 long_org=args.long_org,
                 long_course=args.long_course,
                 issued_date=args.issued_date,
-                score=args.score,
             )
             title = None
             if args.assign_title:
