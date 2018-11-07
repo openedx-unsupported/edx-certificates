@@ -637,7 +637,7 @@ class CertificateGen(object):
             # if we have customize the pdf template conf is django admin,
             # we use this configuration
 
-            font = self.pdf_info.pop('font_name')
+            font = self.pdf_info.pop('font')
             style = ParagraphStyle(name=font.lower(), leading=10, fontName=font)
             style.alignment = TA_CENTER
             for sentence, info in self.pdf_info:
