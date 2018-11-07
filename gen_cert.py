@@ -645,7 +645,12 @@ class CertificateGen(object):
                 style.textColor = colors.Color(*info[2][1])
                 italic = info[2][3]
                 bold = info[2][2]
-                paragraph_string = sentence
+                if sentence == 'name':
+                    paragraph_string = student_name
+                if sentence == 'issued_date':
+                    paragraph_string = self.issued_date
+                else:
+                    paragraph_string = sentence
                 if italic:
                     paragraph_string = '<i>' + paragraph_string + '</i>'
                 if bold:
@@ -653,87 +658,6 @@ class CertificateGen(object):
                 paragraph = Paragraph(paragraph_string, style)
                 paragraph.wrapOn(c, info[0][0]*mm, info[0][1]*mm)
                 paragraph.drawOn(c, info[1][0]*mm, info[1][1]*mm)
-
-            WIDTH = 360  # width in mm (A4)
-            HEIGHT = 210  # hight in mm (A4)
-
-            LEFT_INDENT = 0  # mm from the left side to write the text
-            RIGHT_INDENT = 49  # mm from the right side for the CERTIFICATE
-
-            style1 = style2 = style3 = style4 = styleOpenSans
-
-            # This certificate is proudly presented to..
-
-            style1.fontSize = 16
-            style1.leading = 10
-            style1.textColor = colors.Color(
-                0.302, 0.306, 0.318)
-            style1.alignment = TA_CENTER
-
-            paragraph_string = "<b>This certificate is proudly presented to</b>"
-            paragraph = Paragraph(paragraph_string, style1)
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 88 * mm)
-
-            #  Student name
-
-            # default is to use the DejaVu font for the name,
-            # will fall back to Arial if there are
-            # unusual characters
-            style2.fontSize = 20
-            style2.leading = 10
-            style2.textColor = colors.Color(
-                0.302, 0.306, 0.318)
-            style2.alignment = TA_CENTER
-            paragraph_string = "<b>{0}</b>".format(student_name)
-
-            if self._use_unicode_font(student_name):
-                style = styleArial
-                width = stringWidth(student_name.decode('utf-8'), 'Arial Unicode', 24) / mm
-                # There is no bold styling for Arial :(
-                paragraph_string = "{0}".format(student_name)
-
-            paragraph = Paragraph(paragraph_string, style2)
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 78 * mm)
-
-            # For successfully completing
-
-            style3.fontSize = 14
-            style3.leading = 10
-            style3.textColor = colors.Color(
-                0.302, 0.306, 0.318)
-            style3.alignment = TA_CENTER
-            paragraph_string = "For successfully completing"
-            paragraph = Paragraph(paragraph_string, style3)
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 65 * mm)
-
-            # Course name
-
-            paragraph_string = u"{0}".format(self.long_course.decode('utf-8'))
-            paragraph = Paragraph(paragraph_string, style3)
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 57 * mm)
-
-            # With a passing grade of ...
-
-            paragraph_string = "With a passing grade of {0}".format(self.score)
-            paragraph = Paragraph(paragraph_string, style3)
-            paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 49 * mm)
-
-            # issued date
-
-            style4.fontSize = 14
-            style4.leading = 10
-            style4.textColor = colors.Color(
-                0.302, 0.306, 0.318)
-            style4.alignment = TA_CENTER
-            paragraph_string = "<b>{0}</b>".format(self.issued_date)
-            paragraph = Paragraph(paragraph_string, style4)
-            paragraph.wrapOn(c, 422 * mm, HEIGHT * mm)
-            paragraph.drawOn(c, LEFT_INDENT * mm, 39 * mm)
 
         c.showPage()
         c.save()
