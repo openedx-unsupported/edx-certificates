@@ -649,6 +649,8 @@ class CertificateGen(object):
                     paragraph_string = student_name
                 if sentence == 'issued_date':
                     paragraph_string = self.issued_date
+                if sentence == 'course_name':
+                    paragraph_string = self.long_course.decode('utf-8')
                 else:
                     paragraph_string = sentence
                 if italic:
