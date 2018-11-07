@@ -255,8 +255,8 @@ class CertificateGen(object):
         # Else, the filename is calculated from the version and course_id.
         template_pdf = cert_data.get('TEMPLATEFILE', template_pdf)
         template_prefix = '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
-        template_pdf_filename = "{0}/certificate-template-{1}.pdf".format(template_prefix, self.org)
-        if template_pdf:
+        template_pdf_filename = "{0}/certificate-template-edX-DemoX.pdf".format(template_prefix)
+        if template_pdf and pdf_info:
             template_pdf_filename = "{0}/{1}".format(template_prefix, template_pdf)
             if 'verified' in template_pdf:
                 self.template_type = 'verified'
