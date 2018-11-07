@@ -637,7 +637,7 @@ class CertificateGen(object):
             # if we have customize the pdf template conf is django admin,
             # we use this configuration
 
-            font = self.pdf_info.pop('font')
+            font = self.pdf_info.get('font')
             style = ParagraphStyle(name=font.lower(), leading=10, fontName=font)
             style.alignment = TA_CENTER
             for sentence, info in self.pdf_info.items():
@@ -645,7 +645,9 @@ class CertificateGen(object):
                 style.textColor = colors.Color(*info[2][1])
                 italic = info[2][3]
                 bold = info[2][2]
-                if sentence == 'name':
+                if sentence == 'font':
+                    continue
+                elif sentence == 'name':
                     paragraph_string = student_name
                 elif sentence == 'issued_date':
                     paragraph_string = self.issued_date
