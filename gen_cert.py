@@ -640,7 +640,7 @@ class CertificateGen(object):
             font = self.pdf_info.pop('font')
             style = ParagraphStyle(name=font.lower(), leading=10, fontName=font)
             style.alignment = TA_CENTER
-            for sentence, info in self.pdf_info:
+            for sentence, info in self.pdf_info.items():
                 style.fontSize = info[2][0]
                 style.textColor = colors.Color(*info[2][1])
                 italic = info[2][3]
