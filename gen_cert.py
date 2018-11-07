@@ -641,13 +641,9 @@ class CertificateGen(object):
             style = ParagraphStyle(name=font.lower(), leading=10, fontName=font)
             style.alignment = TA_CENTER
             for sentence, info in self.pdf_info.items():
-                style.fontSize = info[2][0]
-                style.textColor = colors.Color(*info[2][1])
-                italic = info[2][3]
-                bold = info[2][2]
                 if sentence == 'font':
                     continue
-                elif sentence == 'name':
+                if sentence == 'name':
                     paragraph_string = student_name
                 elif sentence == 'issued_date':
                     paragraph_string = self.issued_date
@@ -655,6 +651,10 @@ class CertificateGen(object):
                     paragraph_string = self.long_course.decode('utf-8')
                 else:
                     paragraph_string = sentence
+                style.fontSize = info[2][0]
+                style.textColor = colors.Color(*info[2][1])
+                italic = info[2][3]
+                bold = info[2][2]
                 if italic:
                     paragraph_string = '<i>' + paragraph_string + '</i>'
                 if bold:
