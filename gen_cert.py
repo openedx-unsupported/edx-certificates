@@ -650,8 +650,8 @@ class CertificateGen(object):
             for sentence, info in self.pdf_info.items():
                 if sentence == 'font':
                     continue
-                if sentence == 'name':
-                    paragraph_string = student_name
+                if '{name}' in sentence:
+                    paragraph_string = sentence.format(name=student_name)
                 elif '{issued_date}' in sentence:
                     paragraph_string = sentence.format(issued_date=self.issued_date)
                 elif '{course_name}' in sentence:
@@ -664,6 +664,12 @@ class CertificateGen(object):
                 style.textColor = colors.Color(*info[2][1])
                 italic = info[2][3]
                 bold = info[2][2]
+                if info[2][4] == 'center':
+                    style.alignment = TA_CENTER
+                elif info[2][4] == 'left':
+                    style.alignment = TA_LEFT
+                else:
+                    style.alignment = TA_RIGHT
                 if italic:
                     paragraph_string = '<i>' + paragraph_string + '</i>'
                 if bold:
