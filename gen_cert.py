@@ -653,10 +653,10 @@ class CertificateGen(object):
                     paragraph_string = student_name
                 elif sentence == 'issued_date':
                     paragraph_string = self.issued_date
-                elif sentence == 'course_name':
-                    paragraph_string = self.long_course.decode('utf-8')
-                elif 'grade' in sentence or 'score' in sentence:
-                    paragraph_string = sentence.format(self.score)
+                elif '{course_name}' in sentence:
+                    paragraph_string = sentence.format(course_name=self.long_course.decode('utf-8'))
+                elif '{grade}' in sentence:
+                    paragraph_string = sentence.format(grade=self.score)
                 else:
                     paragraph_string = sentence
                 style.fontSize = info[2][0]
