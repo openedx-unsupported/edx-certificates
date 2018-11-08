@@ -425,6 +425,12 @@ class CertificateGen(object):
         addMapping('OpenSans-Regular', 1, 0, 'OpenSans-Bold')
         addMapping('OpenSans-Regular', 1, 1, 'OpenSans-BoldItalic')
 
+        # add font Raleway
+        addMapping('Raleway-Regular', 0, 0, 'Raleway-Regular')
+        addMapping('Raleway-Regular', 0, 1, 'Raleway-Italic')
+        addMapping('Raleway-Regular', 1, 0, 'Raleway-Bold')
+        addMapping('Raleway-Regular', 1, 1, 'Raleway-BoldItalic')
+
         styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
         styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10, fontName='OpenSans-Regular')
         styleOpenSansLight = ParagraphStyle(name="opensans-light", leading=10, fontName='OpenSans-Light')
