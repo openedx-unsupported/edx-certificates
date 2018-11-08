@@ -419,6 +419,7 @@ class CertificateGen(object):
         addMapping('OpenSans-Light', 0, 0, 'OpenSans-Light')
         addMapping('OpenSans-Light', 0, 1, 'OpenSans-LightItalic')
         addMapping('OpenSans-Light', 1, 0, 'OpenSans-Bold')
+        addMapping('OpenSans-Light', 1, 1, 'OpenSans-SemiboldItalic')
 
         addMapping('OpenSans-Regular', 0, 0, 'OpenSans-Regular')
         addMapping('OpenSans-Regular', 0, 1, 'OpenSans-Italic')
