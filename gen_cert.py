@@ -434,7 +434,7 @@ class CertificateGen(object):
 
         # add font Klavika
         addMapping('Klavika', 0, 0, 'Klavika-Regular')
-        addMapping('Klavika', 0, 1, 'Klavika-Regular-Italic')
+        addMapping('Klavika', 0, 1, 'Klavika-Italic')
         addMapping('Klavika', 1, 0, 'Klavika-Bold')
         addMapping('Klavika', 1, 1, 'Klavika-BoldItalic')
 
