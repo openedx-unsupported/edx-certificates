@@ -433,10 +433,10 @@ class CertificateGen(object):
         addMapping('Raleway-Regular', 1, 1, 'Raleway-BoldItalic')
 
         # add font Klavika
-        addMapping('Klavika', 0, 0, 'Klavika-Regular')
-        addMapping('Klavika', 0, 1, 'Klavika-Italic')
-        addMapping('Klavika', 1, 0, 'Klavika-Bold')
-        addMapping('Klavika', 1, 1, 'Klavika-BoldItalic')
+        addMapping('Klavika-Light', 0, 0, 'Klavika-Light')
+        addMapping('Klavika-Light', 0, 1, 'Klavika-Light-Italic')
+        addMapping('Klavika-Light', 1, 0, 'Klavika-Medium')
+        addMapping('Klavika-Light', 1, 1, 'Klavika-Medium-Italic')
 
         styleArial = ParagraphStyle(name="arial", leading=10, fontName='Arial Unicode')
         styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10, fontName='OpenSans-Regular')
