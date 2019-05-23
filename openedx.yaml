@@ -4,5 +4,7 @@
 nick: cert
 oeps: {}
 openedx-release: {ref: master}
-owner: edx/devops
+owner: scottrish
 track-pulls: true
+tags:
+  - backend-service
