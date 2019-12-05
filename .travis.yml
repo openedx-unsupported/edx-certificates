@@ -9,7 +9,7 @@ branches:
 before_install:
   - export BOTO_CONFIG=/dev/null
 install:
-  - pip install --allow-all-external -r requirements/base.txt
+  - pip install -r requirements/base.txt
   - pip install -r requirements/testing.txt
 script:
   - pep8 --verbose
