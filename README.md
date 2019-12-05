@@ -30,7 +30,7 @@ Generating sample certificates
 
 4. Install the python requirements into the virtualenv 
     ```shell
-    pip install -r edx-certificates/requirements.txt
+    pip install -r edx-certificates/requirements/base.txt
     ```
 
 5. In order to generate sample certificates that are uploaded to S3 you will need access to the _verify-test_ bucket, create a `~/.boto` file in your home directory
@@ -153,7 +153,7 @@ To run the test suite:
 
   * If tests fail with errors, try running:
      ```shell
-     pip install -r requirements.txt
+     pip install -r requirements/base.txt
      ```
     to install necessary requirements.  
 

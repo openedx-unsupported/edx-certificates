@@ -8,5 +8,5 @@ pyPdf2==1.23
 python-bidi==0.3.4
 PyYAML==3.11
 reportlab==3.1.44
-requests==2.3.0
+requests==2.22.0
 git+https://github.com/edx/opaque-keys.git@1254ed4d615a428591850656f39f26509b86d30a#egg=opaque-keys
