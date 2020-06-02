@@ -23,7 +23,9 @@
 # displaying/printing of the text, like writing it to PIL Image or passing
 # it to a PDF generating method.
 
+from __future__ import absolute_import
 import re
+from six.moves import range
 
 DEFINED_CHARACTERS_ORGINAL_ALF_UPPER_MDD = u'\u0622'
 DEFINED_CHARACTERS_ORGINAL_ALF_UPPER_HAMAZA = u'\u0623'
