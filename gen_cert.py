@@ -403,7 +403,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
 
         # 0 0 - normal
@@ -682,7 +682,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
 
         styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10,
@@ -979,7 +979,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer)
         c.setPageSize((WIDTH * mm, HEIGHT * mm))
 
@@ -1296,7 +1296,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
 
         # 0 0 - normal
@@ -1560,7 +1560,7 @@ class CertificateGen(object):
         styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
 
         def draw_centered_text(text, style, height):
@@ -1720,7 +1720,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         PAGE = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
 
         WIDTH, HEIGHT = landscape(A4)  # Width and Height of landscape canvas (in points)
