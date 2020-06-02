@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
-import gnupg
 import os
 import shutil
 import tempfile
-import urllib2
-from mock import patch
 
-from nose.plugins.skip import SkipTest
-from nose.tools import assert_true, assert_false
-
+import gnupg
 import settings
-from gen_cert import CertificateGen
-from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH
+from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH, CertificateGen
+from mock import patch
+from nose.plugins.skip import SkipTest
+from nose.tools import assert_false, assert_true
+from six.moves.urllib.request import urlopen  # pylint: disable=import-error
 from test_data import NAMES
-
 
 CERT_FILENAME = settings.CERT_FILENAME
 CERT_FILESIG = settings.CERT_FILENAME + '.sig'
@@ -102,6 +99,6 @@ def test_cert_upload():
         raise SkipTest
     cert = CertificateGen(settings.CERT_DATA.keys()[0])
     (download_uuid, verify_uuid, download_url) = cert.create_and_upload('John Smith')
-    r = urllib2.urlopen(download_url)
+    r = urlopen(download_url)
     with tempfile.NamedTemporaryFile(delete=True) as f:
         f.write(r.read())
