@@ -23,11 +23,11 @@ pillow==7.1.2             # via -r requirements/base.txt, reportlab
 psutil==5.7.0             # via -r requirements/base.txt, gnupg
 pymongo==3.10.1           # via -r requirements/base.txt, opaque-keys
 pypdf2==1.23              # via -r requirements/base.txt
-python-bidi==0.3.4        # via -r requirements/base.txt
+python-bidi==0.4.2        # via -r requirements/base.txt
 pyyaml==3.11              # via -r requirements/base.txt, coveralls
 reportlab==3.1.44         # via -r requirements/base.txt
 requests==2.22.0          # via -r requirements/base.txt, coveralls
-six==1.15.0               # via -r requirements/base.txt, mock, stevedore
+six==1.15.0               # via -r requirements/base.txt, mock, python-bidi, stevedore
 stevedore==1.32.0         # via -r requirements/base.txt, opaque-keys
 urllib3==1.25.9           # via -r requirements/base.txt, requests
 

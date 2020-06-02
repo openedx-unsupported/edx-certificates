@@ -19,11 +19,11 @@ pillow==7.1.2             # via reportlab
 psutil==5.7.0             # via gnupg
 pymongo==3.10.1           # via opaque-keys
 pypdf2==1.23              # via -r requirements/base.in
-python-bidi==0.3.4        # via -r requirements/base.in
+python-bidi==0.4.2        # via -r requirements/base.in
 pyyaml==3.11              # via -r requirements/base.in
 reportlab==3.1.44         # via -r requirements/base.in
 requests==2.22.0          # via -r requirements/base.in
-six==1.15.0               # via stevedore
+six==1.15.0               # via python-bidi, stevedore
 stevedore==1.32.0         # via opaque-keys
 urllib3==1.25.9           # via requests
 

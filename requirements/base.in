@@ -5,7 +5,7 @@ nose==1.2.1
 path.py==2.4.1
 pep8==1.5.7
 pyPdf2==1.23
-python-bidi==0.3.4
+python-bidi
 PyYAML==3.11
 reportlab==3.1.44
 requests==2.22.0
