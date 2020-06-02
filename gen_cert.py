@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import copy
 import datetime
 import gnupg
@@ -7,7 +8,7 @@ import math
 import os
 import re
 import shutil
-import StringIO
+from six import StringIO
 import uuid
 
 from reportlab.platypus import Paragraph
@@ -23,7 +24,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from glob import glob
-from HTMLParser import HTMLParser
+from six.moves.html_parser import HTMLParser
 
 import settings
 import collections
@@ -37,6 +38,8 @@ from bidi.algorithm import get_display
 import arabic_reshaper
 
 from opaque_keys.edx.keys import CourseKey
+import six
+from functools import reduce
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
@@ -68,15 +71,15 @@ FONT_CHARACTER_TABLES = {}
 for font_file in glob('{0}/fonts/*.ttf'.format(TEMPLATE_DIR)):
     font_name = os.path.basename(os.path.splitext(font_file)[0])
     ttf = TTFont(font_name, font_file)
-    FONT_CHARACTER_TABLES[font_name] = ttf.face.charToGlyph.keys()
+    FONT_CHARACTER_TABLES[font_name] = list(ttf.face.charToGlyph.keys())
     pdfmetrics.registerFont(TTFont(font_name, font_file))
 
 # These are small, so let's just load them at import time and keep them around
 # so we don't have to keep doing the file I/o
 BLANK_PDFS = {
-    'landscape-A4': PdfFileReader(file("{0}/blank.pdf".format(TEMPLATE_DIR), "rb")),
-    'landscape-letter': PdfFileReader(file("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")),
-    'portrait-A4': PdfFileReader(file("{0}/blank-portrait-A4.pdf".format(TEMPLATE_DIR), "rb")),
+    'landscape-A4': PdfFileReader(open("{0}/blank.pdf".format(TEMPLATE_DIR), "rb")),
+    'landscape-letter': PdfFileReader(open("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")),
+    'portrait-A4': PdfFileReader(open("{0}/blank-portrait-A4.pdf".format(TEMPLATE_DIR), "rb")),
 }
 
 
@@ -131,7 +134,7 @@ def font_for_string(fontlist, ustring):
     """
     # TODO: There's probably a way to do this by consulting reportlab that
     #       doesn't require re-loading the font files at all
-    ustring = unicode(ustring)
+    ustring = six.text_type(ustring)
     if fontlist and not ustring:
         return fontlist[0]
     for fonttuple in fontlist:
@@ -259,7 +262,7 @@ class CertificateGen(object):
             if 'verified' in template_pdf:
                 self.template_type = 'verified'
         try:
-            self.template_pdf = PdfFileReader(file(template_pdf_filename, "rb"))
+            self.template_pdf = PdfFileReader(open(template_pdf_filename, "rb"))
         except IOError as e:
             log.critical("I/O error ({0}): {1} opening {2}".format(e.errno, e.strerror, template_pdf_filename))
             raise
@@ -405,7 +408,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
 
         # 0 0 - normal
@@ -644,7 +647,7 @@ class CertificateGen(object):
 
         self._ensure_dir(filename)
 
-        outputStream = file(filename, "wb")
+        outputStream = open(filename, "wb")
         output.write(outputStream)
         outputStream.close()
 
@@ -684,7 +687,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
 
         styleOpenSans = ParagraphStyle(name="opensans-regular", leading=10,
@@ -941,7 +944,7 @@ class CertificateGen(object):
 
         self._ensure_dir(filename)
 
-        outputStream = file(filename, "wb")
+        outputStream = open(filename, "wb")
         output.write(outputStream)
         outputStream.close()
 
@@ -981,7 +984,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer)
         c.setPageSize((WIDTH * mm, HEIGHT * mm))
 
@@ -1075,7 +1078,7 @@ class CertificateGen(object):
         # (much faster)
 
         blank_pdf = PdfFileReader(
-            file("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")
+            open("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")
         )
 
         final_certificate = blank_pdf.getPage(0)
@@ -1086,7 +1089,7 @@ class CertificateGen(object):
 
         self._ensure_dir(filename)
 
-        outputStream = file(filename, "wb")
+        outputStream = open(filename, "wb")
         output.write(outputStream)
         outputStream.close()
         return (download_uuid, verify_uuid, download_url)
@@ -1298,7 +1301,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
 
         # 0 0 - normal
@@ -1455,7 +1458,7 @@ class CertificateGen(object):
 
         self._ensure_dir(filename)
 
-        outputStream = file(filename, "wb")
+        outputStream = open(filename, "wb")
         output.write(outputStream)
         outputStream.close()
 
@@ -1562,7 +1565,7 @@ class CertificateGen(object):
         styleDroidSerif = ParagraphStyle(name="droidserif", leading=10, fontName='DroidSerif', allowWidows=0)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         c = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(letter))
 
         def draw_centered_text(text, style, height):
@@ -1660,7 +1663,7 @@ class CertificateGen(object):
 
         output = PdfFileWriter()
         output.addPage(final_certificate)
-        with file(filename, "wb") as ostream:
+        with open(filename, "wb") as ostream:
             output.write(ostream)
 
         return (download_uuid, 'No Verification', download_url)
@@ -1722,7 +1725,7 @@ class CertificateGen(object):
         filename = os.path.join(download_dir, download_uuid, filename)
 
         # This file is overlaid on the template certificate
-        overlay_pdf_buffer = StringIO.StringIO()
+        overlay_pdf_buffer = StringIO()
         PAGE = canvas.Canvas(overlay_pdf_buffer, pagesize=landscape(A4))
 
         WIDTH, HEIGHT = landscape(A4)  # Width and Height of landscape canvas (in points)
@@ -1961,7 +1964,7 @@ class CertificateGen(object):
 
         self._ensure_dir(filename)
 
-        outputStream = file(filename, "wb")
+        outputStream = open(filename, "wb")
         output.write(outputStream)
         outputStream.close()
 
