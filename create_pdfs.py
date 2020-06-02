@@ -4,6 +4,8 @@ This is a standalone utility for generating certficiates.
 It will use test data in tests/test_data.py for names and courses.
 PDFs by default will be dropped in TMP_GEN_DIR for review
 """
+from __future__ import absolute_import
+from __future__ import print_function
 from argparse import ArgumentParser, RawTextHelpFormatter
 import csv
 import logging
@@ -15,6 +17,7 @@ import sys
 from gen_cert import CertificateGen, S3_CERT_PATH, TARGET_FILENAME, TMP_GEN_DIR
 import settings
 from tests.test_data import NAMES
+import six
 
 
 logging.config.dictConfig(settings.LOGGING)
@@ -93,7 +96,7 @@ def main():
     if args.course_id:
         course_list = [args.course_id]
     else:
-        course_list = settings.CERT_DATA.keys()
+        course_list = list(settings.CERT_DATA.keys())
 
     upload_files = not args.no_upload
 
@@ -120,7 +123,7 @@ def main():
             title = None
             if args.assign_title:
                 title = random.choice(stanford_cme_titles)[0]
-                print "assigning random title", name, title
+                print("assigning random title", name, title)
             grade = None
             if args.grade_text:
                 grade = args.grade_text
@@ -136,14 +139,14 @@ def main():
 
             try:
                 shutil.copyfile('{0}/{1}'.format(gen_dir, TARGET_FILENAME),
-                                unicode(copy_dest.decode('utf-8')))
-            except Exception, msg:
+                                six.text_type(copy_dest.decode('utf-8')))
+            except Exception as msg:
                 # Sometimes we have problems finding or creating the files to be copied;
                 # the following lines help us debug this case
-                print msg
-                print "%s\n%s\n%s\n%s\n%s\n%s" % (name, download_uuid, verify_uuid, download_uuid, gen_dir, copy_dest)
+                print(msg)
+                print("%s\n%s\n%s\n%s\n%s\n%s" % (name, download_uuid, verify_uuid, download_uuid, gen_dir, copy_dest))
                 raise
-            print "Created {0}".format(copy_dest)
+            print("Created {0}".format(copy_dest))
 
     should_write_report_to_stdout = not args.no_report
     if args.report_file:
@@ -156,7 +159,7 @@ def main():
             LOG.error("Unable to open report file: %s", error)
     if should_write_report_to_stdout:
         for row in certificate_data:
-            print '\t'.join(row)
+            print('\t'.join(row))
 
 if __name__ == '__main__':
     args = parse_args()

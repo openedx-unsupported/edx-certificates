@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
-import gnupg
+from __future__ import absolute_import
+
 import os
 import shutil
 import tempfile
-import urllib2
-from mock import patch
 
-from nose.plugins.skip import SkipTest
-from nose.tools import assert_true, assert_false
+import six.moves.urllib.error
+import six.moves.urllib.parse
+import six.moves.urllib.request
 
+import gnupg
 import settings
-from gen_cert import CertificateGen
-from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH
-from test_data import NAMES
+from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH, CertificateGen
+from mock import patch
+from nose.plugins.skip import SkipTest
+from nose.tools import assert_false, assert_true
 
+from .test_data import NAMES
 
 CERT_FILENAME = settings.CERT_FILENAME
 CERT_FILESIG = settings.CERT_FILENAME + '.sig'
@@ -76,7 +79,7 @@ def test_creates_default_dir(gen_dir):
         assert_true(os.path.exists(gen_dir))
         shutil.rmtree(gen_dir)
         assert_false(os.path.exists(gen_dir))
-        gen = CertificateGen(settings.CERT_DATA.keys()[0])
+        gen = CertificateGen(list(settings.CERT_DATA.keys())[0])
         assert_true(os.path.exists(gen.dir_prefix))
     finally:
         if os.path.exists(gen_dir):
@@ -90,7 +93,7 @@ def test_creates_default_dir(gen_dir):
 def test_cert_names():
     """Generate certificates for all names in NAMES without saving or uploading"""
     # XXX: This is meant to catch unicode rendering problems, but does it?
-    course_id = settings.CERT_DATA.keys()[0]
+    course_id = list(settings.CERT_DATA.keys())[0]
     for name in NAMES:
         cert = CertificateGen(course_id)
         (download_uuid, verify_uuid, download_url) = cert.create_and_upload(name, upload=False)
@@ -100,8 +103,8 @@ def test_cert_upload():
     """Check here->S3->http round trip."""
     if not settings.CERT_AWS_ID or not settings.CERT_AWS_KEY:
         raise SkipTest
-    cert = CertificateGen(settings.CERT_DATA.keys()[0])
+    cert = CertificateGen(list(settings.CERT_DATA.keys())[0])
     (download_uuid, verify_uuid, download_url) = cert.create_and_upload('John Smith')
-    r = urllib2.urlopen(download_url)
+    r = six.moves.urllib.request.urlopen(download_url)
     with tempfile.NamedTemporaryFile(delete=True) as f:
         f.write(r.read())
