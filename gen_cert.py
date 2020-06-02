@@ -12,7 +12,6 @@ import shutil
 import tempfile
 import uuid
 from glob import glob
-from HTMLParser import HTMLParser
 
 import arabic_reshaper
 import boto.s3
@@ -35,6 +34,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from reportlab.platypus import Paragraph
 from six import StringIO
+from six.moves.html_parser import HTMLParser
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
