@@ -1,42 +1,40 @@
 # -*- coding: utf-8 -*-
 
+import collections
 import copy
 import datetime
-import gnupg
+import itertools
+import logging.config
 import math
 import os
 import re
 import shutil
-import StringIO
+import tempfile
 import uuid
-
-from reportlab.platypus import Paragraph
-from PyPDF2 import PdfFileWriter, PdfFileReader
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-from reportlab.lib.fonts import addMapping
-from reportlab.lib.pagesizes import A4, letter, landscape
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.units import mm
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.pdfgen import canvas
-from reportlab.pdfbase.pdfmetrics import stringWidth
 from glob import glob
 from HTMLParser import HTMLParser
 
-import settings
-import collections
-import itertools
-import logging.config
-import reportlab.rl_config
-import tempfile
-import boto.s3
-from boto.s3.key import Key
-from bidi.algorithm import get_display
 import arabic_reshaper
-
+import boto.s3
+import gnupg
+import reportlab.rl_config
+import settings
+from bidi.algorithm import get_display
+from boto.s3.key import Key
 from opaque_keys.edx.keys import CourseKey
+from PyPDF2 import PdfFileReader, PdfFileWriter
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.fonts import addMapping
+from reportlab.lib.pagesizes import A4, landscape, letter
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Paragraph
+from six import StringIO
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
