@@ -59,7 +59,7 @@ def test_cert_gen():
             pdf = os.path.join(tmpdir, S3_CERT_PATH, download_uuid, CERT_FILENAME)
             sig = os.path.join(tmpdir, S3_VERIFY_PATH, verify_uuid, CERT_FILESIG)
             gpg = gnupg.GPG(homedir=settings.CERT_GPG_DIR)
-            with open(pdf) as f:
+            with open(pdf, "rb") as f:
                 v = gpg.verify_file(f, sig)
             assert_true(v is not None and v.trust_level >= v.TRUST_FULLY)
 
