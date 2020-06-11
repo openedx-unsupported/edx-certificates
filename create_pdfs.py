@@ -138,7 +138,7 @@ def main():
 
             try:
                 shutil.copyfile('{0}/{1}'.format(gen_dir, TARGET_FILENAME),
-                                six.text_type(copy_dest.decode('utf-8')))
+                                six.text_type(copy_dest))
             except Exception as msg:
                 # Sometimes we have problems finding or creating the files to be copied;
                 # the following lines help us debug this case
