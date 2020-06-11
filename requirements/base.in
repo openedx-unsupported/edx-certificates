@@ -6,7 +6,7 @@ path.py==2.4.1
 pep8==1.5.7
 pyPdf2
 python-bidi
-PyYAML==3.11
+PyYAML==5.1
 reportlab
 requests==2.22.0
 edx-opaque-keys

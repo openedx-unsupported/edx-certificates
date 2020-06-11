@@ -24,7 +24,7 @@ psutil==5.7.0             # via -r requirements/base.txt, gnupg
 pymongo==3.10.1           # via -r requirements/base.txt, edx-opaque-keys
 pypdf2==1.26.0            # via -r requirements/base.txt
 python-bidi==0.4.2        # via -r requirements/base.txt
-pyyaml==3.11              # via -r requirements/base.txt, coveralls
+pyyaml==5.1               # via -r requirements/base.txt, coveralls
 reportlab==3.5.42         # via -r requirements/base.txt
 requests==2.22.0          # via -r requirements/base.txt, coveralls
 six==1.15.0               # via -r requirements/base.txt, edx-opaque-keys, mock, python-bidi, stevedore
