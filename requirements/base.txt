@@ -14,13 +14,12 @@ idna==2.8                 # via requests
 nose==1.2.1               # via -r requirements/base.in
 path.py==2.4.1            # via -r requirements/base.in
 pbr==5.4.5                # via stevedore
-pep8==1.5.7               # via -r requirements/base.in
 pillow==7.1.2             # via reportlab
 psutil==5.7.0             # via gnupg
 pymongo==3.10.1           # via edx-opaque-keys
 pypdf2==1.26.0            # via -r requirements/base.in
 python-bidi==0.4.2        # via -r requirements/base.in
-pyyaml==3.11              # via -r requirements/base.in
+pyyaml==5.3.1             # via -r requirements/base.in
 reportlab==3.5.42         # via -r requirements/base.in
 requests==2.22.0          # via -r requirements/base.in
 six==1.15.0               # via edx-opaque-keys, python-bidi, stevedore
