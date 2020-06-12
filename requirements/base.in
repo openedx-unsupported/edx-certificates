@@ -3,10 +3,9 @@ boto==2.39.0
 gnupg
 nose==1.2.1
 path.py==2.4.1
-pep8==1.5.7
 pyPdf2
 python-bidi
-PyYAML==3.11
+PyYAML
 reportlab
 requests==2.22.0
 edx-opaque-keys
