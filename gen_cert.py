@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import
-
 import collections
 import copy
 import datetime
@@ -21,10 +19,10 @@ import boto.s3
 import gnupg
 import reportlab.rl_config
 import six
+from PyPDF2 import PdfFileReader, PdfFileWriter
 from bidi.algorithm import get_display
 from boto.s3.key import Key
 from opaque_keys.edx.keys import CourseKey
-from PyPDF2 import PdfFileReader, PdfFileWriter
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.lib.fonts import addMapping

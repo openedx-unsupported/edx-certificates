@@ -4,14 +4,14 @@
 Settings file for the certificate agent
 """
 
-from __future__ import absolute_import
+
 import json
 import os
-import yaml
 
-from logsettings import get_logger_config
+import yaml
 from path import path
 
+from logsettings import get_logger_config
 
 ROOT_PATH = path(__file__).dirname()
 REPO_PATH = ROOT_PATH

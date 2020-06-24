@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 
 import os
 import shutil
 import tempfile
 
+import gnupg
 import six.moves.urllib.error
 import six.moves.urllib.parse
 import six.moves.urllib.request
-
-import gnupg
-import settings
-from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH, CertificateGen
 from mock import patch
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_false, assert_true
 
+import settings
+from gen_cert import S3_CERT_PATH, S3_VERIFY_PATH, CertificateGen
 from .test_data import NAMES
 
 CERT_FILENAME = settings.CERT_FILENAME
