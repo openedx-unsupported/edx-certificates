@@ -1,10 +1,9 @@
-from __future__ import absolute_import
+
 import json
 import logging
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
-
 
 log = logging.getLogger(__name__)
 
