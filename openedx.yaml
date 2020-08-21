@@ -3,10 +3,8 @@
 
 nick: cert
 oeps:
-  oep-2: True
-  oep-18: True
+    oep-2: true
+    oep-18: true
 openedx-release: {ref: master}
-owner: scottrish
-track-pulls: true
 tags:
-  - backend-service
+    - backend-service
