@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 import os
 import shutil
 import tempfile
@@ -9,7 +6,7 @@ import gnupg
 import six.moves.urllib.error
 import six.moves.urllib.parse
 import six.moves.urllib.request
-from mock import patch
+from unittest.mock import patch
 from nose.plugins.skip import SkipTest
 from nose.tools import assert_false, assert_true
 
@@ -19,8 +16,8 @@ from .test_data import NAMES
 
 CERT_FILENAME = settings.CERT_FILENAME
 CERT_FILESIG = settings.CERT_FILENAME + '.sig'
-VERIFY_FILES = set(['valid.html', 'verify.html'])
-DOWNLOAD_FILES = set([])
+VERIFY_FILES = {'valid.html', 'verify.html'}
+DOWNLOAD_FILES = set()
 
 
 def setUp():

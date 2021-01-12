@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import collections
 import copy
 import datetime
@@ -42,7 +40,7 @@ import settings
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
 
 
-RE_ISODATES = re.compile("(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})")
+RE_ISODATES = re.compile(r"(?P<year>\d{4})-(?P<month>\d{2})-(?P<day>\d{2})")
 TEMPLATE_DIR = settings.TEMPLATE_DIR
 BUCKET = settings.CERT_BUCKET
 CERT_KEY_ID = settings.CERT_KEY_ID
@@ -66,7 +64,7 @@ l.setLevel('WARNING')
 # While registering fonts, build a table of the Unicode code points in each
 # for use in font_for_string().
 FONT_CHARACTER_TABLES = {}
-for font_file in glob('{0}/fonts/*.ttf'.format(TEMPLATE_DIR)):
+for font_file in glob(f'{TEMPLATE_DIR}/fonts/*.ttf'):
     font_name = os.path.basename(os.path.splitext(font_file)[0])
     ttf = TTFont(font_name, font_file)
     FONT_CHARACTER_TABLES[font_name] = list(ttf.face.charToGlyph.keys())
@@ -75,9 +73,9 @@ for font_file in glob('{0}/fonts/*.ttf'.format(TEMPLATE_DIR)):
 # These are small, so let's just load them at import time and keep them around
 # so we don't have to keep doing the file I/o
 BLANK_PDFS = {
-    'landscape-A4': PdfFileReader(open("{0}/blank.pdf".format(TEMPLATE_DIR), "rb")),
-    'landscape-letter': PdfFileReader(open("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")),
-    'portrait-A4': PdfFileReader(open("{0}/blank-portrait-A4.pdf".format(TEMPLATE_DIR), "rb")),
+    'landscape-A4': PdfFileReader(open(f"{TEMPLATE_DIR}/blank.pdf", "rb")),
+    'landscape-letter': PdfFileReader(open(f"{TEMPLATE_DIR}/blank-letter.pdf", "rb")),
+    'portrait-A4': PdfFileReader(open(f"{TEMPLATE_DIR}/blank-portrait-A4.pdf", "rb")),
 }
 
 
@@ -112,7 +110,7 @@ def get_cert_date(calling_date_parameter, configured_date_parameter):
     else:
         date_value = configured_date_parameter
 
-    date_string = "{0}".format(date_value)
+    date_string = f"{date_value}"
 
     return date_string
 
@@ -132,7 +130,7 @@ def font_for_string(fontlist, ustring):
     """
     # TODO: There's probably a way to do this by consulting reportlab that
     #       doesn't require re-loading the font files at all
-    ustring = six.text_type(ustring)
+    ustring = str(ustring)
     if fontlist and not ustring:
         return fontlist[0]
     for fonttuple in fontlist:
@@ -152,7 +150,7 @@ def font_for_string(fontlist, ustring):
             return fonttuple
     # No font we tested supports this string, throw an exception.
     # Then a human can and should install better fonts
-    raise ValueError("Nothing in fontlist supports string '{0}'. Fontlist: {1}".format(
+    raise ValueError("Nothing in fontlist supports string '{}'. Fontlist: {}".format(
         ustring.encode('utf-8'),
         repr(fontlist),
     ))
@@ -182,7 +180,7 @@ def autoscale_text(page, string, max_fontsize, max_leading, max_height, max_widt
     return paragraph
 
 
-class CertificateGen(object):
+class CertificateGen:
     """Manages the pdf, signatures, and S3 bucket for course certificates."""
 
     def __init__(self, course_id, template_pdf=None, aws_id=None, aws_key=None,
@@ -253,10 +251,10 @@ class CertificateGen(object):
         # Else if a value is passed in to the constructor (eg, from xqueue), it is used,
         # Else, the filename is calculated from the version and course_id.
         template_pdf = cert_data.get('TEMPLATEFILE', template_pdf)
-        template_prefix = '{0}/v{1}-cert-templates'.format(TEMPLATE_DIR, self.template_version)
-        template_pdf_filename = "{0}/certificate-template-{1}-{2}.pdf".format(template_prefix, self.org, self.course)
+        template_prefix = f'{TEMPLATE_DIR}/v{self.template_version}-cert-templates'
+        template_pdf_filename = f"{template_prefix}/certificate-template-{self.org}-{self.course}.pdf"
         if template_pdf:
-            template_pdf_filename = "{0}/{1}".format(template_prefix, template_pdf)
+            template_pdf_filename = f"{template_prefix}/{template_pdf}"
             if 'verified' in template_pdf:
                 self.template_type = 'verified'
         try:
@@ -457,7 +455,7 @@ class CertificateGen(object):
             'OpenSans-Light',
             19,
         ) / mm
-        paragraph = Paragraph("{0}".format(
+        paragraph = Paragraph("{}".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 163 * mm)
@@ -470,7 +468,7 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "Issued {0}".format(self.issued_date)
+        paragraph_string = f"Issued {self.issued_date}"
 
         # Right justified so we compute the width
         width = stringWidth(
@@ -478,7 +476,7 @@ class CertificateGen(object):
             'OpenSans-LightItalic',
             12,
         ) / mm
-        paragraph = Paragraph("<i>{0}</i>".format(
+        paragraph = Paragraph("<i>{}</i>".format(
             paragraph_string), styleOpenSansLight)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (WIDTH - RIGHT_INDENT - width) * mm, 155 * mm)
@@ -504,13 +502,13 @@ class CertificateGen(object):
         style = styleOpenSans
         style.leading = 10
         width = stringWidth(student_name, 'OpenSans-Bold', 34) / mm
-        paragraph_string = "<b>{0}</b>".format(student_name)
+        paragraph_string = f"<b>{student_name}</b>"
 
         if self._use_unicode_font(student_name):
             style = styleArial
             width = stringWidth(student_name, 'Arial Unicode', 34) / mm
             # There is no bold styling for Arial :(
-            paragraph_string = "{0}".format(student_name)
+            paragraph_string = f"{student_name}"
 
         # We will wrap at 200mm in, so if we reach the end (200-47)
         # decrease the font size
@@ -576,7 +574,7 @@ class CertificateGen(object):
             0, 0.624, 0.886)
         styleOpenSans.alignment = TA_LEFT
 
-        paragraph_string = "<b><i>{0}: {1}</i></b>".format(
+        paragraph_string = "<b><i>{}: {}</i></b>".format(
             self.course, self.long_course)
         paragraph = Paragraph(paragraph_string, styleOpenSans)
         # paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
@@ -597,9 +595,9 @@ class CertificateGen(object):
             0.302, 0.306, 0.318)
         styleOpenSansLight.alignment = TA_LEFT
 
-        paragraph_string = "a course of study offered by <b>{0}</b>" \
+        paragraph_string = "a course of study offered by <b>{}</b>" \
                            ", an online learning<br /><br />initiative of " \
-                           "<b>{1}</b> through <b>edX</b>.".format(
+                           "<b>{}</b> through <b>edX</b>.".format(
                                self.org, self.long_org)
 
         paragraph = Paragraph(paragraph_string, styleOpenSansLight)
@@ -843,7 +841,7 @@ class CertificateGen(object):
 
         paragraph_string = 'successfully completed and received a passing grade in'
 
-        paragraph = Paragraph("{0}".format(paragraph_string), styleAvenirNext)
+        paragraph = Paragraph(f"{paragraph_string}", styleAvenirNext)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
 
@@ -856,7 +854,7 @@ class CertificateGen(object):
         if self.template_type == 'verified':
             styleAvenirCourseName.textColor = v_style_color_course
 
-        paragraph_string = "{0}: {1}".format(self.course, self.long_course)
+        paragraph_string = f"{self.course}: {self.long_course}"
         html_paragraph_string = html.unescape(paragraph_string)
         larger_width = stringWidth(html_paragraph_string,
                                    'AvenirNext-DemiBold', style_type_course_size) / mm
@@ -903,9 +901,9 @@ class CertificateGen(object):
         # ELEM: Footer - Issued on Date
         x_offset = pos_footer_date_x
         y_offset = pos_footer_date_y
-        paragraph_string = "Issued {0}".format(self.issued_date)
+        paragraph_string = f"Issued {self.issued_date}"
         # Right justified so we compute the width
-        paragraph = Paragraph("{0}".format(
+        paragraph = Paragraph("{}".format(
             paragraph_string), styleAvenirFooter)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, LEFT_INDENT * mm, y_offset * mm)
@@ -1078,7 +1076,7 @@ class CertificateGen(object):
         # (much faster)
 
         blank_pdf = PdfFileReader(
-            open("{0}/blank-letter.pdf".format(TEMPLATE_DIR), "rb")
+            open(f"{TEMPLATE_DIR}/blank-letter.pdf", "rb")
         )
 
         final_certificate = blank_pdf.getPage(0)
@@ -1168,7 +1166,7 @@ class CertificateGen(object):
         )
         type_map['honor']['img'] = ""
 
-        with open("{0}/{1}".format(TEMPLATE_DIR, valid_template)) as f:
+        with open(f"{TEMPLATE_DIR}/{valid_template}") as f:
             valid_page = f.read()
         valid_page = valid_page.format(
             COURSE=self.course,
@@ -1192,7 +1190,7 @@ class CertificateGen(object):
         with open(os.path.join(output_dir, verify_uuid, "valid.html"), 'w') as f:
             f.write(valid_page)
 
-        with open("{0}/{1}".format(TEMPLATE_DIR, verify_template)) as f:
+        with open(f"{TEMPLATE_DIR}/{verify_template}") as f:
             verify_page = f.read().format(
                 NAME=name,
                 SIG_URL=signature_download_url,
@@ -1358,7 +1356,7 @@ class CertificateGen(object):
 
         # Right justified so we compute the width
         width = stringWidth(paragraph_string, 'SourceSansPro-SemiboldItalic', style.fontSize) / mm
-        paragraph = Paragraph("<i><b>{0}</b></i>".format(paragraph_string), style)
+        paragraph = Paragraph(f"<i><b>{paragraph_string}</b></i>", style)
         paragraph.wrapOn(c, WIDTH * mm, HEIGHT * mm)
         paragraph.drawOn(c, (WIDTH - DATE_INDENT - width) * mm, 159 * mm)
 
@@ -1380,13 +1378,13 @@ class CertificateGen(object):
         style = styleOpenSansLight
         style.fontSize = 34
         width = stringWidth(student_name, 'OpenSans-Bold', style.fontSize) / mm
-        paragraph_string = "<b>{0}</b>".format(student_name)
+        paragraph_string = f"<b>{student_name}</b>"
 
         if self._use_unicode_font(student_name):
             style = styleArial
             width = stringWidth(student_name, 'Arial Unicode', style.fontSize) / mm
             # There is no bold styling for Arial :(
-            paragraph_string = "{0}".format(student_name)
+            paragraph_string = f"{student_name}"
 
         # We will wrap at 200mm in, so if we reach the end (200-47)
         # decrease the font size
@@ -1542,9 +1540,9 @@ class CertificateGen(object):
         gets_md_cert = False
         gets_md_cert_list = self.cert_data.get('MD_CERTS', [])
         gets_no_title = self.cert_data.get('NO_TITLE', [])
-        student_name = "{}".format(student_name)  # Ensure consistent handling
+        student_name = f"{student_name}"  # Ensure consistent handling
         if designation and designation not in gets_no_title:
-            student_name = "{}, {}".format(student_name, designation)
+            student_name = f"{student_name}, {designation}"
         gets_md_cert = designation in gets_md_cert_list
 
         #                            0 0 - normal
@@ -1605,18 +1603,18 @@ class CertificateGen(object):
                 nameYOffset = nameYOffset - math.floor((36 - fontsize) / 12)
             fontsize -= 1
 
-        draw_centered_text("<b>{0}</b>".format(student_name), style, nameYOffset)
+        draw_centered_text(f"<b>{student_name}</b>", style, nameYOffset)
 
         # Enduring material titled
         style = styleDroidSerif
         style.alignment = TA_CENTER
         style.fontSize = 28
-        draw_centered_text("<b>{0}</b>".format(self.long_course), style, 119)
+        draw_centered_text(f"<b>{self.long_course}</b>", style, 119)
 
         # Issued on date...
         style.fontSize = 26
         paragraph_string = get_cert_date(generate_date, self.issued_date)
-        draw_centered_text("<b>{0}</b>".format(paragraph_string), style, 95)
+        draw_centered_text(f"<b>{paragraph_string}</b>", style, 95)
 
         # Credits statement
         # This is pretty fundamentally not internationalizable; like the rest of the certificate template renderers
@@ -1807,7 +1805,7 @@ class CertificateGen(object):
         #   * honor code url at the bottom
 
         # SECTION: Issued Date
-        date_string = "{0}".format(get_cert_date(generate_date, self.issued_date))
+        date_string = "{}".format(get_cert_date(generate_date, self.issued_date))
 
         (fonttag, fontfile, date_style) = font_for_string(fontlist_with_style(style_date_text), date_string)
         max_width = 125
@@ -1822,7 +1820,7 @@ class CertificateGen(object):
 
         # SECTION: Student name
 
-        student_name_string = "<b>{0}</b>".format(student_name)
+        student_name_string = f"<b>{student_name}</b>"
 
         (fonttag, fontfile, name_style) = font_for_string(fontlist_with_style(style_big_name_text), student_name_string)
 
@@ -1864,7 +1862,7 @@ class CertificateGen(object):
 
         # SECTION: Course Title
         course_name_string = self.long_course
-        course_title = "<b>{0}</b>".format(course_name_string)
+        course_title = f"<b>{course_name_string}</b>"
 
         (fonttag, fontfile, course_style) = font_for_string(fontlist_with_style(style_big_course_text), course_title)
 
@@ -1885,8 +1883,8 @@ class CertificateGen(object):
         achievements_string = ""
         achievements_description_string = self.interstitial_texts[grade]
         if grade and grade.lower() != 'pass':
-            achievements_string = "with <b>{0}</b>.<br /><br />".format(grade)
-        achievements_paragraph = "{0}{1}".format(achievements_string, achievements_description_string)
+            achievements_string = f"with <b>{grade}</b>.<br /><br />"
+        achievements_paragraph = f"{achievements_string}{achievements_description_string}"
 
         (fonttag, fontfile, achievements_style) = font_for_string(
             fontlist_with_style(style_standard_text),

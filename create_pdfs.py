@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
 """
 This is a standalone utility for generating certficiates.
 It will use test data in tests/test_data.py for names and courses.
 PDFs by default will be dropped in TMP_GEN_DIR for review
 """
-from __future__ import absolute_import, print_function
 from argparse import ArgumentParser, RawTextHelpFormatter
 import csv
 import logging
@@ -137,15 +135,15 @@ def main():
                 course=course.replace("/", "-"))
 
             try:
-                shutil.copyfile('{0}/{1}'.format(gen_dir, TARGET_FILENAME),
-                                six.text_type(copy_dest))
+                shutil.copyfile(f'{gen_dir}/{TARGET_FILENAME}',
+                                str(copy_dest))
             except Exception as msg:
                 # Sometimes we have problems finding or creating the files to be copied;
                 # the following lines help us debug this case
                 print(msg)
                 print("%s\n%s\n%s\n%s\n%s\n%s" % (name, download_uuid, verify_uuid, download_uuid, gen_dir, copy_dest))
                 raise
-            print("Created {0}".format(copy_dest))
+            print(f"Created {copy_dest}")
 
     should_write_report_to_stdout = not args.no_report
     if args.report_file:
@@ -154,7 +152,7 @@ def main():
                 csv_writer = csv.writer(file_report, quoting=csv.QUOTE_ALL)
                 csv_writer.writerows(certificate_data)
             should_write_report_to_stdout = False
-        except IOError as error:
+        except OSError as error:
             LOG.error("Unable to open report file: %s", error)
     if should_write_report_to_stdout:
         for row in certificate_data:

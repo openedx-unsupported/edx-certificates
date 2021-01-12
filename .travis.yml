@@ -2,8 +2,7 @@
 language: python
 sudo: false
 python:
-  - "3.5"
-  - "3.8"
+  - '3.8'
 branches:
   only:
     - master

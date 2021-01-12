@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
 Settings file for the certificate agent
 """
@@ -43,7 +41,7 @@ LOGGING = get_logger_config(ENV_ROOT,
 
 # Default for the gpg dir
 # Specify the CERT_KEY_ID before running the test suite
-CERT_GPG_DIR = '{0}/.gnupg'.format(os.environ['HOME'])
+CERT_GPG_DIR = '{}/.gnupg'.format(os.environ['HOME'])
 # dummy key:
 # https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt
 CERT_KEY_ID = 'FEF8D954'
@@ -119,12 +117,12 @@ if os.path.isfile(ENV_ROOT / "env.json"):
     CERT_PRIVATE_DIR = ENV_TOKENS.get('CERT_PRIVATE_DIR', CERT_PRIVATE_DIR)
 
 # This is the base URL used for logging CERT uploads to s3
-CERT_URL = CERT_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
+CERT_URL = CERT_URL or f'http://{CERT_BUCKET}.s3.amazonaws.com'
 # This is the base URL that will be displayed to the user in the dashboard
 # It's different than CERT_URL because because CERT_URL will not have a valid
 # SSL certificate. # FIXME: confirm whether this is true
-CERT_DOWNLOAD_URL = CERT_DOWNLOAD_URL or 'https://{}.s3.amazonaws.com'.format(CERT_BUCKET)
-CERT_VERIFY_URL = CERT_VERIFY_URL or 'http://{}.s3.amazonaws.com'.format(CERT_BUCKET)
+CERT_DOWNLOAD_URL = CERT_DOWNLOAD_URL or f'https://{CERT_BUCKET}.s3.amazonaws.com'
+CERT_VERIFY_URL = CERT_VERIFY_URL or f'http://{CERT_BUCKET}.s3.amazonaws.com'
 
 DEFAULT_ORG = "Some Institution"
 
