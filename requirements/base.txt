@@ -4,24 +4,47 @@
 #
 #    make upgrade
 #
-argparse==1.2.1           # via -r requirements/base.in
-boto==2.39.0              # via -r requirements/base.in
-certifi==2020.4.5.2       # via requests
-chardet==3.0.4            # via requests
-edx-opaque-keys==2.1.0    # via -r requirements/base.in
-gnupg==2.3.1              # via -r requirements/base.in
-idna==2.8                 # via requests
-nose==1.2.1               # via -r requirements/base.in
-path.py==2.4.1            # via -r requirements/base.in
-pbr==5.4.5                # via stevedore
-pillow==7.1.2             # via reportlab
-psutil==5.7.0             # via gnupg
-pymongo==3.10.1           # via edx-opaque-keys
-pypdf2==1.26.0            # via -r requirements/base.in
-python-bidi==0.4.2        # via -r requirements/base.in
-pyyaml==5.3.1             # via -r requirements/base.in
-reportlab==3.5.42         # via -r requirements/base.in
-requests==2.22.0          # via -r requirements/base.in
-six==1.15.0               # via edx-opaque-keys, python-bidi, stevedore
-stevedore==1.32.0         # via edx-opaque-keys
-urllib3==1.25.9           # via requests
+argparse==1.2.1
+    # via -r requirements/base.in
+boto==2.39.0
+    # via -r requirements/base.in
+certifi==2020.12.5
+    # via requests
+chardet==3.0.4
+    # via requests
+edx-opaque-keys==2.1.1
+    # via -r requirements/base.in
+gnupg==2.3.1
+    # via -r requirements/base.in
+idna==2.8
+    # via requests
+nose==1.2.1
+    # via -r requirements/base.in
+path.py==2.4.1
+    # via -r requirements/base.in
+pbr==5.5.1
+    # via stevedore
+pillow==8.1.0
+    # via reportlab
+psutil==5.8.0
+    # via gnupg
+pymongo==3.11.2
+    # via edx-opaque-keys
+pypdf2==1.26.0
+    # via -r requirements/base.in
+python-bidi==0.4.2
+    # via -r requirements/base.in
+pyyaml==5.4.1
+    # via -r requirements/base.in
+reportlab==3.5.59
+    # via -r requirements/base.in
+requests==2.22.0
+    # via -r requirements/base.in
+six==1.15.0
+    # via
+    #   edx-opaque-keys
+    #   python-bidi
+stevedore==3.3.0
+    # via edx-opaque-keys
+urllib3==1.25.11
+    # via requests

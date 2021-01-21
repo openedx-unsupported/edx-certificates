@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # List of names that are used for certificate generation
 
 NAMES = [

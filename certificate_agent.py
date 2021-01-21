@@ -59,7 +59,7 @@ def main():
     while True:
 
         if manager.get_length() == 0:
-            log.debug("{0} has no jobs".format(str(manager)))
+            log.debug("{} has no jobs".format(str(manager)))
             time.sleep(settings.QUEUE_POLL_FREQUENCY)
             continue
         else:
@@ -95,7 +95,7 @@ def main():
                 if action in ['remove']:
                     continue
 
-        except (TypeError, ValueError, KeyError, IOError) as e:
+        except (TypeError, ValueError, KeyError, OSError) as e:
             log.critical('Unable to parse queue submission ({0}) : {1}'.format(e, certdata))
             if settings.DEBUG:
                 raise
