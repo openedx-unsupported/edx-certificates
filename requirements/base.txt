@@ -12,7 +12,7 @@ certifi==2020.12.5
     # via requests
 chardet==3.0.4
     # via requests
-edx-opaque-keys==2.1.1
+edx-opaque-keys==2.2.0
     # via -r requirements/base.in
 gnupg==2.3.1
     # via -r requirements/base.in
@@ -41,9 +41,7 @@ reportlab==3.5.59
 requests==2.22.0
     # via -r requirements/base.in
 six==1.15.0
-    # via
-    #   edx-opaque-keys
-    #   python-bidi
+    # via python-bidi
 stevedore==3.3.0
     # via edx-opaque-keys
 urllib3==1.25.11
