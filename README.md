@@ -110,7 +110,7 @@ renderers for new languages.
 Some members of the Open edX community maintain multiple private modifications
 to the open source edX projects, and use a branching scheme similar to the one
 described by [Giulio Gratta in this edX Eng blog
-post](http://engineering.edx.org/2014/12/how-stanford-runs-its-own-fork/).  If
+post](https://open.edx.org/blog/how-stanford-runs-its-own-fork/).  If
 you have many changes to the code base, a system like this might help you stay
 organized. If, on the other hand you are only forking one template renderer,
 this may be too complex. Please do whatever works best for your site.
