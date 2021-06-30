@@ -1,8 +1,13 @@
+# Archive Notice
+
+**This repository is in the process of being Archived.**
+Please see the DEPR ticket for more details: https://openedx.atlassian.net/browse/DEPR-160
+
+
+
 # edx-certificates
 
 This is the code we use the generate certificates at edX.
-
-
 
 # Generate edX certificates
 
@@ -13,22 +18,22 @@ for the purpose of generating a course certificate for a user.
 Generating sample certificates
 -------------------------
 
-1. Create a new python virtualenv 
+1. Create a new python virtualenv
     ```shell
     mkvirtualenv certificates
     ```
 
-2. Clone the certificate repo 
+2. Clone the certificate repo
     ```shell
     git clone https://github.com/edx/edx-certificates.git
     ```
 
-3. Clone the internal certificate repo for templates and private data (optional) 
+3. Clone the internal certificate repo for templates and private data (optional)
     ```shell
     git clone git@github.com:edx/edx-certificates-internal
     ```
 
-4. Install the python requirements into the virtualenv 
+4. Install the python requirements into the virtualenv
     ```shell
     pip install -r edx-certificates/requirements/base.txt
     ```
@@ -46,7 +51,7 @@ Generating sample certificates
         cp edx-certificates-internal/boto.example ~/.boto
         ```
 
-6. Set an environment variable to point to the internal repo for certificate templates 
+6. Set an environment variable to point to the internal repo for certificate templates
     ```shell
     export CERT_PRIVATE_DIR=/path/to/edx-certificates-internal
     ```
@@ -71,7 +76,7 @@ Generating sample certificates
 
 ## Behavioral Overview
 
-The `certificate_agent.py` script will continuously monitor a queue for 
+The `certificate_agent.py` script will continuously monitor a queue for
 certificate generation, it does the following:
 
 * Connect to the xqueue server
@@ -83,7 +88,7 @@ certificate generation, it does the following:
 A global exception handler will catch any error during the certificate
 generation process and post a result back to the LMS via the xqueue server
 indicating there was a problem.
-    
+
     optional arguments:
       -h, --help         show this help message and exit
       --aws-id AWS_ID    AWS ID for write access to the S3 bucket
@@ -100,7 +105,7 @@ There is none. Every renderer should have complete Unicode support throughout,
 but every certificate template render method is built around English-grammar
 sentence interpolation. Consequently, if the target language of the certificate
 has very different sentence structure, you may find the easiest way to add
-support for your language is to fork an existing renderer. We suggest 
+support for your language is to fork an existing renderer. We suggest
 ```_generate_v3_dynamic_certificate```.
 
 If you think that your new renderer would be useful to the international Open
@@ -140,16 +145,16 @@ To run the test suite:
 
         nosetests
 
-   These are more integration tests than unit tests, and will be exercising your 
+   These are more integration tests than unit tests, and will be exercising your
    certificate configuration, your file pathing, and your S3 credentials.  Some tests
    may fail, but the code may still be working properly; you'll have to investigate to
-   discover what the failed test is diagnostic of. To run just the tests for local 
+   discover what the failed test is diagnostic of. To run just the tests for local
    on-disk publishing run:
 
         nosetests tests.gen_cert_test:test_cert_gen
 
 
-**Troubleshooting**: 
+**Troubleshooting**:
 
   * If tests fail with errors, try running:
      ```shell
@@ -162,7 +167,7 @@ To run the test suite:
     installing.
 
   * If you run `create_pdf.py` and get unicode errors, you may need to set the
-    LC_ALL environment variable. To set it permanently, like from your 
+    LC_ALL environment variable. To set it permanently, like from your
     ~/.bashrc, try:
     ```shell
     export LC_ALL=en_US.UTF-8
@@ -193,4 +198,3 @@ To run the test suite:
   desire to see it replaced by smarter intermediate layers that use celery task
   queues or similar. This repo should be sufficiently modular that only
   queue.py should need to be changed to work this way.
-
