@@ -263,6 +263,7 @@ class CertificateGen(object):
             self.template_pdf = PdfFileReader(open(template_pdf_filename, "rb"))
         except IOError as e:
             log.critical("I/O error ({0}): {1} opening {2}".format(e.errno, e.strerror, template_pdf_filename))
+            os.rmdir(dir_prefix)
             raise
 
         self.cert_label_singular = cert_data.get('CERTS_ARE_CALLED', CERTS_ARE_CALLED)
