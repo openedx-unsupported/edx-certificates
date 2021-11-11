@@ -1,0 +1,47 @@
+name: Python CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  run_tests:
+    name: Tests
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+        python-version:
+          - 3.8
+        toxenv: [django32]
+    steps:
+      - uses: actions/checkout@v2
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: Set ENV
+        run: export BOTO_CONFIG=/dev/null
+      - name: Install dependencies
+        run: |
+          pip install -r requirements/base.txt
+          pip install -r requirements/testing.txt
+      - name: Run Tests
+        run: |
+          pep8 --verbose
+          curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-private-key.txt -o /var/tmp/key.txt
+          curl https://raw.githubusercontent.com/edx/configuration/master/playbooks/roles/certs/files/example-key-ownertrust.txt -o /var/tmp/trust.txt
+          /usr/bin/gpg --import /var/tmp/key.txt
+          /usr/bin/gpg --import-ownertrust /var/tmp/trust.txt
+          nosetests --with-coverage
+      - name: Run Coverage
+        uses: codecov/codecov-action@v1
+        with:
+          flags: unittests
+          fail_ci_if_error: true
